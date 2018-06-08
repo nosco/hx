@@ -6,13 +6,15 @@
 
  :dependencies
  [[cider/cider-nrepl "0.16.0-SNAPSHOT"]
-  [binaryage/devtools "0.9.7"]]
+  [binaryage/devtools "0.9.7"]
+  [devcards "0.2.5"]]
 
  :builds
- {:browser {:target :browser
-            :output-dir "public/test/js"
-            :asset-path "/test/js"
-            :modules {:main {:entries [hx.test.browser]}}
-            :devtools {:http-root    "public"
-                       :http-port    8700
-                       :preloads     [devtools.preload]}}]}}
+ {:workshop {:target :browser
+             :output-dir "public/workshop/js"
+             :asset-path "/js"
+             :modules {:main {:entries [hx.workshop.core]}}
+             :compiler-options {:devcards true}
+             :devtools {:http-root    "public/workshop"
+                        :http-port    8700
+                        :preloads     [devtools.preload]}}}}
