@@ -1,0 +1,30 @@
+{
+  "name": "hx",
+  "version": "0.0.1",
+  "description": "A Clojure library designed to ... well, that part is up to you.",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lokeh/hx.git"
+  },
+  "author": "Will Acton",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/Lokeh/hx/issues"
+  },
+  "homepage": "https://github.com/Lokeh/hx#readme",
+  "devDependencies": {
+    "shadow-cljs": "^2.3.36"
+  },
+  "dependencies": {
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0"
+  }
+}

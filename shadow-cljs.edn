@@ -1,9 +1,18 @@
 ;; shadow-cljs configuration
 {:source-paths
- ["src"]
+ ["src" "test"]
+
+ :nrepl {:port 8777}
 
  :dependencies
- []
+ [[cider/cider-nrepl "0.16.0-SNAPSHOT"]
+  [binaryage/devtools "0.9.7"]]
 
  :builds
- {}}
+ {:browser {:target :browser
+            :output-dir "public/test/js"
+            :asset-path "/test/js"
+            :modules {:main {:entries [hx.test.browser]}}
+            :devtools {:http-root    "public"
+                       :http-port    8700
+                       :preloads     [devtools.preload]}}]}}
