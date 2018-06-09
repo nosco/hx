@@ -31,7 +31,14 @@
      (when false
        $[:div "false"])]))
 
-(react/defnc greeting [{:keys [name]}]
+(dc/defcard defnc
+  (macroexpand '(react/defnc greeting [{:keys [name] :as props}]
+                  (println props)
+                  $[:span {:style {:font-size "24px"}}
+                    "Hello, " name])))
+
+(react/defnc greeting [{:keys [name] :as props}]
+  (println props)
   $[:span {:style {:font-size "24px"}}
     "Hello, " name])
 
