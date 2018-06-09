@@ -33,7 +33,6 @@
           [x & {:keys [keyword-fn]
                 :or   {keyword-fn name}
                 :as options}]
-          (println x)
           x
           (cond
             (nil? x) nil
