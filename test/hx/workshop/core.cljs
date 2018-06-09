@@ -120,6 +120,44 @@
   (react/compile
    $[static-property]))
 
+(react/defcomponent fn-as-child
+  (constructor [this]
+               (set! (. this -state) #js {:name "Will"})
+               this)
+  (update-name! [this e]
+                (. this setState #js {:name (.. e -target -value)}))
+  (render [this]
+          (let [state (. this -state)]
+            $[:div
+              [:div ((.. this -props -children) (. state -name))]
+              [:input {:value (. state -name)
+                       :on-change (. this -update-name!)}]])))
+
+(dc/defcard fn-as-child
+  (react/compile
+   $[fn-as-child
+     (fn [name]
+       $[:span {:style {:color "red"}} name])]))
+
+(react/defcomponent render-prop
+  (constructor [this]
+               (set! (. this -state) #js {:name "Will"})
+               this)
+  (update-name! [this e]
+                (. this setState #js {:name (.. e -target -value)}))
+  (render [this]
+          (let [state (. this -state)]
+            $[:div
+              [:div ((.. this -props -render) (. state -name))]
+              [:input {:value (. state -name)
+                       :on-change (. this -update-name!)}]])))
+
+(dc/defcard render-prop
+  (react/compile
+   $[render-prop
+     {:render (fn [name]
+                $[:span {:style {:color "red"}} name])}]))
+
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
 

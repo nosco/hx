@@ -11,24 +11,30 @@
       (analyzer/analyze)
       (generator/generate create-element)))
 
-(defn seq-vec-zip [root]
+(defn seq-vec-map-zip [root]
   (zip/zipper
    ;; branch?
-   (fn [v] (or (seq? v) (vector? v)))
+   (fn [v] (or (seq? v) (vector? v) (map? v)))
 
    ;; children
    seq
 
    ;; make-node
    (fn [node children]
-     (if (vector? node)
+     (cond
+       (vector? node)
        (with-meta (vec children) (meta node))
+
+       (map? node)
+       (with-meta (into {} children) (meta node))
+
+       :else
        (with-meta children (meta node))))
 
    root))
 
 (defn convert-compile-sym [form sym create-element]
-  (loop [loc (seq-vec-zip form)]
+  (loop [loc (seq-vec-map-zip form)]
     (if (not (zip/end? loc))
       (let [node (zip/node loc)]
         (if (= node sym)
