@@ -21,7 +21,14 @@
           ~(analyze-props props)
           ~@(into [] (generate-children create-element children))))
 
-(defn generate-element [create-element leaf]
+(defmulti generate-element
+  (fn [create-element leaf]
+    (:el leaf))
+  :default ::default)
+
+(defmethod generate-element
+  ::default
+  [create-element leaf]
   (if (element? leaf)
     (make-node create-element leaf)
     leaf))
