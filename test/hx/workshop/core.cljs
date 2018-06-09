@@ -61,6 +61,16 @@
   (react/compile
    $[greeting {:name "Will"}]))
 
+(react/defnc with-children [{:keys [children]}]
+  $[:div
+    (identity children)])
+
+(dc/defcard with-children
+  (react/compile
+   $[with-children
+     [:span "hi"]
+     [:div "watup"]]))
+
 (dc/defcard defcomponent
   (macroexpand '(react/defcomponent some-component
                   (constructor [this]
@@ -99,10 +109,11 @@
 (react/defcomponent static-property
   (constructor [this]
                this)
+
   ^:static
   (some-prop "1234")
+
   (render [this]
-          (js/console.log static-property)
           $[:div (. static-property -some-prop)]))
 
 (dc/defcard stateful-element
