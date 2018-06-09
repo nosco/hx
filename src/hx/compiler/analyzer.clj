@@ -13,7 +13,14 @@
        :children children)
       (dissoc :args)))
 
-(defn analyze-element [leaf]
+(defmulti analyze-element
+  (fn [leaf]
+    (:el leaf))
+  :default ::default)
+
+(defmethod analyze-element
+  ::default
+  [leaf]
   (if (:hx/parsed leaf)
     (let [{:keys [args]} leaf]
       (if (child? (first args))
