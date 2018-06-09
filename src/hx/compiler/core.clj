@@ -27,7 +27,7 @@
 
    root))
 
-(defn convert-compile-sym [form sym]
+(defn convert-compile-sym [form sym create-element]
   (loop [loc (seq-vec-zip form)]
     (if (not (zip/end? loc))
       (let [node (zip/node loc)]
@@ -38,18 +38,15 @@
             (-> next
                 ;; add the hx macro to the next form
                 (zip/replace
-                 (list 'hx.compiler.core/compile-hiccup (zip/node next)))
+                 (hx.compiler.core/compile-hiccup
+                  (zip/node next)
+                  create-element))
                 (recur)))
 
           (recur (zip/next loc))))
       (zip/root loc))))
 
-(defn compile* [form create-element]
-  (-> form
-      (convert-compile-sym '$)
-      (compile-hiccup create-element)))
-
-#_(compile*
+#_(convert-compile-sym
    '($[:div
        x
        [widget]
@@ -57,4 +54,5 @@
        (when false
          $[:div "heh"])
        [:input {:type "button"} [:i {:id "jkl"} "sup"]]])
+   '$
    'react/createElement)

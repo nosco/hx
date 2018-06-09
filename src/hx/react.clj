@@ -3,15 +3,18 @@
             [hx.compiler.parser :as parser])
   (:refer-clojure :exclude [compile]))
 
-(defmacro compile [form]
-  (hx.compiler.core/compile*
-   form
-   'hx.react/create-element))
+(defmacro compile [& form]
+  (let [with-compile (hx.compiler.core/convert-compile-sym
+                      form
+                      '$
+                      'hx.react/create-element)]
+    `(do ~@with-compile)))
 
 (defmacro defcomponent [display-name constructor & body]
   (let [with-compile (hx.compiler.core/convert-compile-sym
+                      body
                       '$
-                      'hx.react/create-element body)
+                      'hx.react/create-element)
         method-names (into [] (map #(list 'quote (first %)) body))]
     `(def ~display-name
        (let [ctor# (fn ~(second constructor)
@@ -28,8 +31,9 @@
 
 (defmacro defnc [name props-bindings & body]
   (let [with-compile (hx.compiler.core/convert-compile-sym
+                      body
                       '$
-                      'hx.react/create-element body)]
+                      'hx.react/create-element)]
     `(defn ~name [props#]
        (let [~@props-bindings (hx.react/props->clj props#)]
          ~@with-compile))))

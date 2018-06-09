@@ -5,7 +5,9 @@
 (defn analyze-props [props]
   ;; optimize case when map literal is passed in for props
   (if (map? props)
-    (utils/shallow-clj->js props)
+    (-> props
+        (utils/reactify-props)
+        (utils/shallow-clj->js))
     props))
 
 (defn element? [leaf]
