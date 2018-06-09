@@ -48,6 +48,6 @@
 
 #_(macroexpand
    '(compile
-     [:<>
-      [:div "wat"
-       [:asdf {:class ["123"]}]]]))
+     $[:<>
+       [:div "wat"
+        [:asdf {:class ["123"]}]]]))

@@ -26,6 +26,7 @@
       (utils/shallow-clj->js props)))
 
 (defn create-element [el p & c]
+  (js/console.log el p c)
   (if (or (string? p) (number? p) (react/isValidElement p))
     (apply react/createElement el nil p c)
 

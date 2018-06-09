@@ -2,7 +2,7 @@
   (:require [clojure.walk :as walk]
             [hx.utils :as utils]))
 
-(defn analyze-props [props]
+(defn generate-literal-props [props]
   ;; optimize case when map literal is passed in for props
   (if (map? props)
     (-> props
@@ -15,11 +15,11 @@
 
 (declare generate-children)
 
-(defn make-node [create-element {:keys [el props children]}]
+(defn make-node [create-element {:keys [el props children js-interop?]}]
   `(~create-element
-          ~el
-          ~(analyze-props props)
-          ~@(into [] (generate-children create-element children))))
+    ~el
+    ~(if js-interop? (generate-literal-props props) props)
+    ~@(into [] (generate-children create-element children))))
 
 (defmulti generate-element
   (fn [create-element leaf]

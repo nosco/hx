@@ -31,6 +31,21 @@
      (when false
        $[:div "false"])]))
 
+(dc/defcard
+  map*
+  (react/compile
+   $[:ul
+     [:li "Title"]
+     (map (fn [n] $[:li {:key n} n])
+          [1 2 3 4 5])]))
+
+;; (dc/defcard
+;;   map
+;;   (react/compile
+;;    $[:ul
+;;      (map [1 2 3 4 5]
+;;           (fn [n] $[:li n]))]))
+
 (dc/defcard defnc
   (macroexpand '(react/defnc greeting [{:keys [name] :as props}]
                   (println props)
@@ -38,7 +53,6 @@
                     "Hello, " name])))
 
 (react/defnc greeting [{:keys [name] :as props}]
-  (println props)
   $[:span {:style {:font-size "24px"}}
     "Hello, " name])
 

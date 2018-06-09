@@ -3,14 +3,16 @@
 
 (defn child? [leaf]
   (or (:hx/parsed leaf)
-      (string? leaf)))
+      (string? leaf)
+      (seq? leaf)))
 
-(defn make-node [leaf & {:keys [props children]}]
+(defn make-node [leaf & {:keys [props children js-interop?]}]
   (-> leaf
       (assoc
        :hx/analyzed true
        :props props
-       :children children)
+       :children children
+       :js-interop? js-interop?)
       (dissoc :args)))
 
 (defmulti analyze-element
@@ -22,18 +24,20 @@
   ::default
   [leaf]
   (if (:hx/parsed leaf)
-    (let [{:keys [args]} leaf]
+    (let [{:keys [el args]} leaf]
       (if (child? (first args))
         ;; first arg is an element
         (make-node
          leaf
          :props nil
-         :children args)
+         :children args
+         :js-interop? (string? el))
 
         (make-node
          leaf
          :props (first args)
-         :children (rest args))))
+         :children (rest args)
+         :js-interop? (string? el))))
     leaf))
 
 (defn analyze [tree]
