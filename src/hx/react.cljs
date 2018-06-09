@@ -20,8 +20,8 @@
 
     :default props))
 
-(defn clj->props [props & {:keys [js-interop?]}]
-  (-> (if js-interop? (styles->js props) props)
+(defn clj->props [props & {:keys [styles?]}]
+  (-> (if styles? (styles->js props) props)
       (utils/reactify-props)
       (utils/shallow-clj->js props)))
 
@@ -30,9 +30,8 @@
     (apply react/createElement el nil p c)
 
     ;; if el is a keyword, or is marked as ^:js
-    (let [props (clj->props
-                 p
-                 :js-interop? (or (string? el) (:js (meta el))))]
+    (let [js-interop? (or (string? el) (:js (meta el)))
+          props (clj->props p :styles? js-interop?)]
       (apply react/createElement el props c))))
 
 (defn create-class [super-class init-fn static-properties method-names]
