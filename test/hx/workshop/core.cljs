@@ -32,19 +32,19 @@
        $[:div "false"])]))
 
 (dc/defcard
+  seq
+  (react/compile
+   $[:ul
+     (list $[:li {:key 1} 1]
+           $[:li {:key 2} 2])]))
+
+(dc/defcard
   map*
   (react/compile
    $[:ul
      [:li "Title"]
      (map (fn [n] $[:li {:key n} n])
           [1 2 3 4 5])]))
-
-;; (dc/defcard
-;;   map
-;;   (react/compile
-;;    $[:ul
-;;      (map [1 2 3 4 5]
-;;           (fn [n] $[:li n]))]))
 
 (dc/defcard defnc
   (macroexpand '(react/defnc greeting [{:keys [name] :as props}]
