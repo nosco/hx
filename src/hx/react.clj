@@ -15,18 +15,22 @@
                       body
                       '$
                       'hx.react/create-element)
-        method-names (into [] (map #(list 'quote (first %)) body))]
+        methods (filter #(not (:static (meta %))) with-compile)
+        statics (->> (filter #(:static (meta %)) with-compile)
+                     (map #(apply vector (str (munge (first %))) (rest %)))
+                     (into {"displayName" (name display-name)}))
+        method-names (into [] (map #(list 'quote (first %)) methods))]
     `(def ~display-name
        (let [ctor# (fn ~(second constructor)
                      ;; constructor must return `this`
                      ~@(drop 2 constructor))
              class# (hx.react/create-pure-component
                      ctor#
-                     {"displayName" (name '~display-name)}
+                     ~statics
                      ~method-names)]
          (cljs.core/specify! (.-prototype class#)
            ~'Object
-           ~@with-compile)
+           ~@methods)
          class#))))
 
 (defmacro defnc [name props-bindings & body]

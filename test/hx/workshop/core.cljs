@@ -61,6 +61,53 @@
   (react/compile
    $[greeting {:name "Will"}]))
 
+(dc/defcard defcomponent
+  (macroexpand '(react/defcomponent some-component
+                  (constructor [this]
+                               this)
+                  (render [this]
+                          $[:div "sup component"]))))
+
+(react/defcomponent
+  some-component
+  (constructor [this]
+               this)
+  (render [this]
+          $[:div "sup component"]))
+
+(dc/defcard class-element
+  (react/compile
+   $[some-component]))
+
+(react/defcomponent stateful
+  (constructor [this]
+               (set! (.. this -state) #js {:name "Will"})
+               this)
+  (update-name! [this e]
+                (. this setState #js {:name (.. e -target -value)}))
+  (render [this]
+          (let [state (. this -state)]
+            $[:div
+              [:div (. state -name)]
+              [:input {:value (. state -name)
+                       :on-change (. this -update-name!)}]])))
+
+(dc/defcard stateful-element
+  (react/compile
+   $[stateful]))
+
+(react/defcomponent static-property
+  (constructor [this]
+               this)
+  ^:static
+  (some-prop "1234")
+  (render [this]
+          (js/console.log static-property)
+          $[:div (. static-property -some-prop)]))
+
+(dc/defcard stateful-element
+  (react/compile
+   $[static-property]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
