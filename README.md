@@ -15,6 +15,18 @@ A modern hiccup compiler, targeted at maximal React interop.
   (. js/document getElementById "app"))
 ```
 
+## Goals
+
+1. **Simple** interop between vanilla React features and CLJS code, to ease
+   adoption of new features & technologies in the JS world.
+   
+2. **Performant** parsing of hiccup syntax; impact is minimized by using macros,
+   to remove the need for runtime parsing of hiccup and minimize marshalling of
+   CLJS data.
+   
+3. **Extensible** API so that parsing, analysis & code generation of the hiccup
+   compiler can evolve to meet the needs of different ecosystems.
+
 ## License
 
 Copyright © 2018 Will Acton
