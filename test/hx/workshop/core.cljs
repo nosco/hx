@@ -123,7 +123,7 @@
   (render [this]
           $[:div (. static-property -some-prop)]))
 
-(dc/defcard stateful-element
+(dc/defcard static-property
   (react/compile
    $[static-property]))
 

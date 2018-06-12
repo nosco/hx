@@ -77,6 +77,35 @@ Example usage:
   (. js/document getElementById "app"))
 ```
 
+### hx.react/defcomponent: ([name constructor & body])
+
+This macro creates a React component class. Is the JS equivalent of 
+`class {name} extends React.Component { ... `. `constructor` is passed in `this`
+and must _return it._ Additional methods and static properties can be passed in,
+similar to `defrecord` / `deftype`. Methods are automatically bound to `this`.
+
+Example usage:
+
+```clojure
+(hx/defcomponent my-component
+  (constructor [this]
+    (set! (. this -state) #js {:name "Maria"})
+    this)
+
+  ^:static
+  (greeting "Hello")
+  
+  (update-name! [this e]
+                (. this setState #js {:name (.. e -target -value)}))
+
+  (render [this]
+    (let [state (. this -state)]
+      $[:div
+        [:div (. my-component -greeting) ", " (. state -name)]
+         [:input {:value (. state -name)
+                  :on-change (. this -update-name!)}]])))
+```
+
 ## License
 
 Copyright © 2018 Will Acton
