@@ -25,12 +25,17 @@
       (utils/reactify-props)
       (utils/shallow-clj->js props)))
 
+(defn is-hx? [el]
+  ;; TODO: detect hx component
+  true)
+
 (defn create-element [el p & c]
   (if (or (string? p) (number? p) (react/isValidElement p))
     (apply react/createElement el nil p c)
 
-    ;; if el is a keyword, or is marked as ^:js
-    (let [js-interop? (or (string? el) (:js (meta el)))
+    ;; if el is a keyword, or is not marked as an hx component,
+    ;; we recursively convert styles
+    (let [js-interop? (or (string? el) (not (is-hx? el)))
           props (clj->props p :styles? js-interop?)]
       (apply react/createElement el props c))))
 

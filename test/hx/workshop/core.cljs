@@ -158,13 +158,17 @@
      {:render (fn [name]
                 $[:span {:style {:color "red"}} name])}]))
 
-(defn js-interop-test [props]
-  (js/console.log props)
-  (prn-str (. props -nested)))
+(def js-interop-test
+  (fn
+    [props]
+    (js/console.log props)
+    "blahblah"))
+
+(js/console.log js-interop-test)
 
 (dc/defcard js-interop-nested-props
   (react/compile
-   $[^:js js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
+   $[js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
