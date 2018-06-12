@@ -1,6 +1,7 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
-            [hx.react :as react]))
+            [hx.react :as react
+             :refer-macros [defnc defcomponent]]))
 
 (dc/defcard
   macroexpand
@@ -45,6 +46,13 @@
      [:li "Title"]
      (map (fn [n] $[:li {:key n} n])
           [1 2 3 4 5])]))
+
+(dc/defcard css-class
+  (react/compile
+   $[:<>
+     [:style {:dangerouslySetInnerHTML #js {:__html ".foo { color: lightblue }"}}]
+     [:div {:className "foo"} "asdf jkl"]
+     [:div {:class "foo"} "1234 bnm,"]]))
 
 (dc/defcard defnc
   (macroexpand '(react/defnc greeting [{:keys [name] :as props}]
