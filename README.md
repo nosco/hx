@@ -79,7 +79,7 @@ Example usage:
 
 ### hx.react/defcomponent: ([name constructor & body])
 
-This macro creates a React component class. Is the JS equivalent of 
+This macro creates a React component class. Is the CLJS equivalent of 
 `class {name} extends React.Component { ... `. `constructor` is passed in `this`
 and must _return it._ Additional methods and static properties can be passed in,
 similar to `defrecord` / `deftype`. Methods are automatically bound to `this`.
