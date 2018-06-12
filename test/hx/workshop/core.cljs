@@ -1,7 +1,6 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
-            [hx.react :as react
-             :refer-macros [defnc defcomponent]]))
+            [hx.react :as react :include-macros true]))
 
 (dc/defcard
   macroexpand
@@ -40,12 +39,12 @@
            $[:li {:key 2} 2])]))
 
 (dc/defcard
-  map*
+  map
   (react/compile
-   $[:ul
-     [:li "Title"]
-     (map (fn [n] $[:li {:key n} n])
-          [1 2 3 4 5])]))
+   (let [numbers [1 2 3 4 5]]
+     $[:ul {:style {:list-style-type "square"}}
+       (map #(do $[:li {:key %} %])
+            numbers)])))
 
 (dc/defcard css-class
   (react/compile
