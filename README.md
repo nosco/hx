@@ -40,7 +40,7 @@ Example usage:
 ```clojure
 (require '[hx.react :as hx])
 
-(react/compile
+(hx/compile
    (let [numbers [1 2 3 4 5]]
      $[:ul {:style {:list-style-type "square"}}
        (map #(do $[:li {:key %} %])
