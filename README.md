@@ -26,6 +26,36 @@ A modern hiccup compiler, targeted at maximal React interop.
    
 3. **Extensible** API so that parsing, analysis & code generation of the hiccup
    compiler can evolve to meet the needs of different ecosystems.
+   
+   
+## Top-level API
+
+### hx.react/compile: ([& form])
+
+This macro akes in an arbitrary clojure form. It parses all `$` to mean "parse
+the next form into React `createElement` calls."
+
+Example usage:
+
+```clojure
+(require '[hx.react :as hx])
+
+(react/compile
+   (let [numbers [1 2 3 4 5]]
+     $[:ul {:style {:list-style-type "square"}}
+       (map #(do $[:li {:key %} %])
+            numbers)]))
+```
+
+Will become the equivalent:
+
+```clojure
+(let [numbers [1 2 3 4 5]]
+  (createElement "ul" #js {:style #js {:listStyleType "square"}}
+    (map #(do (createElement "li" #js {:key %} %)])
+         numbers)]))
+```
+
 
 ## License
 
