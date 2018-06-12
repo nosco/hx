@@ -32,7 +32,7 @@ A modern hiccup compiler, targeted at maximal React interop.
 
 ### hx.react/compile: ([& form])
 
-This macro akes in an arbitrary clojure form. It parses all `$` to mean "parse
+This macro takes in an arbitrary clojure form. It parses all `$` to mean "parse
 the next form into React `createElement` calls."
 
 Example usage:
@@ -56,6 +56,26 @@ Will become the equivalent:
          numbers)]))
 ```
 
+### hx.react/defnc: ([name props-bindings & body])
+
+This macro is just like `defn`, but has some helpers for defining functional
+React components. Takes a name, props bindings and a body that will be passed to
+`hx.react/compile`.
+
+Example usage:
+```clojure
+(require '[hx.react :as hx])
+
+(hx/defnc greeting [{:keys [name] :as props}]
+  $[:span {:style {:font-size "24px"}}
+    "Hello, " name "!"])
+
+(react/render
+  (hx/compile
+    $[greeting {:name "Tara"}])
+    
+  (. js/document getElementById "app"))
+```
 
 ## License
 
