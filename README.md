@@ -24,8 +24,8 @@ attributes.
 
 The [original library](https://github.com/weavejester/hiccup) was written for
 Clojure and outputs HTML strings. This library is written for use in CLJS and
-outputs React data structures. It extends it slightly to accomodate using any
-arbitrary React component in place of HTML tags.
+outputs React data structures. It extends the syntax slightly to accomodate using
+any arbitrary React component in place of HTML tags.
 
 The basis of the library is the `compile-hiccup` macro that takes in a hiccup
 form and transforms it into calls to React's `createElement` function:
