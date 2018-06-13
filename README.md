@@ -143,7 +143,7 @@ Will become the equivalent:
 ```clojure
 (let [numbers [1 2 3 4 5]]
   (createElement "ul" #js {:style #js {:listStyleType "square"}}
-    (map #(do (createElement "li" #js {:key %} %)])
+    (map #(do (createElement "li" #js {:key %} %))
          numbers)]))
 ```
 
