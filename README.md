@@ -50,7 +50,7 @@ of the Clojure ecosystem, and `hx` aims to solve that problem just as well.
 
 No state management, no custom rendering queue, no opinions. Use it to build
 your awesome opinionated async reactive immutable app framework. `hx` is just
-your plain, unadulterated hiccup ➡ React library.
+your plain, unadulterated hiccup → React library.
 
 
 ## Goals
