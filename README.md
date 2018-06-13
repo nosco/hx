@@ -117,7 +117,7 @@ components. `hx` makes itself different in two significant ways:
    
 3. Out-of-the-box defaults allow the library to be easily used right away, while
    providing APIs to extend and change the parsing, analysis and generation of
-   hiccup ➡ React elements as your needs evolve.
+   hiccup → React elements as your needs evolve.
    
 ## Top-level API
 
