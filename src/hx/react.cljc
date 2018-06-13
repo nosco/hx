@@ -51,11 +51,10 @@
 
 #?(:clj (defmethod parser/parse-element
            :<>
-           [el props & children]
+           [el & args]
            (parser/-parse-element
             'hx.react/fragment
-            props
-            children)))
+            args)))
 
 
 #?(:cljs (defn props->clj [props]
