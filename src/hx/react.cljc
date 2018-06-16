@@ -17,7 +17,9 @@
                       'hx.react/create-element)]
     `(do ~@with-compile)))
 
-(defmacro defcomponent [display-name constructor & body]
+(defmacro defcomponent
+  {:style/indent [1 :form [1]]}
+  [display-name constructor & body]
   (let [with-compile (hx.compiler.core/convert-compile-sym
                       body
                       '$
@@ -87,6 +89,13 @@
              (let [js-interop? (or (string? el) (not (is-hx? el)))
                    props (clj->props p :styles? js-interop?)]
                (apply react/createElement el props c)))))
+
+#?(:cljs (defn assign-methods [class method-map]
+           (doseq [[method-name method-fn] method-map]
+             (gobj/set (.-prototype class)
+                       (munge (name method-name))
+                       method-fn))
+           class))
 
 #?(:cljs (defn create-class [super-class init-fn static-properties method-names]
            (let [ctor (fn [props]
