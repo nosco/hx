@@ -1,7 +1,8 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :include-macros true]
-            [hx.state]))
+            [hx.state]
+            [cljs.js]))
 
 (dc/defcard
   macroexpand
@@ -174,6 +175,26 @@
 (dc/defcard js-interop-nested-props
   (hx/compile
    $ [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
+
+(defonce my-state (atom ""))
+
+;; (cljs.pprint/pprint (macroexpand '
+(hx.state/defrc
+  reactive
+  [props]
+  (println "my-state:\"" @my-state "\"")
+  $[:div
+    [:div "hello " @my-state]
+    [:div [:input {:type "text"
+                   :value @my-state
+                   :on-change #(reset! my-state (.. % -target -value))}]]])
+;; ))
+
+;; (println (macroexpand '@my-state))
+
+(dc/defcard reactive
+  (hx/compile
+   $[reactive {:asdf "jkl"}]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))

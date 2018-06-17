@@ -33,24 +33,26 @@
 
    root))
 
-(defn convert-compile-sym [form sym create-element]
+(defn transform-sym [form sym transform]
   (loop [loc (seq-vec-map-zip form)]
     (if (not (zip/end? loc))
       (let [node (zip/node loc)]
         (if (= node sym)
-          ;; remove the $ symbol
-          (let [no$ (zip/remove loc)
-                next (zip/next no$)]
+          ;; remove the sym
+          (let [no-sym (zip/remove loc)
+                next (zip/next no-sym)]
             (-> next
                 ;; add the hx macro to the next form
                 (zip/replace
-                 (hx.compiler.core/compile-hiccup
-                  (zip/node next)
-                  create-element))
+                 (transform
+                  (zip/node next)))
                 (recur)))
 
           (recur (zip/next loc))))
       (zip/root loc))))
+
+(defn convert-compile-sym [form sym create-element]
+  (transform-sym form sym #(compile-hiccup % create-element)))
 
 #_(convert-compile-sym
    '($[:div
