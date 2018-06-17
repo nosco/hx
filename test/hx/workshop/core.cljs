@@ -180,7 +180,7 @@
 
 ;; (cljs.pprint/pprint (macroexpand '
 (hx.state/defrc
-  reactive
+  reactive-macro
   [props]
   $[:div
     [:div "hello " @my-state]
@@ -194,9 +194,26 @@
 
 ;; (println (macroexpand '@my-state))
 
-(dc/defcard reactive
+(dc/defcard reactive-macro
   (hx/compile
-   $[reactive {:asdf "jkl"}]))
+   $[reactive-macro]))
+
+(defonce other-state (atom ""))
+
+(hx/defnc reactive-no-macro
+  [props]
+  $[hx.state/reactive
+    (fn []
+      $[:div
+        [:span (hx.state/deref! other-state)]
+        [:div [:input {:type "text"
+                       :value (hx.state/deref! other-state)
+                       :on-change
+                       #(reset! other-state (.. % -target -value))}]]])])
+
+(dc/defcard reactive-no-macro
+  (hx/compile
+   $[reactive-no-macro]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
