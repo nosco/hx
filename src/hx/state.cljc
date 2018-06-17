@@ -6,15 +6,14 @@
 
 
 (def ^:dynamic *reactions*)
-(def ^:dynamic *this*)
+(def ^:dynamic *render*)
 (def ^:dynamic *reactive-id*)
 
 (defn track! [atom-name a]
   (when (not ((deref *reactions*) atom-name))
-    (let [this *this*]
-      (println "adding watch" *reactive-id* "on"  a)
+    (do
       (add-watch a *reactive-id*
-                 #(. this forceUpdate))
+                 *render*)
       (vswap! *reactions* assoc atom-name a))))
 
 (defn deref! [atom-name a]
@@ -30,14 +29,7 @@
   (let [atom-sym (second leaf)]
     `(hx.state/deref!
       '~atom-sym
-      ~@(rest leaf)))
-  ;; (cons 'hx.state/deref!
-  ;;       (cons component-name
-  ;;             (cons list
-  ;;                   'quote
-  ;;              (cons (second leaf)
-  ;;                    (rest leaf)))))
-  )
+      ~@(rest leaf))))
 
 (defmacro defrc
   [component-name args & body]
@@ -51,13 +43,11 @@
       (set! (.-reactiveId this#) (clojure.core/random-uuid))
       this#)
      (~'componentWillUnmount [this#]
-      (println "unmounting")
       (doseq [[k# a#] @(.-reactions this#)]
-        (println "removing watch" (.-reactiveId this#) "on" a#)
         (remove-watch a# (.-reactiveId this#))))
      (~'render [this#]
       (binding [*reactions* (.-reactions this#)
-                *this* this#
+                *render* #(.forceUpdate this#)
                 *reactive-id* (.-reactiveId this#)]
         (let [~@args (hx.react/props->clj (.-props this#))]
         ~@compiled-body))))))

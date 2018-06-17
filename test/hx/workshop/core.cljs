@@ -182,12 +182,14 @@
 (hx.state/defrc
   reactive
   [props]
-  (println "my-state:\"" @my-state "\"")
   $[:div
     [:div "hello " @my-state]
     [:div [:input {:type "text"
                    :value @my-state
-                   :on-change #(reset! my-state (.. % -target -value))}]]])
+                   :on-change #(reset! my-state (.. % -target -value))}]]
+    [:div [:button
+           {:on-click #(reset! my-state "it works!")}
+           "Set to \"it works!\""]]])
 ;; ))
 
 ;; (println (macroexpand '@my-state))
