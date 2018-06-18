@@ -23,14 +23,19 @@
                :leave (if (nil? new-leave)
                         leave
                         (fn [context]
-                          (new-leave (leave context))))}))
+                          (leave (new-leave context))))}))
           {:enter identity
            :leave identity}
           @*interceptors*))
 
-#_(binding [*interceptors* (atom '())]
+#_(binding [*interceptors* (atom [])]
     (register-interceptor! {:name ::test
-                            :enter #(+ 1 %)})
+                            :enter #(+ 1 %)
+                            :leave #(- % 1)
+                            })
+    (register-interceptor! {:name ::test2
+                            :enter #(* 3 %)
+                            :leave #(/ % 3)})
     (let [{:keys [enter leave]} (!collapse-interceptors)]
       (leave (enter 2)))
     )
