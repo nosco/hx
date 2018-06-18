@@ -1,6 +1,6 @@
 # hx
 
-A modern, decomplected hiccup compiler for React.
+An easy to use, decomplected hiccup compiler for React.
 
 ## Usage
 
