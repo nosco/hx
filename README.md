@@ -22,7 +22,7 @@ representing HTML using clojure data structures.
 It uses vectors to represent elements, and maps to represent an elements 
 attributes.
 
-The [original library](https://github.com/weavejester/hiccup) was written for
+The [original hiccup library](https://github.com/weavejester/hiccup) was written for
 Clojure and outputs HTML strings. This library is written for use in CLJS and
 outputs React data structures. It extends the syntax slightly to accomodate using
 any arbitrary React component in place of HTML tags.
