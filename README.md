@@ -98,23 +98,26 @@ rendering, a use-case that many CLJS libraries still do not weigh very heavily.
 Removing the layers of abstraction between CLJS & vanilla React is important for
 using React context and (more generally) render-props/function-as-children.
 
-#### 2. Framework agnostic
+#### 2. Building blocks
 
-Many frameworks such as Reagent, Om.Next, etc. define their own way of creating
-React elements. While this allows them to integrate the render process heavily
-with their framework, it also means that our code becomes much less portable.
+Some frameworks such as Reagent, Rum, etc. define their own way of creating
+React elements. While this allows them to build integrations, it also means
+that our code must subscribe to many ways in which these frameworks control
+our application code. We can combine them at the seams, but doing a full-on
+replacement is often difficult.
 
-`hx` aims to be framework agnostic so that we can move our hiccup code anywhere
-we need it, as long as React elements are acceptable.
+`hx` aims to not control state management, rendering, or anything else about
+your application. It should only give you a way of describing React data easily
+in your CLJS applications.
 
 #### 3. Uniform & easy to use
 
 [Sablono](https://github.com/r0man/sablono/) and [Hicada](https://github.com/rauhs/hicada)
 are two other great libraries for parsing & compiling hiccup syntax into React
-components. `hx` makes itself different in two significant ways:
+components. `hx` is different in two significant ways:
 
 1. A uniform syntax for calling React components (as in, functions and React obj).
-   No need to constantly mix [:div ..] with (my-component ...), creating
+   No need to constantly mix `[:div ..]` with `(my-component ...)`, creating
    factories, etc.
 
 2. No runtime interpretation of hiccup syntax; always assumes that things are
@@ -126,10 +129,14 @@ components. `hx` makes itself different in two significant ways:
    
 ## Top-level API
 
+This top-level macro is meant to serve as sane defaults for users (app developers,
+library developers) to use out-of-the-box. It provides a good mix of performance,
+ease of use and interoperability.
+
 ### hx.react/compile: ([& form])
 
 This macro takes in an arbitrary clojure form. It parses all `$` to mean "parse
-the next form into React `createElement` calls."
+the next form as hiccup into React.createElement calls."
 
 Example usage:
 
@@ -147,16 +154,19 @@ Will become the equivalent:
 
 ```clojure
 (let [numbers [1 2 3 4 5]]
-  (createElement "ul" #js {:style #js {:listStyleType "square"}}
-    (map #(do (createElement "li" #js {:key %} %))
+  (react/createElement "ul" #js {:style #js {:listStyleType "square"}}
+    (map #(do (react/createElement "li" #js {:key %} %))
          numbers)]))
 ```
 
 ## Extra sauce
 
 Along with compilation of hiccup into React API calls, it also comes with a few
-other helpful macros & functions for creating React components. Feel free to
-ignore them if you want to build something cooler.
+other helpful macros & functions for creating React components. It handles shallowly
+marshalling props into CLJS data structures and some other quality of life
+improvements.
+
+Feel free to ignore them if you want to build something cooler.
 
 ### hx.react/defnc: ([name props-bindings & body])
 
@@ -210,6 +220,25 @@ Example usage:
 
 
 ## Compiler API
+
+### hx.compiler.core/compile-hiccup ([hiccup create-element])
+
+Compiles a `hiccup` form into function calls to the passed in `create-element` symbol.
+
+Example usage:
+
+```clojure
+(require '[hx.compiler.core :refer [compile-hiccup]])
+
+(compile-hiccup
+  [ReactComponent {:some-prop #js {:foo "bar"}}
+   [:div {:class "greeting"} "Hello, ReactJS!"]]
+
+ 'react/createElement)
+;; => (react/createElement ReactComponent #js {:some-prop #js {:foo "bar"}}
+;;      (react/createElement #js {:className "greeting"}
+;;        "Hello, ReactJS!"))
+```
 
 STUB
 
