@@ -17,6 +17,9 @@ A modern, decomplected hiccup compiler for React.
 
 ## What problem does `hx` solve?
 
+*TL;DR: hiccup is the [JSX](https://reactjs.org/docs/introducing-jsx.html)
+of the Clojure ecosystem, and `hx` aims to solve that problem just as well.*
+
 `hx` is an implementation of a "hiccup" syntax compiler. Hiccup is a way of
 representing HTML using clojure data structures. 
 It uses vectors to represent elements, and maps to represent an elements 
@@ -27,8 +30,8 @@ Clojure and outputs HTML strings. This library is written for use in CLJS and
 outputs React data structures. It extends the syntax slightly to accomodate using
 any arbitrary React component in place of HTML tags.
 
-The basis of the library is the `compile-hiccup` macro that takes in a hiccup
-form and transforms it into calls to React's `createElement` function:
+The basis of the library is the `compile-hiccup` function that takes in a
+hiccup form and transforms it into calls to React's `createElement` function:
 
 ```clojure
 (require '[hx.compiler.core :refer [compile-hiccup]])
@@ -43,8 +46,10 @@ form and transforms it into calls to React's `createElement` function:
 ;;        "Hello, ReactJS!"))
 ```
 
-Simply put, Hiccup is the [JSX](https://reactjs.org/docs/introducing-jsx.html)
-of the Clojure ecosystem, and `hx` aims to solve that problem just as well.
+This is then used to build a macro so that it can be used on our CLJS code
+at compile time. `hx` comes with it's own macro out of the box with sane
+defaults, but the core compiler is also available should you have different
+needs.
 
 ## What problems does `hx` _not_ solve?
 
