@@ -78,9 +78,9 @@ initial design decisions of other React wrappers in the CLJS ecosystem:
 
 #### 1. Maximal interop
 
+Up until now, CLJS wrappers have been implementing async rendering in user-land.
 Firstly, async rendering is [generally](https://reagent-project.github.io/news/reagent-is-async.html)
-[a good](http://swannodette.github.io/2013/12/17/the-future-of-javascript-mvcs) [thing](https://www.youtube.com/watch?v=nLF0n9SACd4). However, up until now, CLJS wrappers have been implementing
-async rendering in user-land.
+[a good](http://swannodette.github.io/2013/12/17/the-future-of-javascript-mvcs) [thing](https://www.youtube.com/watch?v=nLF0n9SACd4).
 
 Now that React is implementing async rendering in the framework itself, we
 should endeavor to leverage the framework rather than our various user-land
@@ -100,11 +100,11 @@ using React context and (more generally) render-props/function-as-children.
 
 #### 2. Building blocks
 
-Some frameworks such as Reagent, Rum, etc. define their own way of creating
-React elements. While this allows them to build integrations, it also means
-that our code must subscribe to many ways in which these frameworks control
-our application code. We can combine them at the seams, but doing a full-on
-replacement is often difficult.
+Some frameworks such as Reagent, Rum, etc. define their own way of parsing
+hiccup and creating React elements. While this allows them to build integrations,
+it also means that our code must subscribe to many ways in which these frameworks
+control our application code. We can combine them at the seams, but doing a
+full-on replacement is often difficult.
 
 `hx` aims to not control state management, rendering, or anything else about
 your application. It should only give you a way of describing React data easily
