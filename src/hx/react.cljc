@@ -3,27 +3,61 @@
             #?(:cljs ["react" :as react])
             #?(:clj [hx.compiler.core])
             #?(:clj [hx.compiler.parser :as parser])
+            #?(:clj [hx.react.interceptors :as interceptors])
             [hx.utils :as utils])
   (:refer-clojure :exclude [compile]))
+
+(def ^:dynamic *interceptors* (atom []))
+
+(defn register-interceptor! [{:keys [name enter leave] :as interceptor}]
+  (swap! *interceptors* conj interceptor))
+
+(defn !collapse-interceptors []
+  (reduce (fn [{:keys [enter leave]} interceptor]
+            (let [new-enter (:enter interceptor)
+                  new-leave (:leave interceptor)]
+              {:enter (if (nil? new-enter)
+                        enter
+                        (fn [context]
+                          (new-enter (enter context))))
+               :leave (if (nil? new-leave)
+                        leave
+                        (fn [context]
+                          (new-leave (leave context))))}))
+          {:enter identity
+           :leave identity}
+          @*interceptors*))
+
+#_(binding [*interceptors* (atom '())]
+    (register-interceptor! {:name ::test
+                            :enter #(+ 1 %)})
+    (let [{:keys [enter leave]} (!collapse-interceptors)]
+      (leave (enter 2)))
+    )
+
 
 (defn is-hx? [el]
   ;; TODO: detect hx component
   true)
 
+#?(:clj (do (register-interceptor! interceptors/compile)
+            (register-interceptor! interceptors/$-as-compile)))
+
+(defn compile* [form]
+  (let [{:keys [enter leave]} (!collapse-interceptors)
+        transformed (-> {:in form}
+                        (enter)
+                        (leave))]
+    (:out transformed)))
+
 (defmacro compile [& form]
-  (let [with-compile (hx.compiler.core/convert-compile-sym
-                      form
-                      '$
-                      'hx.react/create-element)]
-    `(do ~@with-compile)))
+  (let [compiled (compile* form)]
+    `(do ~@compiled)))
 
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
   [display-name constructor & body]
-  (let [with-compile (hx.compiler.core/convert-compile-sym
-                      body
-                      '$
-                      'hx.react/create-element)
+  (let [with-compile (compile* body)
         methods (filter #(not (:static (meta %))) with-compile)
         statics (->> (filter #(:static (meta %)) with-compile)
                      (map #(apply vector (str (munge (first %))) (rest %)))
@@ -43,10 +77,7 @@
          class#))))
 
 (defmacro defnc [name props-bindings & body]
-  (let [with-compile (hx.compiler.core/convert-compile-sym
-                      body
-                      '$
-                      'hx.react/create-element)]
+  (let [with-compile (compile* body)]
     `(defn ~name [props#]
        (let [~@props-bindings (hx.react/props->clj props#)]
          ~@with-compile))))
@@ -80,7 +111,9 @@
                (utils/reactify-props)
                (utils/shallow-clj->js props))))
 
-#?(:cljs (defn create-element [el p & c]
+#?(:clj (defn create-element [el p & c]
+          nil)
+   :cljs (defn create-element [el p & c]
            (if (or (string? p) (number? p) (react/isValidElement p))
              (apply react/createElement el nil p c)
 

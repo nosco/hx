@@ -1,7 +1,7 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :include-macros true]
-            [hx.state]
+            [hx.state :include-macros true]
             [cljs.js]))
 
 (dc/defcard

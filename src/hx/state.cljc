@@ -21,6 +21,7 @@
   (track! a)
   (deref a))
 
+;; TODO: detect when deref!s are removed and remove their respective watches
 #?(:cljs (def reactive
            (let [class (hx.react/create-pure-component
                         (fn [this]
