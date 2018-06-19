@@ -1,5 +1,6 @@
 (ns hx.compiler.generator
   (:require [clojure.walk :as walk]
+            [hx.compiler.analyzer :as analyzer]
             [hx.utils :as utils]))
 
 (defn generate-literal-props [props]
@@ -40,6 +41,13 @@
   (walk/prewalk
    (partial generate-element create-element)
    tree))
+
+(def interceptor
+  {:name :hx.compiler/generator
+   :enter (fn [context]
+            (assoc context
+                   ::out (generate (::analyzer/out context)
+                                   (::create-element context))))})
 
 #_(-> [:div
        [:span "wat"]

@@ -2,14 +2,18 @@
   (:require [clojure.zip :as zip]
             [hx.compiler.parser :as parser]
             [hx.compiler.analyzer :as analyzer]
-            [hx.compiler.generator :as generator])
+            [hx.compiler.generator :as generator]
+            [hx.compiler.interceptor :as interceptor])
   (:refer-clojure :exclude [compile]))
 
 (defn compile-hiccup [hiccup create-element]
-  (-> hiccup
-      (parser/parse)
-      (analyzer/analyze)
-      (generator/generate create-element)))
+  (-> {::parser/form hiccup
+       ::generator/create-element create-element}
+      (interceptor/execute
+       parser/interceptor
+       analyzer/interceptor
+       generator/interceptor)
+      (::generator/out)))
 
 (defn seq-vec-map-zip [root]
   (zip/zipper

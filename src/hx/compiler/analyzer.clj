@@ -1,5 +1,6 @@
 (ns hx.compiler.analyzer
-  (:require [clojure.walk :as walk]))
+  (:require [clojure.walk :as walk]
+            [hx.compiler.parser :as parser]))
 
 (defn child? [leaf]
   (or (:hx/parsed leaf)
@@ -42,6 +43,11 @@
 
 (defn analyze [tree]
   (walk/prewalk analyze-element tree))
+
+(def interceptor
+  {:name :hx.compiler/analyzer
+   :enter (fn [context]
+            (assoc context ::out (analyze (::parser/out context))))})
 
 #_(analyze
    (hx.compiler.parser/parse

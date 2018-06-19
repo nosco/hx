@@ -66,6 +66,12 @@
 (defn parse [hiccup]
   (apply parse-element hiccup))
 
+(def interceptor
+  {:name :hx.compiler/parser
+   :enter (fn [context]
+            (assoc context ::out
+                   (parse (::form context))))})
+
 #_(parse [:div {:id "asdf"} "hi"])
 #_(parse [:div [:span "wat"]])
 #_(parse [:div [:span "wat"]
