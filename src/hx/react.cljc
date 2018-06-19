@@ -12,7 +12,7 @@
 (defn register-interceptor! [{:keys [name enter leave] :as interceptor}]
   (swap! *interceptors* conj interceptor))
 
-(defn !collapse-interceptors []
+(defn collapse-interceptors []
   (reduce (fn [{:keys [enter leave]} interceptor]
             (let [new-enter (:enter interceptor)
                   new-leave (:leave interceptor)]
@@ -45,11 +45,10 @@
   ;; TODO: detect hx component
   true)
 
-#?(:clj (do (register-interceptor! interceptors/compile)
-            (register-interceptor! interceptors/$-as-compile)))
+#?(:clj (do (register-interceptor! interceptors/compile)))
 
 (defn compile* [form]
-  (let [{:keys [enter leave]} (!collapse-interceptors)
+  (let [{:keys [enter leave]} (collapse-interceptors)
         transformed (-> {:in form}
                         (enter)
                         (leave))]

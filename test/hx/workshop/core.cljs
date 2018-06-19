@@ -2,7 +2,10 @@
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :include-macros true]
             [hx.state :include-macros true]
-            [cljs.js]))
+            [cljs.js])
+  (:require-macros [hx.workshop.core :refer [register!]]))
+
+(register!)
 
 (dc/defcard
   macroexpand

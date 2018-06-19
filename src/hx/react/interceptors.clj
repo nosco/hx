@@ -1,4 +1,6 @@
-(ns hx.react.interceptors)
+(ns hx.react.interceptors
+  (:require [hx.compiler.core])
+  (:refer-clojure :exclude [compile]))
 
 (def compile
   {:name ::compile
