@@ -245,8 +245,8 @@ other props will need this manual conversion.
 If the compiler doesn't see a map literal in the second position, it effectively
 treats it as a child element and simply passes it through unchanged.
 
-As a convenience, though, if props `nil`, `hx.react` will check if the first child is a
-map, and if so, shallowly convert it to a JS object at runtime. There should be no
+As a convenience, though, if props are `nil`, `hx.react` will check if the first child
+is a map, and if so, shallowly convert it to a JS object at runtime. There should be no
 functional difference between doing this at runtime vs. compile-time, but there may be
 a slight performance hit. In most cases, this will be unnoticeable; however if you have
 a component that is on the hot path and the marshalling does become a performance
