@@ -252,6 +252,67 @@ a slight performance hit. In most cases, this will be unnoticeable; however if y
 a component that is on the hot path and the marshalling does become a performance
 bottleneck, writing out props as a map literal will improve it.
 
+### Authoring components
+
+`hx` doesn't do anything special in regards to how it calls or creates CLJS components.
+They are assumed to act like native, vanilla React components that could be used in any
+codebase.
+
+In practice, this is fairly easy to handle in ClojureScript. A basic functional component
+can be written as just a normal function that returns a React element:
+
+```clojure
+(defn my-component [props]
+  (hx/compile $[:div "Hello"]))
+```
+
+`props` will always be a *JS object*, so if we want to pull something out of it, we'll
+need to use JS interop:
+
+```clojure
+(defn my-component [props]
+  (let [name (goog.object/get props "name")]
+    (hx/compile $[:div "Hello, " name "!"]))
+```
+
+`hx.react/defnc` is a macro that shallowly converts the props object for us and wraps our
+function body in `(hx/compile ...`, so we can get rid of some of the boilerplate:
+
+```clojure
+(hx/defnc my-component [props]
+  (let [name (:name props)]
+    $[:div "Hello, " name "!"]))
+```
+
+Children are also passed in just like any other prop, so if we want to obtain children we
+simply peel it off of the props object:
+
+```clojure
+(defn has-children [props]
+  (let [children (goog.object/get props "children")]
+    (hx/compile $[:div 
+                  {:style {:border "1px solid #000"}}
+                  children]))
+
+;; or
+(hx/defnc has-children [props]
+  (let [children (:children props)]
+    $[:div
+      {:style {:border "1px solid #000"}}
+      children]))
+```
+
+Sometimes we also need access to React's various lifecycle methods like
+`componentDidMount`, `componentDidUpdate`, or we need to re-render our component
+based on some internal state. In that case, we should create a React component
+class. This is mainly left as an exercise to the reader; `hx` exposes a very
+barebones `hx/defcomponent` macro that binds closely to the OOP, class-based
+API React has for maximum flexibility. You can also leverage libraries like
+Om.Next, Reagent, Rum, or other frameworks that have state management buil in.
+**PRs welcome for libraries built on top of `hx` for managing this in a more idiomatic
+Clojure way!**
+
+
 ## Top-level API
 
 This top-level macro is meant to serve as sane defaults for users (app developers,
