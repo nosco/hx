@@ -1,6 +1,6 @@
 # hx
 
-An easy to use, decomplected hiccup compiler for React.
+An easy to use, decomplected hiccup compiler for ClojureScript and React.
 
 ## Usage
 
@@ -127,6 +127,111 @@ components. `hx` is different in two significant ways:
    providing APIs to extend and change the parsing, analysis and generation of
    hiccup → React elements as your needs evolve.
    
+## Hiccup forms & compiler behavior
+
+`hx` makes several default decisions about how hiccup and components should be
+written.
+
+
+### Writing hiccup
+
+First, all hiccup forms are assumed to follow the same pattern:
+
+`[ <(1)component> <(2)props-map?> <(3)child> ... <(n)child> ]`.
+
+The element in the *(1)* first position are assumed to be valid React elements.
+They can be:
+
+1. A keyword that maps to a native element - such as `:div`, `:span`, `:nav`.
+   These are mapped to a string and passed into `createElement`.
+
+2. A function that returns React elements, aka a [functional component](https://reactjs.org/docs/components-and-props.html#functional-and-class-components).
+
+3. An object that extends the [React.Component](https://reactjs.org/docs/react-component.html) class.
+
+Regardless of the type of the element in position *(1)*, if you want to pass in
+props to a component, they are **always** passed in via a map in the *(2)* second
+position. Props can be written as a map literally or a symbol bound to a map.
+**If the element in position *(2)* is not a map, it is assumed to be a child and
+passed into the *children* field of createElement**.
+
+Finally, anything passed into position *(3)* or on is considered a child element.
+
+Here are a few examples:
+
+```clojure
+;; (1)
+(defn greet []
+  (hx/compile
+    $[:div "Hello"]))
+
+;; (2)
+(defn medium-greet []
+  (hx/compile
+    $[:div {:style {:font-size "28px"}} "Medium hello"]))
+
+;; (3)
+(defn big-greet []
+  (hx/compile
+    (let [props {:style {:font-size "56px"}}
+          children "Big hello"]
+      $[:div props children])))
+
+;; (4)
+(defn all-greets []
+  (hx/compile
+    [:div
+      [greet]
+      [medium-greet]
+      [big-greet]]))
+```
+
+*(1)* is an example of writing a component that has children, but no props. Strings
+are considered valid children.
+
+*(2)* is an example of writing a component that is passed in a map of props.
+
+*(3)* is an example of binding props and children to symbols and passing it into the
+element.
+
+*(4)* is an example of passing in multiple children, and calling components that we
+defined ourselves (instead of native elements like `:div`).
+
+### Optimizations
+
+Let's pause here and talk about the difference between *(2)* and *(3)* in the example
+above. Functionally, they are equivalent, but there are some things that the compiler
+will do differently depending on whether a symbol or map literal is passed in as the
+second element.
+
+React's `createElement` function expects props to be passed in as a JS object.
+It will attempt to introspect this object. So we need to marshall the props map into
+a JS object before we can pass it off to React.
+
+The `hx` compiler attempts to be clever: when it detects that the second argument is
+a map literal, it will shallowly rewrite it into a native JS object:
+
+```clojure
+(hx/compile
+  $[:div {:foo "bar" 
+          :baz {:asdf ["jkl" 1234]}}])
+;; =>
+(React/createElement
+ "div"
+ (js-obj "foo" "bar"
+         "baz" {:asdf ["jkl" 1234]}
+ nil)
+```
+
+It only rewrites the first level; any nested structures are left untouched. So if you're
+working with a vanilla React component (implemented in JS), you may have to write something
+like this to convert the nested structures into native JS types:
+
+```clojure
+(hx/compile
+  $[SomeWidget {:config #js {:foo "bar" :baz #js ["jkl" 1234]}}])
+```
+
 ## Top-level API
 
 This top-level macro is meant to serve as sane defaults for users (app developers,
