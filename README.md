@@ -225,7 +225,7 @@ a map literal, it will shallowly rewrite it into a native JS object:
 
 It only rewrites the first level; any nested structures are left untouched.
 
--
+--
 
 Sidenote: If you're working with a vanilla React component (implemented in JS), you
 may have to write something like this to convert the nested structures into native
@@ -240,7 +240,7 @@ Currently, `:style` is special cased where it will recursively marshall it so th
 easy to work with native elements. You won't have to do this with `:style`, but any
 other props will need this manual conversion.
 
--
+--
 
 If the compiler doesn't see a map literal in the second position, it effectively
 treats it as a child element and simply passes it through unchanged.
