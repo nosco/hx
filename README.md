@@ -223,14 +223,34 @@ a map literal, it will shallowly rewrite it into a native JS object:
  nil)
 ```
 
-It only rewrites the first level; any nested structures are left untouched. So if you're
-working with a vanilla React component (implemented in JS), you may have to write something
-like this to convert the nested structures into native JS types:
+It only rewrites the first level; any nested structures are left untouched.
+
+-
+
+Sidenote: If you're working with a vanilla React component (implemented in JS), you
+may have to write something like this to convert the nested structures into native
+JS types:
 
 ```clojure
 (hx/compile
   $[SomeWidget {:config #js {:foo "bar" :baz #js ["jkl" 1234]}}])
 ```
+
+Currently, `:style` is special cased where it will recursively marshall it so that it's
+easy to work with native elements. You won't have to do this with `:style`, but any
+other props will need this manual conversion.
+
+-
+
+If the compiler doesn't see a map literal in the second position, it effectively
+treats it as a child element and simply passes it through unchanged.
+
+As a convenience, though, if props `nil`, `hx.react` will check if the first child is a
+map, and if so, shallowly convert it to a JS object at runtime. There should be no
+functional difference between doing this at runtime vs. compile-time, but there may be
+a slight performance hit. In most cases, this will be unnoticeable; however if you have
+a component that is on the hot path and the marshalling does become a performance
+bottleneck, writing out props as a map literal will improve it.
 
 ## Top-level API
 
