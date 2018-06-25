@@ -170,10 +170,9 @@ Here are a few examples:
 
 ;; (3)
 (defn big-greet []
-  (hx/compile
     (let [props {:style {:font-size "56px"}}
           children "Big hello"]
-      (hx/c [:div props children]))))
+      (hx/c [:div props children])))
 
 ;; (4)
 (defn all-greets []
@@ -271,8 +270,8 @@ need to use JS interop:
     (hx/c [:div "Hello, " name "!"]))
 ```
 
-`hx.react/defnc` is a macro that shallowly converts the props object for us and wraps our
-function body in `(hx/compile ...`, so we can get rid of some of the boilerplate:
+`hx.react/defnc` is a macro that shallowly converts the props object for us, so
+we can get rid of some of the boilerplate:
 
 ```clojure
 (hx/defnc my-component [props]
