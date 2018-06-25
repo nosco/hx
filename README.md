@@ -9,8 +9,8 @@ An easy to use, decomplected hiccup compiler for ClojureScript and React.
 (require '[react :as react])
 
 (react/render
-  (hx/compile
-    $[:span {:style {:font-weight "bold"}} "Hello, world!"])
+  (hx/c
+   [:span {:style {:font-weight "bold"}} "Hello, world!"])
              
   (. js/document getElementById "app"))
 ```
@@ -319,21 +319,20 @@ This top-level macro is meant to serve as sane defaults for users (app developer
 library developers) to use out-of-the-box. It provides a good mix of performance,
 ease of use and interoperability.
 
-### hx.react/compile: ([& form])
+### hx.react/c: ([form])
 
-This macro takes in an arbitrary clojure form. It parses all `$` to mean "parse
-the next form as hiccup into React.createElement calls."
+This macro takes in form as hiccup and transforms it into React.createElement
+calls.
 
 Example usage:
 
 ```clojure
 (require '[hx.react :as hx])
 
-(hx/compile
-   (let [numbers [1 2 3 4 5]]
-     $[:ul {:style {:list-style-type "square"}}
-       (map #(do $[:li {:key %} %])
-            numbers)]))
+(let [numbers [1 2 3 4 5]]
+  (hx/c [:ul {:style {:list-style-type "square"}}
+         (map #(do (hx/c [:li {:key %} %]))
+              numbers)]))
 ```
 
 Will become the equivalent:
@@ -365,12 +364,11 @@ Example usage:
 (require '[hx.react :as hx])
 
 (hx/defnc greeting [{:keys [name] :as props}]
-  $[:span {:style {:font-size "24px"}}
-    "Hello, " name "!"])
+  (hx/c [:span {:style {:font-size "24px"}}
+         "Hello, " name "!"]))
 
 (react/render
-  (hx/compile
-    $[greeting {:name "Tara"}])
+  (hx/c [greeting {:name "Tara"}])
     
   (. js/document getElementById "app"))
 ```
@@ -398,10 +396,10 @@ Example usage:
 
   (render [this]
     (let [state (. this -state)]
-      $[:div
-        [:div (. my-component -greeting) ", " (. state -name)]
-         [:input {:value (. state -name)
-                  :on-change (. this -update-name!)}]])))
+      (hx/c [:div
+             [:div (. my-component -greeting) ", " (. state -name)]
+              [:input {:value (. state -name)
+                       :on-change (. this -update-name!)}]]))))
 ```
 
 
