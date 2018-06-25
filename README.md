@@ -326,7 +326,7 @@ Example usage:
 
 (let [numbers [1 2 3 4 5]]
   (hx/c [:ul {:style {:list-style-type "square"}}
-         (map #(do (hx/c [:li {:key %} %]))
+         (map #(hx/c [:li {:key %} %])
               numbers)]))
 ```
 
@@ -335,7 +335,7 @@ Will become the equivalent:
 ```clojure
 (let [numbers [1 2 3 4 5]]
   (react/createElement "ul" #js {:style #js {:listStyleType "square"}}
-    (map #(do (react/createElement "li" #js {:key %} %))
+    (map #(react/createElement "li" #js {:key %} %)
          numbers)]))
 ```
 
