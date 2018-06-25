@@ -61,7 +61,7 @@
                                              tx-deref) body)]
     `(hx.react/defnc ~component-name
        [props#]
-       ~'$[hx.state/reactive
-         (fn []
-           (let [~@args props#]
-             ~@compiled-body))])))
+       (hx.react/c [hx.state/reactive
+                    (fn []
+                      (let [~@args props#]
+                        ~@compiled-body))]))))

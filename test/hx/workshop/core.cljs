@@ -2,104 +2,91 @@
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :include-macros true]
             [hx.state :include-macros true]
-            [cljs.js])
-  (:require-macros [hx.workshop.core :refer [register!]]))
-
-(register!)
+            [cljs.js]))
 
 (dc/defcard
   macroexpand
-  (macroexpand '(hx/compile
-                 $ [:div {:style {:color "green"}
+  (macroexpand '(hx/c [:div {:style {:color "green"}
                           :id "asdf"} "hello"])))
 
 (dc/defcard
   simple
-  (hx/compile
-   $ [:div {:style {:color "green"}
+  (hx/c [:div {:style {:color "green"}
             :id "asdf"} "hello"]))
 
 (dc/defcard
   with-children
-  (hx/compile
-   $ [:ul {:style {:background "lightgrey"}}
-      [:li {:style {:font-weight "bold"}} "one"]
-      [:li "two"]
-      [:li "three"]]))
+  (hx/c [:ul {:style {:background "lightgrey"}}
+         [:li {:style {:font-weight "bold"}} "one"]
+         [:li "two"]
+         [:li "three"]]))
 
 (dc/defcard
   conditional
-  (hx/compile
-   $ [:<>
-      (when true
-        $ [:div "true"])
-      (when false
-        $ [:div "false"])]))
+  (hx/c [:<>
+         (when true
+           (hx/c [:div "true"]))
+         (when false
+           (hx/c [:div "false"]))]))
 
 (dc/defcard
   seq
-  (hx/compile
-   $ [:ul
-      (list $ [:li {:key 1} 1]
-            $ [:li {:key 2} 2])]))
+  (hx/c [:ul
+         (list (hx/c [:li {:key 1} 1])
+               (hx/c [:li {:key 2} 2]))]))
 
 (dc/defcard
   map
-  (hx/compile
-   (let [numbers [1 2 3 4 5]]
-     $ [:ul {:style {:list-style-type "square"}}
-        (map #(do $ [:li {:key %} %])
-             numbers)])))
+  (let [numbers [1 2 3 4 5]]
+    (hx/c [:ul {:style {:list-style-type "square"}}
+           (map #(hx/c [:li {:key %} %])
+                numbers)])))
 
 (dc/defcard css-class
-  (hx/compile
-   $ [:<>
-      [:style {:dangerouslySetInnerHTML #js {:__html ".foo { color: lightblue }"}}]
-      [:div {:className "foo"} "asdf jkl"]
-      [:div {:class "foo"} "1234 bnm,"]]))
+  (hx/c [:<>
+         [:style {:dangerouslySetInnerHTML #js {:__html ".foo { color: lightblue }"}}]
+         [:div {:className "foo"} "asdf jkl"]
+         [:div {:class "foo"} "1234 bnm,"]]))
 
 (dc/defcard defnc
   (macroexpand '(hx/defnc greeting [{:keys [name] :as props}]
                   (println props)
-                  $ [:span {:style {:font-size "24px"}}
-                     "Hello, " name])))
+                  (hx/c [:span {:style {:font-size "24px"}}
+                     "Hello, " name]))))
 
 (hx/defnc greeting [{:keys [name] :as props}]
-  $ [:span {:style {:font-size "24px"}}
-     "Hello, " name])
+  (hx/c [:span {:style {:font-size "24px"}}
+     "Hello, " name]))
 
 (dc/defcard
   function-element
-  (hx/compile
-   $ [greeting {:name "Will"}]))
+  (hx/c [greeting {:name "Will"}]))
 
 (hx/defnc with-children [{:keys [children]}]
-  $ [:div
-     (identity children)])
+  (hx/c [:div
+     (identity children)]))
 
 (dc/defcard with-children
-  (hx/compile
-   $ [with-children
-      [:span "hi"]
-      [:div "watup"]]))
+  (hx/c [with-children
+         [:span "hi"]
+         [:div "watup"]]))
 
 (dc/defcard defcomponent
   (macroexpand '(hx/defcomponent some-component
                   (constructor [this]
                                this)
                   (render [this]
-                          $ [:div "sup component"]))))
+                          (hx/c [:div "sup component"])))))
 
 (hx/defcomponent
   some-component
   (constructor [this]
                this)
   (render [this]
-          $ [:div "sup component"]))
+          (hx/c [:div "sup component"])))
 
 (dc/defcard class-element
-  (hx/compile
-   $ [some-component]))
+  (hx/c [some-component]))
 
 (hx/defcomponent stateful
   (constructor [this]
@@ -109,14 +96,13 @@
                 (. this setState #js {:name (.. e -target -value)}))
   (render [this]
           (let [state (. this -state)]
-            $ [:div
+            (hx/c [:div
                [:div (. state -name)]
                [:input {:value (. state -name)
-                        :on-change (. this -update-name!)}]])))
+                        :on-change (. this -update-name!)}]]))))
 
 (dc/defcard stateful-element
-  (hx/compile
-   $ [stateful]))
+  (hx/c [stateful]))
 
 (hx/defcomponent static-property
   (constructor [this]
@@ -126,11 +112,10 @@
   (some-prop "1234")
 
   (render [this]
-          $ [:div (. static-property -some-prop)]))
+          (hx/c [:div (. static-property -some-prop)])))
 
 (dc/defcard static-property
-  (hx/compile
-   $ [static-property]))
+  (hx/c [static-property]))
 
 (hx/defcomponent fn-as-child
   (constructor [this]
@@ -140,16 +125,15 @@
                 (. this setState #js {:name (.. e -target -value)}))
   (render [this]
           (let [state (. this -state)]
-            $ [:div
-               [:div ((.. this -props -children) (. state -name))]
-               [:input {:value (. state -name)
-                        :on-change (. this -update-name!)}]])))
+            (hx/c [:div
+                   [:div ((.. this -props -children) (. state -name))]
+                   [:input {:value (. state -name)
+                            :on-change (. this -update-name!)}]]))))
 
 (dc/defcard fn-as-child
-  (hx/compile
-   $ [fn-as-child
-      (fn [name]
-        $ [:span {:style {:color "red"}} name])]))
+  (hx/c [fn-as-child
+         (fn [name]
+           (hx/c [:span {:style {:color "red"}} name]))]))
 
 (hx/defcomponent render-prop
   (constructor [this]
@@ -159,16 +143,15 @@
                 (. this setState #js {:name (.. e -target -value)}))
   (render [this]
           (let [state (. this -state)]
-            $ [:div
-               [:div ((.. this -props -render) (. state -name))]
-               [:input {:value (. state -name)
-                        :on-change (. this -update-name!)}]])))
+            (hx/c [:div
+                   [:div ((.. this -props -render) (. state -name))]
+                   [:input {:value (. state -name)
+                            :on-change (. this -update-name!)}]]))))
 
 (dc/defcard render-prop
-  (hx/compile
-   $ [render-prop
-      {:render (fn [name]
-                 $ [:span {:style {:color "red"}} name])}]))
+  (hx/c [render-prop
+         {:render (fn [name]
+                    (hx/c [:span {:style {:color "red"}} name]))}]))
 
 (def js-interop-test
   (fn
@@ -176,8 +159,7 @@
     (js/JSON.stringify props)))
 
 (dc/defcard js-interop-nested-props
-  (hx/compile
-   $ [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
+  (hx/c [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
 
 (defonce my-state (atom ""))
 
@@ -185,38 +167,36 @@
 (hx.state/defrc
   reactive-macro
   [props]
-  $[:div
-    [:div "hello " @my-state]
-    [:div [:input {:type "text"
-                   :value @my-state
-                   :on-change #(reset! my-state (.. % -target -value))}]]
-    [:div [:button
-           {:on-click #(reset! my-state "it works!")}
-           "Set to \"it works!\""]]])
+  (hx/c [:div
+         [:div "hello " @my-state]
+         [:div [:input {:type "text"
+                        :value @my-state
+                        :on-change #(reset! my-state (.. % -target -value))}]]
+         [:div [:button
+                {:on-click #(reset! my-state "it works!")}
+                "Set to \"it works!\""]]]))
 ;; ))
 
 ;; (println (macroexpand '@my-state))
 
 (dc/defcard reactive-macro
-  (hx/compile
-   $[reactive-macro]))
+  (hx/c [reactive-macro]))
 
 (defonce other-state (atom ""))
 
 (hx/defnc reactive-no-macro
   [props]
-  $[hx.state/reactive
-    (fn []
-      $[:div
-        [:span (hx.state/deref! other-state)]
-        [:div [:input {:type "text"
-                       :value (hx.state/deref! other-state)
-                       :on-change
-                       #(reset! other-state (.. % -target -value))}]]])])
+  (hx/c [hx.state/reactive
+         (fn []
+           (hx/c [:div
+                  [:span (hx.state/deref! other-state)]
+                  [:div [:input {:type "text"
+                                 :value (hx.state/deref! other-state)
+                                 :on-change
+                                 #(reset! other-state (.. % -target -value))}]]]))]))
 
 (dc/defcard reactive-no-macro
-  (hx/compile
-   $[reactive-no-macro]))
+  (hx/c [reactive-no-macro]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
