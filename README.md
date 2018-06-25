@@ -162,24 +162,22 @@ Here are a few examples:
 ```clojure
 ;; (1)
 (defn greet []
-  (hx/compile
-    $[:div "Hello"]))
+  (hx/c [:div "Hello"]))
 
 ;; (2)
 (defn medium-greet []
-  (hx/compile
-    $[:div {:style {:font-size "28px"}} "Medium hello"]))
+  (hx/c [:div {:style {:font-size "28px"}} "Medium hello"]))
 
 ;; (3)
 (defn big-greet []
   (hx/compile
     (let [props {:style {:font-size "56px"}}
           children "Big hello"]
-      $[:div props children])))
+      (hx/c [:div props children]))))
 
 ;; (4)
 (defn all-greets []
-  (hx/compile
+  (hx/c
     [:div
       [greet]
       [medium-greet]
@@ -212,9 +210,8 @@ The `hx` compiler attempts to be clever: when it detects that the second argumen
 a map literal, it will shallowly rewrite it into a native JS object:
 
 ```clojure
-(hx/compile
-  $[:div {:foo "bar" 
-          :baz {:asdf ["jkl" 1234]}}])
+(hx/c [:div {:foo "bar" 
+             :baz {:asdf ["jkl" 1234]}}])
 ;; =>
 (React/createElement
  "div"
@@ -232,8 +229,7 @@ may have to write something like this to convert the nested structures into nati
 JS types:
 
 ```clojure
-(hx/compile
-  $[SomeWidget {:config #js {:foo "bar" :baz #js ["jkl" 1234]}}])
+(hx/c [SomeWidget {:config #js {:foo "bar" :baz #js ["jkl" 1234]}}])
 ```
 
 Currently, `:style` is special cased where it will recursively marshall it so that it's
@@ -263,7 +259,7 @@ can be written as just a normal function that returns a React element:
 
 ```clojure
 (defn my-component [props]
-  (hx/compile $[:div "Hello"]))
+  (hx/c [:div "Hello"]))
 ```
 
 `props` will always be a *JS object*, so if we want to pull something out of it, we'll
@@ -272,7 +268,7 @@ need to use JS interop:
 ```clojure
 (defn my-component [props]
   (let [name (goog.object/get props "name")]
-    (hx/compile $[:div "Hello, " name "!"]))
+    (hx/c [:div "Hello, " name "!"]))
 ```
 
 `hx.react/defnc` is a macro that shallowly converts the props object for us and wraps our
@@ -281,7 +277,7 @@ function body in `(hx/compile ...`, so we can get rid of some of the boilerplate
 ```clojure
 (hx/defnc my-component [props]
   (let [name (:name props)]
-    $[:div "Hello, " name "!"]))
+    (hx/c [:div "Hello, " name "!"])))
 ```
 
 Children are also passed in just like any other prop, so if we want to obtain children we
@@ -290,16 +286,16 @@ simply peel it off of the props object:
 ```clojure
 (defn has-children [props]
   (let [children (goog.object/get props "children")]
-    (hx/compile $[:div 
-                  {:style {:border "1px solid #000"}}
-                  children]))
+    (hx/c [:div 
+           {:style {:border "1px solid #000"}}
+           children]))
 
 ;; or
 (hx/defnc has-children [props]
   (let [children (:children props)]
-    $[:div
-      {:style {:border "1px solid #000"}}
-      children]))
+    (hx/c [:div
+           {:style {:border "1px solid #000"}}
+           children])))
 ```
 
 Sometimes we also need access to React's various lifecycle methods like
