@@ -7,7 +7,7 @@ An easy to use, decomplected hiccup compiler for ClojureScript and React.
 ## Usage
 
 ```clojure
-(require '[hx.react :as hx])
+(require '[hx.react :as hx :include-macros true])
 (require '[react :as react])
 
 (react/render
@@ -234,15 +234,14 @@ JS types:
 ```
 
 Currently, `:style` is special cased where it will recursively marshall it so that it's
-easy to work with native elements. You won't have to do this with `:style`, but any
-other props will need this manual conversion.
+easy to work with native elements. Any other props will need this manual conversion.
 
 --
 
 If the compiler doesn't see a map literal in the second position, it effectively
 treats it as a child element and simply passes it through unchanged.
 
-As a convenience, though, if props are `nil`, `hx.react` will check if the first child
+As a convenience, `hx.react` will check if the first child
 is a map, and if so, shallowly convert it to a JS object at runtime. There should be no
 functional difference between doing this at runtime vs. compile-time, but there may be
 a slight performance hit. In most cases, this will be unnoticeable; however if you have
