@@ -1,5 +1,7 @@
 # hx
 
+[![Clojars Project](https://img.shields.io/clojars/v/lilactown/hx.svg)](https://clojars.org/lilactown/hx)
+
 An easy to use, decomplected hiccup compiler for ClojureScript and React.
 
 ## Usage
