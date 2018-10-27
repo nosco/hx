@@ -1,7 +1,6 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :include-macros true]
-            [hx.state :include-macros true]
             [cljs.js]))
 
 (dc/defcard
@@ -161,42 +160,6 @@
 (dc/defcard js-interop-nested-props
   (hx/c [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
 
-(defonce my-state (atom ""))
-
-;; (cljs.pprint/pprint (macroexpand '
-(hx.state/defrc
-  reactive-macro
-  [props]
-  (hx/c [:div
-         [:div "hello " @my-state]
-         [:div [:input {:type "text"
-                        :value @my-state
-                        :on-change #(reset! my-state (.. % -target -value))}]]
-         [:div [:button
-                {:on-click #(reset! my-state "it works!")}
-                "Set to \"it works!\""]]]))
-;; ))
-
-;; (println (macroexpand '@my-state))
-
-(dc/defcard reactive-macro
-  (hx/c [reactive-macro]))
-
-(defonce other-state (atom ""))
-
-(hx/defnc reactive-no-macro
-  [props]
-  (hx/c [hx.state/reactive
-         (fn []
-           (hx/c [:div
-                  [:span (hx.state/deref! other-state)]
-                  [:div [:input {:type "text"
-                                 :value (hx.state/deref! other-state)
-                                 :on-change
-                                 #(reset! other-state (.. % -target -value))}]]]))]))
-
-(dc/defcard reactive-no-macro
-  (hx/c [reactive-no-macro]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
