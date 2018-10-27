@@ -2,7 +2,7 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/lilactown/hx.svg)](https://clojars.org/lilactown/hx)
 
-An easy to use, decomplected hiccup compiler for ClojureScript and React.
+A simple, easy to use library for React development in ClojureScript.
 
 ## Usage
 
@@ -10,20 +10,38 @@ An easy to use, decomplected hiccup compiler for ClojureScript and React.
 (require '[hx.react :as hx :include-macros true])
 (require '[react :as react])
 
+(hx/defnc MyComponent [{:keys [name]}]
+  (hx/c [:div "Hello," 
+         [:span {:style {:font-weight "bold"}} name] "!"]))
+
 (react/render
   (hx/c
-   [:span {:style {:font-weight "bold"}} "Hello, world!"])
+   [MyComponent {:name "React in CLJS"}])
              
   (. js/document getElementById "app"))
 ```
 
-## What problem does `hx` solve?
+## What problems does `hx` solve?
+
+`hx` is meant to make it simple, easy and fun to use [React.js](https://reactjs.org/)
+within ClojureScript.
+
+The library is split into (currently) two sections, which you can feel free to 
+mix as your project sees fit:
+
+1. A hiccup compiler. Takes in `[:div {:style {:color "red"}} [:span "foo"]]` and
+spits out `React.createElement` calls.
+
+2. Helpers for creating components. `defnc` and `defcomponent` help us write
+plain React.js components in idiomatic ClojureScript.
+
+### What's hiccup?
 
 *TL;DR: hiccup is the [JSX](https://reactjs.org/docs/introducing-jsx.html)
 of the Clojure ecosystem, and `hx` aims to solve that problem just as well.*
 
-`hx` is an implementation of a "hiccup" syntax compiler. Hiccup is a way of
-representing HTML using clojure data structures. 
+`hx.hiccup` is an implementation of a "hiccup" syntax compiler. Hiccup is a way 
+of representing HTML using clojure data structures. 
 It uses vectors to represent elements, and maps to represent an elements 
 attributes.
 
@@ -57,7 +75,7 @@ needs.
 
 No state management, no custom rendering queue, no opinions. Use it to build
 your awesome opinionated async reactive immutable app framework. `hx` is just
-your plain, unadulterated hiccup → React library.
+a Clojure-y interface to creating plain, unadulterated React components.
 
 
 ## Goals
@@ -103,20 +121,20 @@ using React context and (more generally) render-props/function-as-children.
 #### 2. Building blocks
 
 Some frameworks such as Reagent, Rum, etc. define their own way of parsing
-hiccup and creating React elements. While this allows them to build integrations,
+hiccup and creating components. While this allows them to build tight integrations,
 it also means that our code must subscribe to many ways in which these frameworks
 control our application code. We can combine them at the seams, but doing a
 full-on replacement is often difficult.
 
 `hx` aims to not control state management, rendering, or anything else about
-your application. It should only give you a way of describing React data easily
-in your CLJS applications.
+your application. It should only give you a way of creating and using React
+components in your CLJS applications.
 
 #### 3. Uniform & easy to use
 
 [Sablono](https://github.com/r0man/sablono/) and [Hicada](https://github.com/rauhs/hicada)
 are two other great libraries for parsing & compiling hiccup syntax into React
-components. `hx` is different in two significant ways:
+components. `hx.hiccup` is different in two significant ways:
 
 1. A uniform syntax for calling React components (as in, functions and React obj).
    No need to constantly mix `[:div ..]` with `(my-component ...)`, creating
@@ -131,7 +149,7 @@ components. `hx` is different in two significant ways:
    
 ## Hiccup forms & compiler behavior
 
-`hx` makes several default decisions about how hiccup and components should be
+`hx.hiccup` makes several default decisions about how hiccup and components should be
 written.
 
 
@@ -299,15 +317,11 @@ simply peel it off of the props object:
 ```
 
 Sometimes we also need access to React's various lifecycle methods like
-`componentDidMount`, `componentDidUpdate`, or we need to re-render our component
-based on some internal state. In that case, we should create a React component
-class. This is mainly left as an exercise to the reader; `hx` exposes a very
-barebones `hx/defcomponent` macro that binds closely to the OOP, class-based
-API React has for maximum flexibility. You can also leverage libraries like
-Om.Next, Reagent, Rum, or other frameworks that have state management buil in.
-**PRs welcome for libraries built on top of `hx` for managing this in a more idiomatic
-Clojure way!**
-
+`componentDidMount`, `componentDidUpdate`, etc. In that case, we should create a
+React component class. `hx` exposes a very barebones `hx/defcomponent` macro that
+binds closely to the OOP, class-based API React has for maximum flexibility. You 
+can also leverage libraries like Om.Next, Reagent, Rum, or other frameworks that
+have state management built in.
 
 ## Top-level API
 
@@ -339,15 +353,6 @@ Will become the equivalent:
     (map #(react/createElement "li" #js {:key %} %)
          numbers)]))
 ```
-
-## Extra sauce
-
-Along with compilation of hiccup into React API calls, it also comes with a few
-other helpful macros & functions for creating React components. It handles shallowly
-marshalling props into CLJS data structures and some other quality of life
-improvements.
-
-Feel free to ignore them if you want to build something cooler.
 
 ### hx.react/defnc: ([name props-bindings & body])
 
@@ -397,30 +402,6 @@ Example usage:
               [:input {:value (. state -name)
                        :on-change (. this -update-name!)}]]))))
 ```
-
-
-## Compiler API
-
-### hx.compiler.core/compile-hiccup ([hiccup create-element])
-
-Compiles a `hiccup` form into function calls to the passed in `create-element` symbol.
-
-Example usage:
-
-```clojure
-(require '[hx.compiler.core :refer [compile-hiccup]])
-
-(compile-hiccup
-  [ReactComponent {:some-prop #js {:foo "bar"}}
-   [:div {:class "greeting"} "Hello, ReactJS!"]]
-
- 'react/createElement)
-;; => (react/createElement ReactComponent #js {:some-prop #js {:foo "bar"}}
-;;      (react/createElement #js {:className "greeting"}
-;;        "Hello, ReactJS!"))
-```
-
-STUB
 
 ## License
 
