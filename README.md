@@ -128,7 +128,7 @@ full-on replacement is often difficult.
 
 `hx` aims to not control state management, rendering, or anything else about
 your application. It should only give you a way of creating and using React
-components in your CLJS applications.
+components in your ClojureScript applications.
 
 #### 3. Uniform & easy to use
 
@@ -147,6 +147,63 @@ components. `hx.hiccup` is different in two significant ways:
    providing APIs to extend and change the parsing, analysis and generation of
    hiccup → React elements as your needs evolve.
    
+### Authoring components
+
+`hx` doesn't do anything special in regards to how it calls or creates React 
+components. They are assumed to act like native, vanilla React components that 
+could be used in any codebase.
+
+In practice, this is fairly easy to handle in ClojureScript. A basic functional component
+can be written as just a normal function that returns a React element:
+
+```clojure
+(defn my-component [props]
+  (hx/c [:div "Hello"]))
+```
+
+`props` will always be a *JS object*, so if we want to pull something out of it, we'll
+need to use JS interop:
+
+```clojure
+(defn my-component [props]
+  (let [name (goog.object/get props "name")]
+    (hx/c [:div "Hello, " name "!"]))
+```
+
+`hx.react/defnc` is a macro that shallowly converts the props object for us, so
+we can get rid of some of the boilerplate:
+
+```clojure
+(hx/defnc my-component [props]
+  (let [name (:name props)]
+    (hx/c [:div "Hello, " name "!"])))
+```
+
+Children are also passed in just like any other prop, so if we want to obtain children we
+simply peel it off of the props object:
+
+```clojure
+(defn has-children [props]
+  (let [children (goog.object/get props "children")]
+    (hx/c [:div 
+           {:style {:border "1px solid #000"}}
+           children]))
+
+;; or
+(hx/defnc has-children [props]
+  (let [children (:children props)]
+    (hx/c [:div
+           {:style {:border "1px solid #000"}}
+           children])))
+```
+
+Sometimes we also need access to React's various lifecycle methods like
+`componentDidMount`, `componentDidUpdate`, etc. In that case, we should create a
+React component class. `hx` exposes a very barebones `hx/defcomponent` macro that
+binds closely to the OOP, class-based API React has for maximum flexibility. You 
+can also leverage libraries like Om.Next, Reagent, Rum, or other frameworks that
+have state management built in.
+
 ## Hiccup forms & compiler behavior
 
 `hx.hiccup` makes several default decisions about how hiccup and components should be
@@ -266,68 +323,11 @@ a slight performance hit. In most cases, this will be unnoticeable; however if y
 a component that is on the hot path and the marshalling does become a performance
 bottleneck, writing out props as a map literal will improve it.
 
-### Authoring components
-
-`hx` doesn't do anything special in regards to how it calls or creates CLJS components.
-They are assumed to act like native, vanilla React components that could be used in any
-codebase.
-
-In practice, this is fairly easy to handle in ClojureScript. A basic functional component
-can be written as just a normal function that returns a React element:
-
-```clojure
-(defn my-component [props]
-  (hx/c [:div "Hello"]))
-```
-
-`props` will always be a *JS object*, so if we want to pull something out of it, we'll
-need to use JS interop:
-
-```clojure
-(defn my-component [props]
-  (let [name (goog.object/get props "name")]
-    (hx/c [:div "Hello, " name "!"]))
-```
-
-`hx.react/defnc` is a macro that shallowly converts the props object for us, so
-we can get rid of some of the boilerplate:
-
-```clojure
-(hx/defnc my-component [props]
-  (let [name (:name props)]
-    (hx/c [:div "Hello, " name "!"])))
-```
-
-Children are also passed in just like any other prop, so if we want to obtain children we
-simply peel it off of the props object:
-
-```clojure
-(defn has-children [props]
-  (let [children (goog.object/get props "children")]
-    (hx/c [:div 
-           {:style {:border "1px solid #000"}}
-           children]))
-
-;; or
-(hx/defnc has-children [props]
-  (let [children (:children props)]
-    (hx/c [:div
-           {:style {:border "1px solid #000"}}
-           children])))
-```
-
-Sometimes we also need access to React's various lifecycle methods like
-`componentDidMount`, `componentDidUpdate`, etc. In that case, we should create a
-React component class. `hx` exposes a very barebones `hx/defcomponent` macro that
-binds closely to the OOP, class-based API React has for maximum flexibility. You 
-can also leverage libraries like Om.Next, Reagent, Rum, or other frameworks that
-have state management built in.
-
 ## Top-level API
 
 This top-level macro is meant to serve as sane defaults for users (app developers,
-library developers) to use out-of-the-box. It provides a good mix of performance,
-ease of use and interoperability.
+library developers) to compile their hiccup out-of-the-box. It provides a good
+mix of performance, ease of use and interoperability.
 
 ### hx.react/c: ([form])
 
@@ -356,9 +356,9 @@ Will become the equivalent:
 
 ### hx.react/defnc: ([name props-bindings & body])
 
-This macro is just like `defn`, but has some helpers for defining functional
-React components. Takes a name, props bindings and a body that will be passed to
-`hx.react/compile`.
+This macro is just like `defn`, but shallowly converts the props object passed
+in to the component to a Clojure map. Takes a name, props bindings and a 
+function body.
 
 Example usage:
 ```clojure
