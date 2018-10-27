@@ -5,8 +5,7 @@
  :nrepl {:port 8777}
 
  :dependencies
- [[cider/cider-nrepl "0.16.0-SNAPSHOT"]
-  [binaryage/devtools "0.9.7"]
+ [[binaryage/devtools "0.9.7"]
   [devcards "0.2.5"]]
 
  :builds

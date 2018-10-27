@@ -1,4 +1,4 @@
-(ns hx.compiler.parser)
+(ns hx.hiccup.compiler.parser)
 
 (defprotocol IElement
   (-parse-element [el args] "Parses an element"))
@@ -67,7 +67,7 @@
   (apply parse-element hiccup))
 
 (def interceptor
-  {:name :hx.compiler/parser
+  {:name :hx.hiccup.compiler/parser
    :enter (fn [context]
             (assoc context ::out
                    (parse (::form context))))})

@@ -1,4 +1,4 @@
-(ns hx.compiler.interceptor)
+(ns hx.hiccup.compiler.interceptor)
 
 (defn execute [initial-context & interceptors]
   (loop [context (merge

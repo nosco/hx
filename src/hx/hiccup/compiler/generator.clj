@@ -1,6 +1,6 @@
-(ns hx.compiler.generator
+(ns hx.hiccup.compiler.generator
   (:require [clojure.walk :as walk]
-            [hx.compiler.analyzer :as analyzer]
+            [hx.hiccup.compiler.analyzer :as analyzer]
             [hx.utils :as utils]))
 
 (defn generate-literal-props [props]
@@ -43,7 +43,7 @@
    tree))
 
 (def interceptor
-  {:name :hx.compiler/generator
+  {:name :hx.hiccup.compiler/generator
    :enter (fn [context]
             (assoc context
                    ::out (generate (::analyzer/out context)

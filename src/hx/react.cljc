@@ -1,8 +1,8 @@
 (ns hx.react
   (:require #?(:cljs [goog.object :as gobj])
             #?(:cljs ["react" :as react])
-            #?(:clj [hx.compiler.core])
-            #?(:clj [hx.compiler.parser :as parser])
+            #?(:clj [hx.hiccup])
+            #?(:clj [hx.hiccup.compiler.parser :as parser])
             #?(:clj [hx.react.interceptors :as interceptors])
             [hx.utils :as utils])
   (:refer-clojure :exclude [compile]))
@@ -13,7 +13,7 @@
   true)
 
 (defmacro c [form]
-  (hx.compiler.core/compile-hiccup form 'hx.react/create-element))
+  (hx.hiccup/compile-hiccup form 'hx.react/$))
 
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
@@ -71,9 +71,9 @@
                (utils/reactify-props)
                (utils/shallow-clj->js props))))
 
-#?(:clj (defn create-element [el p & c]
+#?(:clj (defn $ [el p & c]
           nil)
-   :cljs (defn create-element [el p & c]
+   :cljs (defn $ [el p & c]
            (if (or (string? p) (number? p) (react/isValidElement p))
              (apply react/createElement el nil p c)
 
