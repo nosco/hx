@@ -42,9 +42,9 @@
   ([a] (<-watch a []))
   ([a deps]
    ;; create a react/useState hook to track and trigger renders
-   (let [[v u] (<-state @a)]
+   (let [[v u] (react/useState @a)]
      ;; react/useEffect hook to create and track the subscription to the iref
-     (<-effect
+     (react/useEffect
       (fn []
         (println "adding watch")
         (add-watch a :use-atom
