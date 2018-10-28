@@ -73,7 +73,7 @@ needs.
 
 ## What problems does `hx` _not_ solve?
 
-No state management, no custom rendering queue, no opinions. Use it to build
+No opinionated state management, no custom rendering queue. Use it to build
 your awesome opinionated async reactive immutable app framework. `hx` is just
 a Clojure-y interface to creating plain, unadulterated React components.
 
@@ -126,7 +126,7 @@ it also means that our code must subscribe to many ways in which these framework
 control our application code. We can combine them at the seams, but doing a
 full-on replacement is often difficult.
 
-`hx` aims to not control state management, rendering, or anything else about
+`hx` aims to not directly control state management, rendering, or anything else about
 your application. It should only give you a way of creating and using React
 components in your ClojureScript applications.
 
