@@ -271,6 +271,27 @@ element.
 *(4)* is an example of passing in multiple children, and calling components that we
 defined ourselves (instead of native elements like `:div`).
 
+### Mixing hiccup and clojure forms
+
+`hx.hiccup` doesn't do any special runtime evaluation or macro magic of your 
+clojure forms, so when you use `for`, `let`, `map` etc. inside of a hiccup form,
+you'll need to wrap the return value in `hx.react/c` as well.
+
+Examples:
+
+```clojure
+(hx/c [:div (map #(hx/c [:div "Hello, " %]) ["Mary" "Uma" "Stu"])])
+;; => (react/createElement "div" nil
+;;      (map #(react/createElement "div" nil "Hello, " %)) ["Mary" "Uma" "Stu"])
+
+(hx/c [:ul {:style {:border "1px solid #eee"}}
+       (for [n [1 2 3 4 5]]
+         (hx/c [:li n]))])
+;; => (react/createElement #js {:style #js {:border "1px solid #eee"}}
+;;      (for [n [1 2 3 4 5]]
+;;        (react/createElement "li" nil n)))
+```
+
 ### Optimizations
 
 Let's pause here and talk about the difference between *(2)* and *(3)* in the example

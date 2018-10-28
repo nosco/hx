@@ -6,12 +6,12 @@
 (dc/defcard
   macroexpand
   (macroexpand '(hx/c [:div {:style {:color "green"}
-                          :id "asdf"} "hello"])))
+                             :id "asdf"} "hello"])))
 
 (dc/defcard
   simple
   (hx/c [:div {:style {:color "green"}
-            :id "asdf"} "hello"]))
+               :id "asdf"} "hello"]))
 
 (dc/defcard
   with-children
@@ -55,7 +55,7 @@
 
 (hx/defnc greeting [{:keys [name] :as props}]
   (hx/c [:span {:style {:font-size "24px"}}
-     "Hello, " name]))
+         "Hello, " name]))
 
 (dc/defcard
   function-element
@@ -63,7 +63,7 @@
 
 (hx/defnc with-children [{:keys [children]}]
   (hx/c [:div
-     (identity children)]))
+         (identity children)]))
 
 (dc/defcard with-children
   (hx/c [with-children
