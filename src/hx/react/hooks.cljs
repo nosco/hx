@@ -46,14 +46,11 @@
      ;; react/useEffect hook to create and track the subscription to the iref
      (react/useEffect
       (fn []
-        (println "adding watch")
         (add-watch a :use-atom
                    ;; update the react state on each change
                    (fn [_ _ _ v'] (u v')))
         ;; return a function to tell react hook how to unsubscribe
-        #(do
-           (println "removing watch")
-           (remove-watch a :use-atom)))
+        #(remove-watch a :use-atom))
       ;; pass in deps vector as an array
       (clj->js deps))
      ;; return value of useState on each run
