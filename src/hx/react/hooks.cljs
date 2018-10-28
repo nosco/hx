@@ -2,7 +2,6 @@
   (:require ["react" :as react]
             [goog.object :as gobj]))
 
-
 (deftype State [react-ref]
   IDeref
   (-deref [_]
@@ -15,16 +14,19 @@
 
   ISwap
   (-swap! [o f]
-    (-reset! o (f (-deref o)))))
-
-(defn <- [f & args]
-  (State. (apply f args)))
+    (-reset! o (f (-deref o))))
+  (-swap! [o f a]
+    (-reset! o (f (-deref o) a)))
+  (-swap! [o f a b]
+    (-reset! o (f (-deref o) a b)))
+  (-swap! [o f a b xs]
+    (-reset! o (apply f (-deref o) a b xs))))
 
 (defn <-state
   "Takes an initial value. Returns an atom that will re-render component on
   change."
   [initial]
-  (<- react/useState initial))
+  (State. (react/useState initial)))
 
 (defn <-ref
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
@@ -56,14 +58,14 @@
      ;; return value of useState on each run
      v)))
 
-(defn <-reducer
+(def <-reducer
   "Just react/useReducer."
   react/useReducer)
 
-(defn <-effect
+(def <-effect
   "Just react/useEffect"
   react/useEffect)
 
-(defn <-context
+(def <-context
   "Just react/useContext"
   react/useContext)
