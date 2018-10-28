@@ -147,7 +147,7 @@ components. `hx.hiccup` is different in two significant ways:
    providing APIs to extend and change the parsing, analysis and generation of
    hiccup → React elements as your needs evolve.
    
-### Authoring components
+## Authoring components
 
 `hx` doesn't do anything special in regards to how it calls or creates React 
 components. They are assumed to act like native, vanilla React components that 
