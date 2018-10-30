@@ -20,6 +20,7 @@
    (-parse-element el args)))
 
 (defn make-node [el props & children]
+  (println props)
   (apply react/createElement el props children))
 
 (defn parse [hiccup]
@@ -44,7 +45,7 @@
              (name el)
              (if props?
                (-> props
-                   (util/clj->props :styles? true))
+                   (util/clj->props))
                nil)
              (into (if props? [] [props]) (map parse-element children)))))
   PersistentVector
@@ -52,7 +53,6 @@
     (apply parse-element form))
   function
   (-parse-element [el args]
-
     (let [props (first args)
           children (rest args)
           props? (map? props)]
@@ -60,6 +60,6 @@
              el
              (if props?
                (-> props
-                   (util/clj->props :styles? true))
+                   (util/clj->props))
                nil)
              (into (if props? [] [props]) (map parse-element children))))))
