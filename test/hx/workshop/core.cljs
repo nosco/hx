@@ -1,6 +1,7 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :include-macros true]
+            [hx.react.dom :as d :include-macros true]
             [cljs.js]))
 
 (dc/defcard
@@ -160,6 +161,13 @@
 (dc/defcard js-interop-nested-props
   (hx/c [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
 
+(hx/defnc _s-exp [_]
+  (d/open (div "bar")))
+
+(def s-exp* (hx/factory _s-exp))
+
+(dc/defcard s-exp
+  (s-exp*))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
