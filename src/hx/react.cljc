@@ -109,3 +109,9 @@
            (create-class react/PureComponent init-fn static-properties method-names)))
 
 #?(:cljs (def fragment react/Fragment))
+
+#?(:cljs (defn factory
+           "Takes a React component, and creates a function that returns
+  a new React element"
+           [component]
+           (partial $ component)))
