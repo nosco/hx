@@ -51,7 +51,6 @@
     (let [props (first args)
           children (rest args)
           props? (map? props)]
-      (js/console.log el props children)
       (apply make-node
              (if (keyword? el) (name el) el)
              (if props?

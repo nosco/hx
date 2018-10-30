@@ -20,7 +20,7 @@
          y 2]
      [:div (+ x y)])
    (for [n [1 2 3]]
-     [:div (+ n 1)])
+     [:div {:key n} (+ n 1)])
    children])
 
 (dc/defcard defnc
