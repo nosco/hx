@@ -50,33 +50,33 @@
 #_(shallow-clj->js {:a "asdf" :b :y :c 2})
 
 #?(:cljs (defn shallow-js->clj
-         ([x] (shallow-js->clj x :keywordize-keys false))
-         ([x & opts]
-          (let [{:keys [keywordize-keys]} opts
-                keyfn (if keywordize-keys keyword str)
-                f (fn thisfn [x]
-                    (cond
-                      (satisfies? IEncodeClojure x)
-                      (-js->clj x (apply array-map opts))
+           ([x] (shallow-js->clj x :keywordize-keys false))
+           ([x & opts]
+            (let [{:keys [keywordize-keys]} opts
+                  keyfn (if keywordize-keys keyword str)
+                  f (fn thisfn [x]
+                      (cond
+                        (satisfies? IEncodeClojure x)
+                        (-js->clj x (apply array-map opts))
 
-                      (seq? x)
-                      x
+                        (seq? x)
+                        x
 
-                      (map-entry? x)
-                      (MapEntry. (key x) (val x) nil)
+                        (map-entry? x)
+                        (MapEntry. (key x) (val x) nil)
 
-                      (coll? x)
-                      x
+                        (coll? x)
+                        x
 
-                      (array? x)
-                      (vec x)
+                        (array? x)
+                        (vec x)
 
-                      (identical? (type x) js/Object)
-                      (into {} (for [k (js-keys x)]
-                                 [(keyfn k) (unchecked-get x k)]))
+                        (identical? (type x) js/Object)
+                        (into {} (for [k (js-keys x)]
+                                   [(keyfn k) (unchecked-get x k)]))
 
-                      :else x))]
-            (f x)))))
+                        :else x))]
+              (f x)))))
 
 ;; I stole most of this from https://github.com/rauhs/hicada/blob/master/src/hicada/util.clj
 
@@ -165,13 +165,28 @@
   (if (map? attrs)
     (reduce-kv (fn [m k v]
                  (assoc m
-                   (case k
-                     :class :className
-                     :for :htmlFor
-                     ;; (if ((:camelcase-key-pred *config*) k)
-                     ;;   (camel-case k)
-                     ;;   k)
-                     (if ((some-fn keyword? symbol?) k)
-                       (camel-case k)))
-                   (reactify-props-kv k v))) {} attrs)
+                        (case k
+                          :class :className
+                          :for :htmlFor
+                          (if ((some-fn keyword? symbol?) k)
+                            (camel-case k)))
+                        (reactify-props-kv k v))) {} attrs)
     attrs))
+
+(defn styles->js [props]
+  (cond
+    (and (map? props) (:style props))
+    (assoc props :style (clj->js (:style props)))
+
+    (gobj/containsKey props "style")
+    (do (->> (gobj/get props "style")
+             (clj->js)
+             (gobj/set props "style"))
+        props)
+
+    :default props))
+
+(defn clj->props [props & {:keys [styles?]}]
+  (-> (if styles? (styles->js props) props)
+      (reactify-props)
+      (shallow-clj->js props)))
