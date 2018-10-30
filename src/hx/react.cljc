@@ -4,10 +4,10 @@
             [hx.hiccup :as hiccup]
             [hx.utils :as utils]))
 
-(defn parse-body [body]
-  (if (vector? body)
-    (hiccup/parse body)
-    body))
+#?(:cljs (defn parse-body [body]
+           (if (vector? body)
+             (hiccup/parse body)
+             body)))
 
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
@@ -37,14 +37,18 @@
        (hx.react/parse-body
         (do ~@body)))))
 
+(defmacro shallow-render [& body]
+  `(with-redefs [hx.react/parse-body identity]
+     ~@body))
+
 #?(:cljs (def fragment react/Fragment))
 
-(defmethod hiccup/parse-element
-  :<>
-  [el & args]
-  (hiccup/-parse-element
-   hx.react/fragment
-   args))
+#?(:cljs (defmethod hiccup/parse-element
+           :<>
+           [el & args]
+           (hiccup/-parse-element
+            hx.react/fragment
+            args)))
 
 
 #?(:cljs (defn props->clj [props]
@@ -92,3 +96,5 @@
   a new React element"
   [component]
   (partial $ component))
+
+

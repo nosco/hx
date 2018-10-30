@@ -38,6 +38,12 @@
            [:div (hx/$ "span" "hi")]
            [:span {:style {:color "red"}} (+ n 1)]])))
 
+(hx/defnc shallow* [{:keys [name]}]
+  [:div "Hello " [:span {:style {:color "blue"}} name] "!"])
+
+(dc/defcard shallow
+  (hx/shallow-render (shallow* {:name "Will"})))
+
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
 
