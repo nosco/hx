@@ -42,6 +42,13 @@
      (let [~@props-bindings (hx.react/props->clj props#)]
        ~@body)))
 
+(defmacro defc [name props-bindings & body]
+  `(def ~name
+     (hx/factory
+      (fn [props#]
+        (let [~@props-bindings (hx.react/props->clj props#)]
+          ~@body)))))
+
 #?(:clj (defmethod parser/parse-element
            :<>
            [el & args]

@@ -161,10 +161,8 @@
 (dc/defcard js-interop-nested-props
   (hx/c [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
 
-(hx/defnc _s-exp [_]
-  (d/open (div "bar")))
-
-(def s-exp* (hx/factory _s-exp))
+(hx/defc s-exp* [_]
+  (d/div {:style {:color "red"}} "bar"))
 
 (dc/defcard s-exp
   (s-exp*))
