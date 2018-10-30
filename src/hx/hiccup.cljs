@@ -51,10 +51,12 @@
     (let [props (first args)
           children (rest args)
           props? (map? props)]
-      (apply make-node
-             (if (keyword? el) (name el) el)
-             (if props?
-               (-> props
-                   (util/clj->props))
-               nil)
-             (into (if props? [] [(parse-element props)]) (map parse-element children))))))
+      (if (react/isValidElement el)
+        el
+        (apply make-node
+               (if (keyword? el) (name el) el)
+               (if props?
+                 (-> props
+                     (util/clj->props))
+                 nil)
+               (into (if props? [] [(parse-element props)]) (map parse-element children)))))))

@@ -26,6 +26,18 @@
 (dc/defcard defnc
   (hx/$ defnc-example {:foo "bar"} "child"))
 
+(hx/defnc rc [{:keys [children]}]
+  [:div
+   (children 3)])
+
+(dc/defcard render-fn-child
+  (hx/$ rc
+        nil
+        (fn [n]
+          [:<>
+           [:div (hx/$ "span" "hi")]
+           [:span {:style {:color "red"}} (+ n 1)]])))
+
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
 
