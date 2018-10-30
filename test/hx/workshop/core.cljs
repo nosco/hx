@@ -13,7 +13,7 @@
                     [:button {:on-click #(js/alert "hi")} "click"]]))
 
 (hx/defnc defnc-example [props]
-  (hx.hiccup/parse [:div "mm"]))
+  [:<> [:div "mm"] [:div "hm"]])
 
 (dc/defcard defnc
   (react/createElement defnc-example #js {:foo "bar"} "child"))

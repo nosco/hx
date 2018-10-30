@@ -34,13 +34,16 @@
 (defmacro defnc [name props-bindings & body]
   `(defn ~name [props#]
      (let [~@props-bindings (hx.react/props->clj props#)]
-       ~@body)))
+       (hx.react/parse-body
+        (do ~@body)))))
+
+#?(:cljs (def fragment react/Fragment))
 
 (defmethod hiccup/parse-element
   :<>
   [el & args]
   (hiccup/-parse-element
-   'hx.react/fragment
+   hx.react/fragment
    args))
 
 
@@ -83,8 +86,6 @@
 
 #?(:cljs (defn create-pure-component [init-fn static-properties method-names]
            (create-class react/PureComponent init-fn static-properties method-names)))
-
-#?(:cljs (def fragment react/Fragment))
 
 (defn factory
   "Takes a React component, and creates a function that returns

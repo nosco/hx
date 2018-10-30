@@ -20,7 +20,6 @@
    (-parse-element el args)))
 
 (defn make-node [el props & children]
-  (println props)
   (apply react/createElement el props children))
 
 (defn parse [hiccup]
@@ -36,30 +35,20 @@
   string
   (-parse-element [s _]
     s)
-  Keyword
-  (-parse-element [el args]
-    (let [props (first args)
-          children (rest args)
-          props? (map? props)]
-      (apply make-node
-             (name el)
-             (if props?
-               (-> props
-                   (util/clj->props))
-               nil)
-             (into (if props? [] [props]) (map parse-element children)))))
   PersistentVector
   (-parse-element [form _]
     (apply parse-element form))
-  function
+
+  default
   (-parse-element [el args]
     (let [props (first args)
           children (rest args)
           props? (map? props)]
+      (js/console.log el props children)
       (apply make-node
-             el
+             (if (keyword? el) (name el) el)
              (if props?
                (-> props
                    (util/clj->props))
                nil)
-             (into (if props? [] [props]) (map parse-element children))))))
+             (into (if props? [] [(parse-element props)]) (map parse-element children))))))
