@@ -20,7 +20,6 @@
    (-parse-element el args)))
 
 (defn make-node [el props & children]
-  (js/console.log el props children)
   (apply react/createElement el props children))
 
 (defn parse [hiccup]
