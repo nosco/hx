@@ -2,7 +2,7 @@
   (:require [devcards.core :as dc :include-macros true]
             ["react" :as react]
             [hx.hiccup]
-            [hx.react :as hx]))
+            [hx.react :as hx :include-macros true]))
 
 (defn example [props]
   (react/createElement "div" nil (prn-str props)))

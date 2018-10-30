@@ -173,7 +173,7 @@
                         (reactify-props-kv k v))) {} attrs)
     attrs))
 
-(defn styles->js [props]
+#?(:cljs (defn styles->js [props]
   (cond
     (and (map? props) (:style props))
     (assoc props :style (clj->js (:style props)))
@@ -184,9 +184,10 @@
              (gobj/set props "style"))
         props)
 
-    :default props))
+    :default props)))
 
-(defn clj->props [props & {:keys [styles?]}]
-  (-> (if styles? (styles->js props) props)
-      (reactify-props)
-      (shallow-clj->js props)))
+#?(:cljs (defn clj->props [props]
+           (-> props
+               (reactify-props)
+               (styles->js)
+               (shallow-clj->js))))

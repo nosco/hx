@@ -4,7 +4,10 @@
             [hx.hiccup :as hiccup]
             [hx.utils :as utils]))
 
-;; (def props->clj utils/props->clj)
+(defn parse-body [body]
+  (if (vector? body)
+    (hiccup/parse body)
+    body))
 
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
@@ -33,13 +36,6 @@
      (let [~@props-bindings (hx.react/props->clj props#)]
        ~@body)))
 
-(defmacro defc [name props-bindings & body]
-  `(def ~name
-     (hx/factory
-      (fn [props#]
-        (let [~@props-bindings (hx.react/props->clj props#)]
-          ~@body)))))
-
 (defmethod hiccup/parse-element
   :<>
   [el & args]
@@ -60,7 +56,7 @@
              ;; if el is a keyword, or is not marked as an hx component,
              ;; we recursively convert styles
              (let [js-interop? (string? el)
-                   props (utils/clj->props p :styles? js-interop?)]
+                   props (utils/clj->props p)]
                (apply react/createElement el props c)))))
 
 #?(:cljs (defn assign-methods [class method-map]
