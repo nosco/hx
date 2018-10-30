@@ -12,11 +12,19 @@
                     [:h1 "foo"]
                     [:button {:on-click #(js/alert "hi")} "click"]]))
 
-(hx/defnc defnc-example [props]
-  [:<> [:div "mm"] [:div "hm"]])
+(hx/defnc defnc-example [{:keys [foo children]}]
+  [:<>
+   [:div "mm"]
+   [:div foo]
+   (let [x 1
+         y 2]
+     [:div (+ x y)])
+   (for [n [1 2 3]]
+     [:div (+ n 1)])
+   children])
 
 (dc/defcard defnc
-  (react/createElement defnc-example #js {:foo "bar"} "child"))
+  (hx/$ defnc-example {:foo "bar"} "child"))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))

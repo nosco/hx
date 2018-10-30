@@ -39,6 +39,13 @@
   (-parse-element [form _]
     (apply parse-element form))
 
+  LazySeq
+  (-parse-element [a b]
+    (apply make-node
+           react/Fragment
+           nil
+           (into [] (map parse-element a))))
+
   default
   (-parse-element [el args]
     (let [props (first args)
