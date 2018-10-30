@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/Lokeh/hx#readme",
   "devDependencies": {
-    "shadow-cljs": "^2.3.36",
+    "shadow-cljs": "^2.6.21",
     "showdown": "^1.8.6"
   },
   "dependencies": {
