@@ -44,6 +44,15 @@
 (dc/defcard shallow
   (hx/shallow-render (shallow* {:name "Will"})))
 
+(hx/defcomponent class-comp
+  (constructor [this]
+               this)
+  (render [this]
+          [:h1 "foo"]))
+
+(dc/defcard class-component
+  (hx/$ class-comp nil nil))
+
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
 

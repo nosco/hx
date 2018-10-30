@@ -13,7 +13,12 @@
   {:style/indent [1 :form [1]]}
   [display-name constructor & body]
   (let [;; with-compile (compile* body)
-        methods (filter #(not (:static (meta %))) body)
+        methods (filter #(not (or (= (first %) 'render)
+                                  (:static (meta %)))) body)
+        render (first (filter #(= (first %) 'render) body))
+        render' `(~(first render) ~(second render)
+                  (hx.react/parse-body
+                   (do ~@(nthrest render 2))))
         statics (->> (filter #(:static (meta %)) body)
                      (map #(apply vector (str (munge (first %))) (rest %)))
                      (into {"displayName" (name display-name)}))
@@ -28,6 +33,7 @@
                      ~method-names)]
          (cljs.core/specify! (.-prototype class#)
            ~'Object
+           ~render'
            ~@methods)
          class#))))
 
