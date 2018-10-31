@@ -19,6 +19,15 @@ A simple, easy to use library for React development in ClojureScript.
   (. js/document getElementById "app"))
 ```
 
+## Dependencies
+
+You'll want to make sure you have the latest version of `react`, `react-is`, and
+whatever renderer you are targeting (e.g. `react-dom`).
+
+```
+npm i react react-is react-dom
+```
+
 ## What problems does `hx` solve?
 
 `hx` is meant to make it simple, easy and fun to use [React.js](https://reactjs.org/)
