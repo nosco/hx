@@ -1,7 +1,8 @@
 (ns hx.hiccup
   (:require [clojure.walk :as walk]
             [hx.utils :as util]
-            ["react" :as react]))
+            ["react" :as react]
+            ["react-is" :as react-is]))
 
 (defprotocol IElement
   (-parse-element [el args] "Parses an element"))
@@ -19,23 +20,33 @@
   ([el & args]
    (-parse-element el args)))
 
-(defn make-node [el props & children]
-  (apply react/createElement el props children))
+(defn make-node [el props children]
+  (if (seq? children)
+    (apply react/createElement el props children)
+    (react/createElement el props children)))
 
 (defn parse [hiccup]
   (apply parse-element hiccup))
 
 (defn make-element [el args]
-  (let [props (first args)
-        children (rest args)
-        props? (map? props)]
-    (apply make-node
-           el
-           (if props?
-             (-> props
-                 (util/clj->props))
-             nil)
-           (into (if props? [] [(parse-element props)]) (map parse-element children)))))
+  (let [props? (map? (first args))
+        props (if props? (first args) nil)
+        children (if props? (rest args) args)]
+    (make-node
+     el
+     (if props?
+       (-> props
+           (util/clj->props))
+       nil)
+     (if (and (= (count children) 1) (fn? (first children)))
+       ;; fn-as-child
+       ;; wrap in a function to parse hiccup from render-fn
+       (fn [& args]
+         (let [ret (apply (first children) args)]
+           (if (vector? ret)
+             (apply parse-element ret)
+             ret)))
+       (map parse-element children)))))
 
 (extend-protocol IElement
   nil
@@ -53,10 +64,10 @@
 
   LazySeq
   (-parse-element [a b]
-    (apply make-node
-           react/Fragment
-           nil
-           (into [] (map parse-element a))))
+    (make-node
+     react/Fragment
+     nil
+     (map parse-element a)))
 
   Keyword
   (-parse-element [el args]
@@ -74,7 +85,9 @@
   (-parse-element [el args]
     (cond
       (react/isValidElement el) el
-      (= (goog/typeOf el) "symbol") (make-element el args)
+      (react-is/isValidElementType el)
+      (make-element el args)
       :default
       (throw
-       (js/Error. "Unknown element type found while parsing hiccup form")))))
+       (js/Error. (str "Unknown element type found while parsing hiccup form: "
+                       (.toString el)))))))

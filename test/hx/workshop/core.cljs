@@ -53,6 +53,23 @@
 (dc/defcard class-component
   (hx/$ class-comp nil nil))
 
+(def some-context (react/createContext))
+
+(hx/defnc context-consumer [_]
+  [:div
+   [(.-Consumer some-context)
+    (fn [v]
+      [:div v])]])
+
+(hx/defnc context-provider [_]
+  [(.-Provider some-context)
+   {:value "context value"}
+   [:div
+    [context-consumer]]])
+
+(dc/defcard context
+  (hx/$ context-provider nil nil))
+
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
 
