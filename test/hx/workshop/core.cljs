@@ -71,7 +71,6 @@
   (hx/$ context-provider nil nil))
 
 (hx/defnc ref-consumer* [{:keys [on-click] :as props} ref]
-  (println ref)
   [:button {:ref ref :on-click on-click} "Click me"])
 
 (def ref-consumer (react/forwardRef ref-consumer*))
