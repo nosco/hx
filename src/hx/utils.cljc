@@ -2,6 +2,12 @@
   (:require [clojure.string :as str]
             #?(:cljs [goog.object :as gobj])))
 
+(defn camel->kebab
+  "Converts from camel case (e.g. Foo or FooBar) to kebab case
+   (e.g. foo or foo-bar)."
+  [s]
+  (str/join "-" (map str/lower-case (re-seq #"\w[a-z]+" s))))
+
 #?(:cljs (defn shallow-clj->js
            "Shallowly transforms ClojureScript values to JavaScript.
   sets/vectors/lists become Arrays, Keywords and Symbol become Strings,
@@ -53,7 +59,7 @@
            ([x] (shallow-js->clj x :keywordize-keys false))
            ([x & opts]
             (let [{:keys [keywordize-keys]} opts
-                  keyfn (if keywordize-keys keyword str)
+                  keyfn (if keywordize-keys (comp keyword camel->kebab) str)
                   f (fn thisfn [x]
                       (cond
                         (satisfies? IEncodeClojure x)
