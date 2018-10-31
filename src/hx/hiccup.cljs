@@ -25,6 +25,18 @@
 (defn parse [hiccup]
   (apply parse-element hiccup))
 
+(defn make-element [el args]
+  (let [props (first args)
+        children (rest args)
+        props? (map? props)]
+    (apply make-node
+           el
+           (if props?
+             (-> props
+                 (util/clj->props))
+             nil)
+           (into (if props? [] [(parse-element props)]) (map parse-element children)))))
+
 (extend-protocol IElement
   nil
   (-parse-element [_ _]
@@ -46,17 +58,23 @@
            nil
            (into [] (map parse-element a))))
 
+  Keyword
+  (-parse-element [el args]
+    (make-element (name el) args))
+
+  function
+  (-parse-element [el args]
+    (make-element el args))
+
+  react/Component
+  (-parse-element [el args]
+    (make-element el args))
+
   default
   (-parse-element [el args]
-    (let [props (first args)
-          children (rest args)
-          props? (map? props)]
-      (if (react/isValidElement el)
-        el
-        (apply make-node
-               (if (keyword? el) (name el) el)
-               (if props?
-                 (-> props
-                     (util/clj->props))
-                 nil)
-               (into (if props? [] [(parse-element props)]) (map parse-element children)))))))
+    (cond
+      (react/isValidElement el) el
+      (= (goog/typeOf el) "symbol") (make-element el args)
+      :default
+      (throw
+       (js/Error. "Unknown element type found while parsing hiccup form")))))
