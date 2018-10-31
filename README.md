@@ -103,6 +103,8 @@ component can be written as just a normal function that returns a React element:
 ```clojure
 (defn my-component [props]
   (hiccup/parse [:div "Hello"]))
+  
+(react-dom/render (hiccup/parse [my-component]) (. js/document getElementById "app"))
 ```
 
 `props` will always be a *JS object*, so if we want to pull something out of it, we'll
@@ -112,6 +114,10 @@ need to use JS interop:
 (defn my-component [props]
   (let [name (goog.object/get props "name")]
     (hiccup/parse [:div "Hello, " name "!"]))
+    
+(react-dom/render (hiccup/parse [my-component {:name "Uma"}])
+                  (. js/document getElementById "app"))
+
 ```
 
 `hx.react/defnc` is a macro that shallowly converts the props object for us and
@@ -119,9 +125,8 @@ wraps our function body in `hiccup/parse`, so we can get rid of some of the
 boilerplate:
 
 ```clojure
-(hx/defnc my-component [props]
-  (let [name (:name props)]
-    [:div "Hello, " name "!"]))
+(hx/defnc my-component [{:keys [name]}]
+  [:div "Hello, " name "!"])
 ```
 
 Children are also passed in just like any other prop, so if we want to obtain children we
