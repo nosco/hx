@@ -288,6 +288,36 @@ Example usage:
                 :on-change (. this -update-name!)}]])))
 ```
 
+#### hx.react/$: ([el p & c])
+
+An alias for `react/createElement`.
+
+#### hx.react/factory: ([component])
+
+Creates a factory function from a component (e.g. a function, class, or string)
+that, when called, returns a React element.
+
+#### hx.react/shallow-render: ([& body])
+
+Short-circuits the hiccup interpreter to return just the hiccup form returned by
+`body`. Very useful for testing React components created using `hx.hiccup`.
+
+Example:
+
+```clojure
+(hx/defnc Welcome [{:keys [age]}]
+  (if (> age 17))
+    [:div "You're allowed!"]
+    [:div [:a {:href "http://disney.com"}] "Please go elsewhere"])
+    
+;; in test
+(deftest welcome-allowed
+  (is (= (hx/shallow-render (hiccup/parse [Welcome {:age 18}]))
+         [:div "You're allowed!"]))
+  (is (= (hx/shallow-render (hiccup/parse [Welcome {:age 17}]))
+         [:div [:a {:href "http://disney.com"}] "Please go elsewhere"])))
+```
+
 ## License
 
 Copyright © 2018 Will Acton
