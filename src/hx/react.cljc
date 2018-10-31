@@ -38,8 +38,8 @@
          class#))))
 
 (defmacro defnc [name props-bindings & body]
-  `(defn ~name [props#]
-     (let [~@props-bindings (hx.react/props->clj props#)]
+  `(defn ~name [props# maybe-ref#]
+     (let [~props-bindings (hx.react/props->clj props# maybe-ref#)]
        (hx.react/parse-body
         (do ~@body)))))
 
@@ -57,8 +57,9 @@
             args)))
 
 
-#?(:cljs (defn props->clj [props]
-           (utils/shallow-js->clj props :keywordize-keys true)))
+#?(:cljs (defn props->clj [props maybe-ref]
+           (let [props (utils/shallow-js->clj props :keywordize-keys true)]
+             [props maybe-ref])))
 
 #?(:clj (defn $ [el p & c]
           nil)

@@ -42,7 +42,7 @@
   [:div "Hello " [:span {:style {:color "blue"}} name] "!"])
 
 (dc/defcard shallow
-  (hx/shallow-render (shallow* {:name "Will"})))
+  (hx/shallow-render (shallow* {:name "Will"} nil)))
 
 (hx/defcomponent class-comp
   (constructor [this]
@@ -69,6 +69,19 @@
 
 (dc/defcard context
   (hx/$ context-provider nil nil))
+
+(hx/defnc ref-consumer* [{:keys [on-click] :as props} ref]
+  (println ref)
+  [:button {:ref ref :on-click on-click} "Click me"])
+
+(def ref-consumer (react/forwardRef ref-consumer*))
+
+(hx/defnc ref-provider [_]
+  (def ref (react/createRef))
+  [ref-consumer {:ref ref :on-click #(println ref)}])
+
+(dc/defcard ref
+  (hx/$ ref-provider nil nil))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
