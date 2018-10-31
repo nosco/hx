@@ -1,7 +1,7 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
             ["react" :as react]
-            [hx.hiccup]
+            [hx.hiccup :as hiccup]
             [hx.react :as hx :include-macros true]))
 
 (defn example [props]
@@ -81,6 +81,17 @@
 
 (dc/defcard ref
   (hx/$ ref-provider nil nil))
+
+(hx/defnc ComponentOne [_]
+  [:<>
+   [:div "hi"]
+   [:div "bye"]])
+
+(dc/defcard strict-mode
+  (hiccup/parse
+   [react/StrictMode
+    [:div "hello"]
+    [ComponentOne]]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
