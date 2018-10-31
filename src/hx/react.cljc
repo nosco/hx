@@ -1,25 +1,24 @@
 (ns hx.react
   (:require #?(:cljs [goog.object :as gobj])
             #?(:cljs ["react" :as react])
-            #?(:clj [hx.hiccup])
-            #?(:clj [hx.hiccup.compiler.parser :as parser])
-            #?(:clj [hx.react.interceptors :as interceptors])
-            [hx.utils :as utils])
-  (:refer-clojure :exclude [compile]))
+            [hx.hiccup :as hiccup]
+            [hx.utils :as utils]))
 
-
-(defn is-hx? [el]
-  ;; TODO: detect hx component
-  true)
-
-(defmacro c [form]
-  (hx.hiccup/compile-hiccup form 'hx.react/$))
+#?(:cljs (defn parse-body [body]
+           (if (vector? body)
+             (hiccup/parse body)
+             body)))
 
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
   [display-name constructor & body]
   (let [;; with-compile (compile* body)
-        methods (filter #(not (:static (meta %))) body)
+        methods (filter #(not (or (= (first %) 'render)
+                                  (:static (meta %)))) body)
+        render (first (filter #(= (first %) 'render) body))
+        render' `(~(first render) ~(second render)
+                  (hx.react/parse-body
+                   (do ~@(nthrest render 2))))
         statics (->> (filter #(:static (meta %)) body)
                      (map #(apply vector (str (munge (first %))) (rest %)))
                      (into {"displayName" (name display-name)}))
@@ -34,49 +33,32 @@
                      ~method-names)]
          (cljs.core/specify! (.-prototype class#)
            ~'Object
+           ~render'
            ~@methods)
          class#))))
 
 (defmacro defnc [name props-bindings & body]
   `(defn ~name [props#]
      (let [~@props-bindings (hx.react/props->clj props#)]
-       ~@body)))
+       (hx.react/parse-body
+        (do ~@body)))))
 
-(defmacro defc [name props-bindings & body]
-  `(def ~name
-     (hx/factory
-      (fn [props#]
-        (let [~@props-bindings (hx.react/props->clj props#)]
-          ~@body)))))
+(defmacro shallow-render [& body]
+  `(with-redefs [hx.react/parse-body identity]
+     ~@body))
 
-#?(:clj (defmethod parser/parse-element
+#?(:cljs (def fragment react/Fragment))
+
+#?(:cljs (defmethod hiccup/parse-element
            :<>
            [el & args]
-           (parser/-parse-element
-            'hx.react/fragment
+           (hiccup/-parse-element
+            hx.react/fragment
             args)))
 
 
 #?(:cljs (defn props->clj [props]
            (utils/shallow-js->clj props :keywordize-keys true)))
-
-#?(:cljs (defn styles->js [props]
-           (cond
-             (and (map? props) (:style props))
-             (assoc props :style (clj->js (:style props)))
-
-             (gobj/containsKey props "style")
-             (do (->> (gobj/get props "style")
-                      (clj->js)
-                      (gobj/set props "style"))
-                 props)
-
-             :default props)))
-
-#?(:cljs (defn clj->props [props & {:keys [styles?]}]
-           (-> (if styles? (styles->js props) props)
-               (utils/reactify-props)
-               (utils/shallow-clj->js props))))
 
 #?(:clj (defn $ [el p & c]
           nil)
@@ -86,8 +68,8 @@
 
              ;; if el is a keyword, or is not marked as an hx component,
              ;; we recursively convert styles
-             (let [js-interop? (or (string? el) (not (is-hx? el)))
-                   props (clj->props p :styles? js-interop?)]
+             (let [js-interop? (string? el)
+                   props (utils/clj->props p)]
                (apply react/createElement el props c)))))
 
 #?(:cljs (defn assign-methods [class method-map]
@@ -115,10 +97,10 @@
 #?(:cljs (defn create-pure-component [init-fn static-properties method-names]
            (create-class react/PureComponent init-fn static-properties method-names)))
 
-#?(:cljs (def fragment react/Fragment))
-
-#?(:cljs (defn factory
-           "Takes a React component, and creates a function that returns
+(defn factory
+  "Takes a React component, and creates a function that returns
   a new React element"
-           [component]
-           (partial $ component)))
+  [component]
+  (partial $ component))
+
+

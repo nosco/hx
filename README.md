@@ -4,32 +4,31 @@
 
 A simple, easy to use library for React development in ClojureScript.
 
-## Usage
-
 ```clojure
-(require '[hx.react :as hx :include-macros true])
-(require '["react-dom" :as react-dom])
+(ns my-app.core
+  (:require [hx.react :as hx :include-macros true]
+            ["react-dom" :as react-dom]))
 
 (hx/defnc MyComponent [{:keys [name]}]
-  (hx/c [:div "Hello," 
-         [:span {:style {:font-weight "bold"}} name] "!"]))
+  [:div "Hello " 
+   [:span {:style {:font-weight "bold"}} name] "!"])
 
 (react-dom/render
-  (hx/c
-   [MyComponent {:name "React in CLJS"}])
-             
+  (hx/$
+   MyComponent {:name "React in CLJS"} nil)
   (. js/document getElementById "app"))
 ```
 
 ## What problems does `hx` solve?
 
 `hx` is meant to make it simple, easy and fun to use [React.js](https://reactjs.org/)
-within ClojureScript.
+within ClojureScript. It is your bridge to the wide world of React.js in 
+idiomatic CLJS.
 
 The library is split into (currently) two sections, which you can feel free to 
 mix as your project sees fit:
 
-1. A hiccup compiler. Takes in `[:div {:style {:color "red"}} [:span "foo"]]` and
+1. A hiccup interpreter. Takes in `[:div {:style {:color "red"}} [:span "foo"]]` and
 spits out `React.createElement` calls.
 
 2. Helpers for creating components. `defnc` and `defcomponent` help us write
@@ -38,10 +37,10 @@ plain React.js components in idiomatic ClojureScript.
 ### What's hiccup?
 
 *TL;DR: hiccup is the [JSX](https://reactjs.org/docs/introducing-jsx.html)
-of the Clojure ecosystem, and `hx` aims to solve that problem just as well.*
+of the Clojure ecosystem*
 
-`hx.hiccup` is an implementation of a "hiccup" syntax compiler. Hiccup is a way 
-of representing HTML using clojure data structures. 
+`hx.hiccup` is an implementation of a "hiccup" syntax interpreter.
+Hiccup is a way of representing HTML using clojure data structures. 
 It uses vectors to represent elements, and maps to represent an elements 
 attributes.
 
@@ -50,26 +49,32 @@ Clojure and outputs HTML strings. This library is written for use in CLJS and
 outputs React data structures. It extends the syntax slightly to accomodate using
 any arbitrary React component in place of HTML tags.
 
-The basis of the library is the `compile-hiccup` function that takes in a
+The basis of the library is the `parse` function that takes in a
 hiccup form and transforms it into calls to React's `createElement` function:
 
 ```clojure
-(require '[hx.compiler.core :refer [compile-hiccup]])
+(require '[hx.hiccup :as hiccup])
 
-(compile-hiccup
+(hiccup/parse
   [ReactComponent {:some-prop #js {:foo "bar"}}
-   [:div {:class "greeting"} "Hello, ReactJS!"]]
-
- 'react/createElement)
-;; => (react/createElement ReactComponent #js {:some-prop #js {:foo "bar"}}
+   [:div {:class "greeting"} "Hello, ReactJS!"]])
+;; executes:
+;;    (react/createElement ReactComponent #js {:some-prop #js {:foo "bar"}}
 ;;      (react/createElement #js {:className "greeting"}
 ;;        "Hello, ReactJS!"))
 ```
 
-This is then used to build a macro so that it can be used on our CLJS code
-at compile time. `hx` comes with it's own macro out of the box with sane
-defaults, but the core compiler is also available should you have different
-needs.
+The hiccup parser can be extended with custom tags by defining a new 
+`hx.hiccup/parse-element` method. For example, here's how we handle `:<>` for
+fragments:
+
+```clojure
+(defmethod hiccup/parse-element :<>
+  [el & args]
+  (hiccup/-parse-element
+   hx.react/fragment
+   args))
+```
 
 ## What problems does `hx` _not_ solve?
 
@@ -77,88 +82,18 @@ No opinionated state management, no custom rendering queue. Use it to build
 your awesome opinionated async reactive immutable app framework. `hx` is just
 a Clojure-y interface to creating plain, unadulterated React components.
 
-
-## Goals
-
-1. **Simple** interop between vanilla React features and CLJS code, to ease
-   adoption of new features & technologies in the JS world.
-   
-2. **Performant** parsing of hiccup syntax; impact is minimized by using macros,
-   to remove the need for runtime parsing of hiccup and minimize marshalling of
-   CLJS data.
-   
-3. **Extensible** API so that parsing, analysis & code generation of the hiccup
-   compiler can evolve to meet the needs of different ecosystems.
-
-
-## Motivation
-   
-There are a lot of cool things coming out of React 16 that are contesting some
-initial design decisions of other React wrappers in the CLJS ecosystem:
-
-#### 1. Maximal interop
-
-Up until now, CLJS wrappers have been implementing async rendering in user-land.
-Firstly, async rendering is [generally](https://reagent-project.github.io/news/reagent-is-async.html)
-[a good](http://swannodette.github.io/2013/12/17/the-future-of-javascript-mvcs) [thing](https://www.youtube.com/watch?v=nLF0n9SACd4).
-
-Now that React is implementing async rendering in the framework itself, we
-should endeavor to leverage the framework rather than our various user-land
-implementations.
-
-Secondly, the second-half of the Dan Abramov video above is quite impressive,
-and I am very excited about React "suspense." Again, this is something that we 
-have solved many times in CLJS-land, but once this lands there will be an 
-explosion of features & functionality that we will not be able to access easily 
-unless we can bind closely to this new API.
-
-Thirdly, React's new context API greatly simplifies passing state around an app
-in an async-safe way. This is especially important when considering server-side
-rendering, a use-case that many CLJS libraries still do not weigh very heavily.
-Removing the layers of abstraction between CLJS & vanilla React is important for
-using React context and (more generally) render-props/function-as-children.
-
-#### 2. Building blocks
-
-Some frameworks such as Reagent, Rum, etc. define their own way of parsing
-hiccup and creating components. While this allows them to build tight integrations,
-it also means that our code must subscribe to many ways in which these frameworks
-control our application code. We can combine them at the seams, but doing a
-full-on replacement is often difficult.
-
-`hx` aims to not directly control state management, rendering, or anything else about
-your application. It should only give you a way of creating and using React
-components in your ClojureScript applications.
-
-#### 3. Uniform & easy to use
-
-[Sablono](https://github.com/r0man/sablono/) and [Hicada](https://github.com/rauhs/hicada)
-are two other great libraries for parsing & compiling hiccup syntax into React
-components. `hx.hiccup` is different in two significant ways:
-
-1. A uniform syntax for calling React components (as in, functions and React obj).
-   No need to constantly mix `[:div ..]` with `(my-component ...)`, creating
-   factories, etc.
-
-2. No runtime interpretation of hiccup syntax; always assumes that things are
-   tags or React elements.
-   
-3. Out-of-the-box defaults allow the library to be easily used right away, while
-   providing APIs to extend and change the parsing, analysis and generation of
-   hiccup → React elements as your needs evolve.
-   
 ## Authoring components
 
 `hx` doesn't do anything special in regards to how it calls or creates React 
 components. They are assumed to act like native, vanilla React components that 
 could be used in any codebase.
 
-In practice, this is fairly easy to handle in ClojureScript. A basic functional component
-can be written as just a normal function that returns a React element:
+In practice, this is fairly easy to handle in ClojureScript. A basic functional
+component can be written as just a normal function that returns a React element:
 
 ```clojure
 (defn my-component [props]
-  (hx/c [:div "Hello"]))
+  (hiccup/parse [:div "Hello"]))
 ```
 
 `props` will always be a *JS object*, so if we want to pull something out of it, we'll
@@ -167,16 +102,17 @@ need to use JS interop:
 ```clojure
 (defn my-component [props]
   (let [name (goog.object/get props "name")]
-    (hx/c [:div "Hello, " name "!"]))
+    (hiccup/parse [:div "Hello, " name "!"]))
 ```
 
-`hx.react/defnc` is a macro that shallowly converts the props object for us, so
-we can get rid of some of the boilerplate:
+`hx.react/defnc` is a macro that shallowly converts the props object for us and
+wraps our function body in `hiccup/parse`, so we can get rid of some of the
+boilerplate:
 
 ```clojure
 (hx/defnc my-component [props]
   (let [name (:name props)]
-    (hx/c [:div "Hello, " name "!"])))
+    [:div "Hello, " name "!"]))
 ```
 
 Children are also passed in just like any other prop, so if we want to obtain children we
@@ -185,16 +121,16 @@ simply peel it off of the props object:
 ```clojure
 (defn has-children [props]
   (let [children (goog.object/get props "children")]
-    (hx/c [:div 
-           {:style {:border "1px solid #000"}}
-           children]))
+    (hiccup/parse
+      [:div 
+       {:style {:border "1px solid #000"}}
+       children]))
 
 ;; or
-(hx/defnc has-children [props]
-  (let [children (:children props)]
-    (hx/c [:div
-           {:style {:border "1px solid #000"}}
-           children])))
+(hx/defnc has-children [{:keys [children]}]
+  [:div
+   {:style {:border "1px solid #000"}}
+   children])
 ```
 
 Sometimes we also need access to React's various lifecycle methods like
@@ -204,19 +140,18 @@ binds closely to the OOP, class-based API React has for maximum flexibility. You
 can also leverage libraries like Om.Next, Reagent, Rum, or other frameworks that
 have state management built in.
 
-## Hiccup forms & compiler behavior
+## Hiccup forms & interpreter behavior
 
 `hx.hiccup` makes several default decisions about how hiccup and components should be
 written.
-
 
 ### Writing hiccup
 
 First, all hiccup forms are assumed to follow the same pattern:
 
-`[ <(1)component> <(2)props-map?> <(3)child> ... <(n)child> ]`.
+`[ <(1)elementType> <(2)props-map?> <(3)child> ... <(n)child> ]`.
 
-The element in the *(1)* first position are assumed to be valid React elements.
+The element in the *(1)* first position are assumed to be valid React element types.
 They can be:
 
 1. A keyword that maps to a native element - such as `:div`, `:span`, `:nav`.
@@ -226,6 +161,9 @@ They can be:
 
 3. An object that extends the [React.Component](https://reactjs.org/docs/react-component.html) class.
 
+4. One of the built-in React symbols, such as `React.Fragment`, a context provider,
+context consumer, etc.
+
 Regardless of the type of the element in position *(1)*, if you want to pass in
 props to a component, they are **always** passed in via a map in the *(2)* second
 position. Props can be written as a map literally or a symbol bound to a map.
@@ -234,30 +172,39 @@ passed into the *children* field of createElement**.
 
 Finally, anything passed into position *(3)* or on is considered a child element.
 
-Here are a few examples:
+Here are a few examples. `hx.react/defnc` is used for concision, the only thing
+it does is coerce props to a map and wrap the body in a call to `hiccup/parse`:
 
 ```clojure
 ;; (1)
-(defn greet []
-  (hx/c [:div "Hello"]))
+(hx/defnc greet [_]
+  [:div "Hello"])
 
 ;; (2)
-(defn medium-greet []
-  (hx/c [:div {:style {:font-size "28px"}} "Medium hello"]))
+(hx/defnc medium-greet [_]
+  [:div {:style {:font-size "28px"}} "Medium hello"])
 
 ;; (3)
-(defn big-greet []
+(hx/defnc big-greet [_]
     (let [props {:style {:font-size "56px"}}
           children "Big hello"]
-      (hx/c [:div props children])))
+      [:div props children]))
 
 ;; (4)
-(defn all-greets []
-  (hx/c
-    [:div
-      [greet]
-      [medium-greet]
-      [big-greet]]))
+(hx/defnc all-greets []
+  [:div
+   [greet]
+   [medium-greet]
+   [big-greet]])
+      
+;; using children as a function
+(hx/defnc fn-as-child [{:keys [children]}]
+  [:div (children "foo")])
+
+;; passing in children as a function
+(hx/defnc use-fn-as-child [_]
+  [fn-as-child (fn [value]
+                [:h1 value])])
 ```
 
 *(1)* is an example of writing a component that has children, but no props. Strings
@@ -271,111 +218,27 @@ element.
 *(4)* is an example of passing in multiple children, and calling components that we
 defined ourselves (instead of native elements like `:div`).
 
-### Mixing hiccup and clojure forms
-
-`hx.hiccup` doesn't do any special runtime evaluation or macro magic of your 
-clojure forms, so when you use `for`, `let`, `map` etc. inside of a hiccup form,
-you'll need to wrap the return value in `hx.react/c` as well.
-
-Examples:
-
-```clojure
-(hx/c [:div (map #(hx/c [:div "Hello, " %]) ["Mary" "Uma" "Stu"])])
-;; => (react/createElement "div" nil
-;;      (map #(react/createElement "div" nil "Hello, " %)) ["Mary" "Uma" "Stu"])
-
-(hx/c [:ul {:style {:border "1px solid #eee"}}
-       (for [n [1 2 3 4 5]]
-         (hx/c [:li n]))])
-;; => (react/createElement #js {:style #js {:border "1px solid #eee"}}
-;;      (for [n [1 2 3 4 5]]
-;;        (react/createElement "li" nil n)))
-```
-
-### Optimizations
-
-Let's pause here and talk about the difference between *(2)* and *(3)* in the example
-above. Functionally, they are equivalent, but there are some things that the compiler
-will do differently depending on whether a symbol or map literal is passed in as the
-second element.
-
-React's `createElement` function expects props to be passed in as a JS object.
-It will attempt to introspect this object. So we need to marshall the props map into
-a JS object before we can pass it off to React.
-
-The `hx` compiler attempts to be clever: when it detects that the second argument is
-a map literal, it will shallowly rewrite it into a native JS object:
-
-```clojure
-(hx/c [:div {:foo "bar" 
-             :baz {:asdf ["jkl" 1234]}}])
-;; =>
-(React/createElement
- "div"
- (js-obj "foo" "bar"
-         "baz" {:asdf ["jkl" 1234]}
- nil)
-```
-
-It only rewrites the first level; any nested structures are left untouched.
-
---
-
-Sidenote: If you're working with a vanilla React component (implemented in JS), you
-may have to write something like this to convert the nested structures into native
-JS types:
-
-```clojure
-(hx/c [SomeWidget {:config #js {:foo "bar" :baz #js ["jkl" 1234]}}])
-```
-
-Currently, `:style` is special cased where it will recursively marshall it so that it's
-easy to work with native elements. Any other props will need this manual conversion.
-
---
-
-If the compiler doesn't see a map literal in the second position, it effectively
-treats it as a child element and simply passes it through unchanged.
-
-As a convenience, `hx.react` will check if the first child
-is a map, and if so, shallowly convert it to a JS object at runtime. There should be no
-functional difference between doing this at runtime vs. compile-time, but there may be
-a slight performance hit. In most cases, this will be unnoticeable; however if you have
-a component that is on the hot path and the marshalling does become a performance
-bottleneck, writing out props as a map literal will improve it.
+`hx.hiccup` shallowly converts props it to a JS object at runtime. Your kebab-case
+props will be converted to camelCase before passed into a native element. 
+`:style` is special-cased to recursively convert to a JS obj to help with using
+native elements as well.
 
 ## Top-level API
 
-This top-level macro is meant to serve as sane defaults for users (app developers,
-library developers) to compile their hiccup out-of-the-box. It provides a good
-mix of performance, ease of use and interoperability.
-
-### hx.react/c: ([form])
-
-This macro takes in form as hiccup and transforms it into React.createElement
-calls.
-
-Example usage:
+If all you want is the hiccup interpreter, you may simple import `hx.hiccup`:
 
 ```clojure
-(require '[hx.react :as hx])
+(require '[hx.hiccup :as hiccup])
 
-(let [numbers [1 2 3 4 5]]
-  (hx/c [:ul {:style {:list-style-type "square"}}
-         (map #(hx/c [:li {:key %} %])
-              numbers)]))
+(hiccup/parse [:div "foo"]) ;; => {$$typeof: Symbol(react.element), type: "div", key: null, ref: null, props: {…}, …}
 ```
 
-Will become the equivalent:
+### hx.react
 
-```clojure
-(let [numbers [1 2 3 4 5]]
-  (react/createElement "ul" #js {:style #js {:listStyleType "square"}}
-    (map #(react/createElement "li" #js {:key %} %)
-         numbers)]))
-```
+`hx.react` contains a number of helpful functions and macros for doing React
+development in ClojureScript.
 
-### hx.react/defnc: ([name props-bindings & body])
+#### hx.react/defnc: ([name props-bindings & body])
 
 This macro is just like `defn`, but shallowly converts the props object passed
 in to the component to a Clojure map. Takes a name, props bindings and a 
@@ -384,18 +247,19 @@ function body.
 Example usage:
 ```clojure
 (require '[hx.react :as hx])
+(require '[hx.hiccup])
 
 (hx/defnc greeting [{:keys [name] :as props}]
-  (hx/c [:span {:style {:font-size "24px"}}
-         "Hello, " name "!"]))
+  [:span {:style {:font-size "24px"}}
+   "Hello, " name "!"])
 
 (react/render
-  (hx/c [greeting {:name "Tara"}])
+  (hx.hiccup/parse [greeting {:name "Tara"}])
     
   (. js/document getElementById "app"))
 ```
 
-### hx.react/defcomponent: ([name constructor & body])
+#### hx.react/defcomponent: ([name constructor & body])
 
 This macro creates a React component class. Is the CLJS equivalent of 
 `class {name} extends React.Component { ... `. `constructor` is passed in `this`
@@ -414,14 +278,44 @@ Example usage:
   (greeting "Hello")
   
   (update-name! [this e]
-                (. this setState #js {:name (.. e -target -value)}))
+    (. this setState #js {:name (.. e -target -value)}))
 
   (render [this]
     (let [state (. this -state)]
-      (hx/c [:div
-             [:div (. my-component -greeting) ", " (. state -name)]
-              [:input {:value (. state -name)
-                       :on-change (. this -update-name!)}]]))))
+      [:div
+       [:div (. my-component -greeting) ", " (. state -name)]
+       [:input {:value (. state -name)
+                :on-change (. this -update-name!)}]])))
+```
+
+#### hx.react/$: ([el p & c])
+
+An alias for `react/createElement`.
+
+#### hx.react/factory: ([component])
+
+Creates a factory function from a component (e.g. a function, class, or string)
+that, when called, returns a React element.
+
+#### hx.react/shallow-render: ([& body])
+
+Short-circuits the hiccup interpreter to return just the hiccup form returned by
+`body`. Very useful for testing React components created using `hx.hiccup`.
+
+Example:
+
+```clojure
+(hx/defnc Welcome [{:keys [age]}]
+  (if (> age 17))
+    [:div "You're allowed!"]
+    [:div [:a {:href "http://disney.com"}] "Please go elsewhere"])
+    
+;; in test
+(deftest welcome-allowed
+  (is (= (hx/shallow-render (hiccup/parse [Welcome {:age 18}]))
+         [:div "You're allowed!"]))
+  (is (= (hx/shallow-render (hiccup/parse [Welcome {:age 17}]))
+         [:div [:a {:href "http://disney.com"}] "Please go elsewhere"])))
 ```
 
 ## License

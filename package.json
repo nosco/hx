@@ -22,11 +22,12 @@
   },
   "homepage": "https://github.com/Lokeh/hx#readme",
   "devDependencies": {
-    "shadow-cljs": "^2.3.36",
+    "shadow-cljs": "^2.6.21",
     "showdown": "^1.8.6"
   },
   "dependencies": {
-    "react": "^16.4.0",
-    "react-dom": "^16.4.0"
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
+    "react-is": "^16.6.0"
   }
 }

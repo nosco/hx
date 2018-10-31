@@ -1,171 +1,74 @@
 (ns hx.workshop.core
   (:require [devcards.core :as dc :include-macros true]
-            [hx.react :as hx :include-macros true]
-            [hx.react.dom :as d :include-macros true]
-            [cljs.js]))
+            ["react" :as react]
+            [hx.hiccup]
+            [hx.react :as hx :include-macros true]))
 
-(dc/defcard
-  macroexpand
-  (macroexpand '(hx/c [:div {:style {:color "green"}
-                             :id "asdf"} "hello"])))
+(defn example [props]
+  (react/createElement "div" nil (prn-str props)))
 
-(dc/defcard
-  simple
-  (hx/c [:div {:style {:color "green"}
-               :id "asdf"} "hello"]))
+(dc/defcard hiccup
+  (hx.hiccup/parse [:div {:style {:background-color "red"}}
+                    [:h1 "foo"]
+                    [:button {:on-click #(js/alert "hi")} "click"]]))
 
-(dc/defcard
-  with-children
-  (hx/c [:ul {:style {:background "lightgrey"}}
-         [:li {:style {:font-weight "bold"}} "one"]
-         [:li "two"]
-         [:li "three"]]))
-
-(dc/defcard
-  conditional
-  (hx/c [:<>
-         (when true
-           (hx/c [:div "true"]))
-         (when false
-           (hx/c [:div "false"]))]))
-
-(dc/defcard
-  seq
-  (hx/c [:ul
-         (list (hx/c [:li {:key 1} 1])
-               (hx/c [:li {:key 2} 2]))]))
-
-(dc/defcard
-  map
-  (let [numbers [1 2 3 4 5]]
-    (hx/c [:ul {:style {:list-style-type "square"}}
-           (map #(hx/c [:li {:key %} %])
-                numbers)])))
-
-(dc/defcard css-class
-  (hx/c [:<>
-         [:style {:dangerouslySetInnerHTML #js {:__html ".foo { color: lightblue }"}}]
-         [:div {:className "foo"} "asdf jkl"]
-         [:div {:class "foo"} "1234 bnm,"]]))
+(hx/defnc defnc-example [{:keys [foo children]}]
+  [:<>
+   [:div "mm"]
+   [:div foo]
+   (let [x 1
+         y 2]
+     [:div (+ x y)])
+   (for [n [1 2 3]]
+     [:div {:key n} (+ n 1)])
+   children])
 
 (dc/defcard defnc
-  (macroexpand '(hx/defnc greeting [{:keys [name] :as props}]
-                  (println props)
-                  (hx/c [:span {:style {:font-size "24px"}}
-                     "Hello, " name]))))
+  (hx/$ defnc-example {:foo "bar"} "child"))
 
-(hx/defnc greeting [{:keys [name] :as props}]
-  (hx/c [:span {:style {:font-size "24px"}}
-         "Hello, " name]))
+(hx/defnc rc [{:keys [children]}]
+  [:div
+   (children 3)])
 
-(dc/defcard
-  function-element
-  (hx/c [greeting {:name "Will"}]))
+(dc/defcard render-fn-child
+  (hx/$ rc
+        nil
+        (fn [n]
+          [:<>
+           [:div (hx/$ "span" "hi")]
+           [:span {:style {:color "red"}} (+ n 1)]])))
 
-(hx/defnc with-children [{:keys [children]}]
-  (hx/c [:div
-         (identity children)]))
+(hx/defnc shallow* [{:keys [name]}]
+  [:div "Hello " [:span {:style {:color "blue"}} name] "!"])
 
-(dc/defcard with-children
-  (hx/c [with-children
-         [:span "hi"]
-         [:div "watup"]]))
+(dc/defcard shallow
+  (hx/shallow-render (shallow* {:name "Will"})))
 
-(dc/defcard defcomponent
-  (macroexpand '(hx/defcomponent some-component
-                  (constructor [this]
-                               this)
-                  (render [this]
-                          (hx/c [:div "sup component"])))))
-
-(hx/defcomponent
-  some-component
+(hx/defcomponent class-comp
   (constructor [this]
                this)
   (render [this]
-          (hx/c [:div "sup component"])))
+          [:h1 "foo"]))
 
-(dc/defcard class-element
-  (hx/c [some-component]))
+(dc/defcard class-component
+  (hx/$ class-comp nil nil))
 
-(hx/defcomponent stateful
-  (constructor [this]
-               (set! (.. this -state) #js {:name "Will"})
-               this)
-  (update-name! [this e]
-                (. this setState #js {:name (.. e -target -value)}))
-  (render [this]
-          (let [state (. this -state)]
-            (hx/c [:div
-               [:div (. state -name)]
-               [:input {:value (. state -name)
-                        :on-change (. this -update-name!)}]]))))
+(def some-context (react/createContext))
 
-(dc/defcard stateful-element
-  (hx/c [stateful]))
+(hx/defnc context-consumer [_]
+  [:div
+   [(.-Consumer some-context)
+    (fn [v]
+      [:div v])]])
 
-(hx/defcomponent static-property
-  (constructor [this]
-               this)
+(hx/defnc context-provider [_]
+  [(.-Provider some-context)
+   {:value "context value"}
+   [:div
+    [context-consumer]]])
 
-  ^:static
-  (some-prop "1234")
-
-  (render [this]
-          (hx/c [:div (. static-property -some-prop)])))
-
-(dc/defcard static-property
-  (hx/c [static-property]))
-
-(hx/defcomponent fn-as-child
-  (constructor [this]
-               (set! (. this -state) #js {:name "Will"})
-               this)
-  (update-name! [this e]
-                (. this setState #js {:name (.. e -target -value)}))
-  (render [this]
-          (let [state (. this -state)]
-            (hx/c [:div
-                   [:div ((.. this -props -children) (. state -name))]
-                   [:input {:value (. state -name)
-                            :on-change (. this -update-name!)}]]))))
-
-(dc/defcard fn-as-child
-  (hx/c [fn-as-child
-         (fn [name]
-           (hx/c [:span {:style {:color "red"}} name]))]))
-
-(hx/defcomponent render-prop
-  (constructor [this]
-               (set! (. this -state) #js {:name "Will"})
-               this)
-  (update-name! [this e]
-                (. this setState #js {:name (.. e -target -value)}))
-  (render [this]
-          (let [state (. this -state)]
-            (hx/c [:div
-                   [:div ((.. this -props -render) (. state -name))]
-                   [:input {:value (. state -name)
-                            :on-change (. this -update-name!)}]]))))
-
-(dc/defcard render-prop
-  (hx/c [render-prop
-         {:render (fn [name]
-                    (hx/c [:span {:style {:color "red"}} name]))}]))
-
-(def js-interop-test
-  (fn
-    [props]
-    (js/JSON.stringify props)))
-
-(dc/defcard js-interop-nested-props
-  (hx/c [js-interop-test {:nested {:thing {:foo {:bar "baz"}}}}]))
-
-(hx/defc s-exp* [_]
-  (d/div {:style {:color "red"}} "bar"))
-
-(dc/defcard s-exp
-  (s-exp*))
+(dc/defcard context
+  (hx/$ context-provider nil nil))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
