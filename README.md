@@ -312,9 +312,9 @@ Example:
     
 ;; in test
 (deftest welcome-allowed
-  (is (= (hx/shallow-render (hiccup/parse [Welcome {:age 18}]))
+  (is (= (hx/shallow-render (Welcome {:keys age}))
          [:div "You're allowed!"]))
-  (is (= (hx/shallow-render (hiccup/parse [Welcome {:age 17}]))
+  (is (= (hx/shallow-render (Welcome {:age 17}))
          [:div [:a {:href "http://disney.com"}] "Please go elsewhere"])))
 ```
 
