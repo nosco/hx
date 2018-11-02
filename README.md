@@ -16,8 +16,7 @@ A simple, easy to use library for React development in ClojureScript.
    [:span {:style {:font-weight "bold"}} name] "!"])
 
 (react-dom/render
-  (hx/$
-   MyComponent {:name "React in CLJS"} nil)
+  (hx/f [MyComponent {:name "React in CLJS"}])
   (. js/document getElementById "app"))
 ```
 
@@ -161,6 +160,8 @@ have state management built in.
 `hx.hiccup` makes several default decisions about how hiccup and components should be
 written.
 
+For a number of examples, check out the [workshop in the examples folder](examples/workshop/). 
+
 ### Writing hiccup
 
 First, all hiccup forms are assumed to follow the same pattern:
@@ -254,11 +255,20 @@ If all you want is the hiccup interpreter, you may simple import `hx.hiccup`:
 `hx.react` contains a number of helpful functions and macros for doing React
 development in ClojureScript.
 
+#### hx.react/f ([form])
+
+An alias of `hx.hiccup/parse`, so that if you need to do some ad-hoc 
+transformation of hiccup one doesn't have to import `hx.hiccup` as well as
+`hx.react`.
+
 #### hx.react/defnc: ([name props-bindings & body])
 
 This macro is just like `defn`, but shallowly converts the props object passed
-in to the component to a Clojure map. Takes a name, props bindings and a 
-function body.
+in to the component to a Clojure map and intelligently interprets the return 
+value of the body as hiccup. If the body doesn't return a vector, it simply
+returns that value.
+
+Takes a name, props bindings and a function body.
 
 Example usage:
 ```clojure
@@ -306,7 +316,8 @@ Example usage:
 
 #### hx.react/$: ([el p & c])
 
-An alias for `react/createElement`.
+An alias for `react/createElement`. It will marshall props from a map to JS and
+interpret any hiccup children.
 
 #### hx.react/factory: ([component])
 

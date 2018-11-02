@@ -49,7 +49,7 @@
           [:h1 "foo"]))
 
 (dc/defcard class-component
-  (hx/$ class-comp nil nil))
+  (hx/$ class-comp))
 
 (def some-context (react/createContext))
 
