@@ -5,18 +5,17 @@
             ["react-dnd" :as dnd]
             ["react-dnd-html5-backend" :default html5-backend]))
 
-(def card-source
+;; Used by react-dnd to handle drag events and map to props for our component
+(def box-spec
   #js {:beginDrag (fn [props]
                     #js {:left (gobj/get props "left")
                          :top (gobj/get props "top")
                          :text (gobj/get props "text")})})
 
-(defn collect [connect monitor]
-  #js {:connectDragSource (. connect dragSource)
-       :isDragging (. monitor isDragging)})
-
 (hx/defnc BoxRender [{:keys [connect-drag-source top left text] :as props}]
   (connect-drag-source
+   ;; we have to call hx/f directly here since `connect-drag-source` expects
+   ;; a react element as it's argument, and returns a react element
    (hx/f [:div {:style {:top top
                         :left left
                         :position "absolute"
@@ -24,15 +23,23 @@
           text])))
 
 (def DraggableBox
+  ;; use react-dnd's HOC here to make it draggable
   (-> BoxRender
-      ((dnd/DragSource "box" card-source collect))))
+      ((dnd/DragSource "box"
+                       box-spec
+                       ;; this maps the react-dnd context to props for our
+                       ;; component
+                       (fn [connect]
+                         #js {:connectDragSource (. connect dragSource)})))))
 
 (hx/defcomponent Container
   (constructor [this]
+               ;; set some initial state
                (set! (. this -state) #js {:box {:top 0 :left 0}})
                this)
 
   (moveBox [this left top]
+           ;; update the state on move
            (. this setState #js {:box {:left left :top top}}))
 
   (render [this]
@@ -46,6 +53,8 @@
                                    :left left
                                    :text "Drag me!"}]])))))
 
+;; used by react-dnd to handle drop events and map to state changes
+;; in our component
 (def target-spec
   #js {:drop (fn [props monitor component]
                (if (nil? component) nil
@@ -55,13 +64,16 @@
                          top (. js/Math round (+ (. item -top) (. delta -y)))]
                      (. component moveBox left top))))})
 
-(def DropContainer (-> Container
-                       ((dnd/DropTarget
-                         "box"
-                         target-spec
-                         (fn [connect monitor]
-                           #js {:connectDropTarget (. connect dropTarget)})))
-                       ((dnd/DragDropContext html5-backend))))
+(def DropContainer
+  (-> Container
+      ;; use react-dnd's HOCs to create a drop target
+      ;; and create an HTML5 context
+      ((dnd/DropTarget
+        "box"
+        target-spec
+        (fn [connect monitor]
+          #js {:connectDropTarget (. connect dropTarget)})))
+      ((dnd/DragDropContext html5-backend))))
 
 (dc/defcard drag-and-drop
   (hx/f [DropContainer]))
