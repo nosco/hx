@@ -193,26 +193,34 @@ Here are a few examples. `hx.react/defnc` is used for concision, the only thing
 it does is coerce props to a map and wrap the body in a call to `hiccup/parse`:
 
 ```clojure
-;; (1)
+;;  has children, but no props. Strings are considered valid children.
 (hx/defnc greet [_]
   [:div "Hello"])
 
-;; (2)
+;; component that is passed in a map of props
 (hx/defnc medium-greet [_]
   [:div {:style {:font-size "28px"}} "Medium hello"])
 
-;; (3)
+;; binding props and children to symbols and passing it into the element.
 (hx/defnc big-greet [_]
     (let [props {:style {:font-size "56px"}}
           children "Big hello"]
       [:div props children]))
 
-;; (4)
+;; passing in multiple children, and calling components that we defined ourselves
+;; (instead of native elements like `:div`).
 (hx/defnc all-greets []
   [:div
    [greet]
    [medium-greet]
    [big-greet]])
+
+;; sequences are wrapped in react Fragments for ease of use
+(hx/defnc sequence []
+  [:div
+   (for [color ["red" "green" "blue"]]
+     ;; add a key prop to help React
+     [:strong {:style {:color color} :key color} color])])
       
 ;; using children as a function
 (hx/defnc fn-as-child [{:keys [children]}]
@@ -224,18 +232,7 @@ it does is coerce props to a map and wrap the body in a call to `hiccup/parse`:
                 [:h1 value])])
 ```
 
-*(1)* is an example of writing a component that has children, but no props. Strings
-are considered valid children.
-
-*(2)* is an example of writing a component that is passed in a map of props.
-
-*(3)* is an example of binding props and children to symbols and passing it into the
-element.
-
-*(4)* is an example of passing in multiple children, and calling components that we
-defined ourselves (instead of native elements like `:div`).
-
-`hx.hiccup` shallowly converts props it to a JS object at runtime. Your kebab-case
+`hx.hiccup` shallowly converts props to a JS object at runtime. Your kebab-case
 props will be converted to camelCase before passed into a native element. 
 `:style` is special-cased to recursively convert to a JS obj to help with using
 native elements as well.
