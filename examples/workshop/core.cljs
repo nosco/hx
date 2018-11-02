@@ -1,7 +1,7 @@
 (ns workshop.core
   (:require [devcards.core :as dc :include-macros true]
             ["react" :as react]
-            [hx.react :as hx :include-macros true]))
+            [hx.react :as hx]))
 
 (defn example [props]
   (react/createElement "div" nil (prn-str props)))

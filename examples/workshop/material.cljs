@@ -1,6 +1,6 @@
 (ns workshop.material
   (:require [devcards.core :as dc :include-macros true]
-            [hx.react :as hx :include-macros true]
+            [hx.react :as hx]
             ["@material-ui/core/Button" :default Button]
             ["@material-ui/core/CircularProgress" :default CircularProgress]))
 

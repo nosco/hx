@@ -8,7 +8,7 @@ A simple, easy to use library for React development in ClojureScript.
 
 ```clojure
 (ns my-app.core
-  (:require [hx.react :as hx :include-macros true]
+  (:require [hx.react :as hx]
             ["react-dom" :as react-dom]))
 
 (hx/defnc MyComponent [{:keys [name]}]

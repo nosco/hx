@@ -1,6 +1,6 @@
 (ns workshop.react-dnd
   (:require [devcards.core :as dc :include-macros true]
-            [hx.react :as hx :include-macros true]
+            [hx.react :as hx]
             [goog.object :as gobj]
             ["react-dnd" :as dnd]
             ["react-dnd-html5-backend" :default html5-backend]))

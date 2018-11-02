@@ -2,7 +2,8 @@
   (:require #?(:cljs [goog.object :as gobj])
             #?(:cljs ["react" :as react])
             [hx.hiccup :as hiccup]
-            [hx.utils :as utils]))
+            [hx.utils :as utils])
+  #?(:cljs (:require-macros [hx.react])))
 
 #?(:cljs (def f hiccup/parse))
 
