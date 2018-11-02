@@ -29,15 +29,14 @@
 
 (hx/defcomponent Container
   (constructor [this]
-               (set! (. this -state) #js {:top 0 :left 0})
+               (set! (. this -state) #js {:box {:top 0 :left 0}})
                this)
 
   (moveBox [this left top]
-           (. this setState #js {:left left :top top}))
+           (. this setState #js {:box {:left left :top top}}))
 
   (render [this]
-          (let [top (.. this -state -top)
-                left (.. this -state -left)
+          (let [{:keys [top left]} (.. this -state -box)
                 connect-drop-target (.. this -props -connectDropTarget)]
             (connect-drop-target
              (hx/f [:div {:style {:height 300 :width 300
