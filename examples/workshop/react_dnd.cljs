@@ -5,6 +5,11 @@
             ["react-dnd" :as dnd]
             ["react-dnd-html5-backend" :default html5-backend]))
 
+;;
+;; Based on the "naive" react-dnd example
+;; https://github.com/react-dnd/react-dnd/tree/master/packages/documentation/examples/02%20Drag%20Around/Naive
+;;
+
 ;; Used by react-dnd to handle drag events and map to props for our component
 (def box-spec
   #js {:beginDrag (fn [props]
