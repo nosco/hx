@@ -17,7 +17,8 @@
            [:div (or variant "default")
             (for [color [nil "primary" "secondary"]]
               [Button {:variant variant :color color
-                       :style {:margin "5px"}} (or color "default")])])]))
+                       :style {:margin "5px"}}
+               (or color "default")])])]))
 
 (dc/defcard circular-progress
   (hx/f [:<>
