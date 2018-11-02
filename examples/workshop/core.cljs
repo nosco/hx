@@ -3,7 +3,7 @@
             ["react" :as react]
             [hx.react :as hx]))
 
-(defn example [props]
+(defn Example [props]
   (react/createElement "div" nil (prn-str props)))
 
 (dc/defcard hiccup
@@ -11,7 +11,7 @@
          [:h1 "foo"]
          [:button {:on-click #(js/alert "hi")} "click"]]))
 
-(hx/defnc defnc-example [{:keys [foo children]}]
+(hx/defnc DefncExample [{:keys [foo children]}]
   [:<>
    [:div "mm"]
    [:div foo]
@@ -23,62 +23,62 @@
    children])
 
 (dc/defcard defnc
-  (hx/$ defnc-example {:foo "bar"} "child"))
+  (hx/$ DefncExample {:foo "bar"} "child"))
 
-(hx/defnc rc [{:keys [children]}]
+(hx/defnc Rc [{:keys [children]}]
   [:div
    (children 3)])
 
 (dc/defcard render-fn-child
-  (hx/$ rc
+  (hx/$ Rc
         (fn [n]
           [:<>
            [:div (hx/$ "span" "hi")]
            [:span {:style {:color "red"}} (+ n 1)]])))
 
-(hx/defnc shallow* [{:keys [name]}]
+(hx/defnc Shallow* [{:keys [name]}]
   [:div "Hello " [:span {:style {:color "blue"}} name] "!"])
 
 (dc/defcard shallow
-  (hx/shallow-render (shallow* {:name "Will"} nil)))
+  (hx/shallow-render (Shallow* {:name "Will"} nil)))
 
-(hx/defcomponent class-comp
+(hx/defcomponent ClassComp
   (constructor [this]
                this)
   (render [this]
           [:h1 "foo"]))
 
 (dc/defcard class-component
-  (hx/$ class-comp))
+  (hx/$ ClassComp))
 
 (def some-context (react/createContext))
 
-(hx/defnc context-consumer [_]
+(hx/defnc ContextConsumer [_]
   [:div
    [(.-Consumer some-context)
     (fn [v]
       [:div v])]])
 
-(hx/defnc context-provider [_]
+(hx/defnc ContextProvider [_]
   [(.-Provider some-context)
    {:value "context value"}
    [:div
-    [context-consumer]]])
+    [ContextConsumer]]])
 
 (dc/defcard context
-  (hx/$ context-provider))
+  (hx/$ ContextProvider))
 
-(hx/defnc ref-consumer* [{:keys [on-click] :as props} ref]
+(hx/defnc RefConsumer* [{:keys [on-click] :as props} ref]
   [:button {:ref ref :on-click on-click} "Click me"])
 
-(def ref-consumer (react/forwardRef ref-consumer*))
+(def RefConsumer (react/forwardRef RefConsumer*))
 
-(hx/defnc ref-provider [_]
+(hx/defnc RefProvider [_]
   (def ref (react/createRef))
-  [ref-consumer {:ref ref :on-click #(println ref)}])
+  [RefConsumer {:ref ref :on-click #(println ref)}])
 
 (dc/defcard ref
-  (hx/$ ref-provider))
+  (hx/$ RefProvider))
 
 (hx/defnc ComponentOne [_]
   [:<>
