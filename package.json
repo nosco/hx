@@ -23,6 +23,8 @@
   "homepage": "https://github.com/Lokeh/hx#readme",
   "devDependencies": {
     "@material-ui/core": "^3.3.2",
+    "react-dnd": "^5.0.0",
+    "react-dnd-html5-backend": "^5.0.1",
     "shadow-cljs": "^2.6.21",
     "showdown": "^1.8.6"
   },
