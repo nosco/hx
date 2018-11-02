@@ -1,5 +1,7 @@
 # hx
 
+**WORK IN PROGRESS!**
+
 [![Clojars Project](https://img.shields.io/clojars/v/lilactown/hx.svg)](https://clojars.org/lilactown/hx)
 
 A simple, easy to use library for React development in ClojureScript.
