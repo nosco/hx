@@ -102,21 +102,21 @@ In practice, this is fairly easy to handle in ClojureScript. A basic functional
 component can be written as just a normal function that returns a React element:
 
 ```clojure
-(defn my-component [props]
+(defn MyComponent [props]
   (hiccup/parse [:div "Hello"]))
   
-(react-dom/render (hiccup/parse [my-component]) (. js/document getElementById "app"))
+(react-dom/render (hiccup/parse [MyComponent]) (. js/document getElementById "app"))
 ```
 
 `props` will always be a *JS object*, so if we want to pull something out of it, we'll
 need to use JS interop:
 
 ```clojure
-(defn my-component [props]
+(defn MyComponent [props]
   (let [name (goog.object/get props "name")]
     (hiccup/parse [:div "Hello, " name "!"]))
     
-(react-dom/render (hiccup/parse [my-component {:name "Uma"}])
+(react-dom/render (hiccup/parse [MyComponent {:name "Uma"}])
                   (. js/document getElementById "app"))
 
 ```
@@ -126,7 +126,7 @@ wraps our function body in `hiccup/parse`, so we can get rid of some of the
 boilerplate:
 
 ```clojure
-(hx/defnc my-component [{:keys [name]}]
+(hx/defnc MyComponent [{:keys [name]}]
   [:div "Hello, " name "!"])
 ```
 
@@ -134,7 +134,7 @@ Children are also passed in just like any other prop, so if we want to obtain ch
 simply peel it off of the props object:
 
 ```clojure
-(defn has-children [props]
+(defn HasChildren [props]
   (let [children (goog.object/get props "children")]
     (hiccup/parse
       [:div 
@@ -142,7 +142,7 @@ simply peel it off of the props object:
        children]))
 
 ;; or
-(hx/defnc has-children [{:keys [children]}]
+(hx/defnc HasChildren [{:keys [children]}]
   [:div
    {:style {:border "1px solid #000"}}
    children])
@@ -194,41 +194,41 @@ it does is coerce props to a map and wrap the body in a call to `hiccup/parse`:
 
 ```clojure
 ;;  has children, but no props. Strings are considered valid children.
-(hx/defnc greet [_]
+(hx/defnc Greet [_]
   [:div "Hello"])
 
 ;; component that is passed in a map of props
-(hx/defnc medium-greet [_]
+(hx/defnc MediumGreet [_]
   [:div {:style {:font-size "28px"}} "Medium hello"])
 
 ;; binding props and children to symbols and passing it into the element.
-(hx/defnc big-greet [_]
+(hx/defnc BigGreet [_]
     (let [props {:style {:font-size "56px"}}
           children "Big hello"]
       [:div props children]))
 
 ;; passing in multiple children, and calling components that we defined ourselves
 ;; (instead of native elements like `:div`).
-(hx/defnc all-greets []
+(hx/defnc AllGreets []
   [:div
-   [greet]
-   [medium-greet]
-   [big-greet]])
+   [Greet]
+   [MediumGreet]
+   [BigGreet]])
 
 ;; sequences are wrapped in react Fragments for ease of use
-(hx/defnc sequence []
+(hx/defnc Sequence []
   [:div
    (for [color ["red" "green" "blue"]]
      ;; add a key prop to help React
      [:strong {:style {:color color} :key color} color])])
       
 ;; using children as a function
-(hx/defnc fn-as-child [{:keys [children]}]
+(hx/defnc FnAsChild [{:keys [children]}]
   [:div (children "foo")])
 
 ;; passing in children as a function
-(hx/defnc use-fn-as-child [_]
-  [fn-as-child (fn [value]
+(hx/defnc UseFnAsChild [_]
+  [FnAsChild (fn [value]
                 [:h1 value])])
 ```
 
@@ -272,12 +272,12 @@ Example usage:
 (require '[hx.react :as hx])
 (require '[hx.hiccup])
 
-(hx/defnc greeting [{:keys [name] :as props}]
+(hx/defnc Greeting [{:keys [name] :as props}]
   [:span {:style {:font-size "24px"}}
    "Hello, " name "!"])
 
 (react/render
-  (hx.hiccup/parse [greeting {:name "Tara"}])
+  (hx.hiccup/parse [Greeting {:name "Tara"}])
     
   (. js/document getElementById "app"))
 ```
@@ -292,7 +292,7 @@ similar to `defrecord` / `deftype`. Methods are automatically bound to `this`.
 Example usage:
 
 ```clojure
-(hx/defcomponent my-component
+(hx/defcomponent MyComponent
   (constructor [this]
     (set! (. this -state) #js {:name "Maria"})
     this)
