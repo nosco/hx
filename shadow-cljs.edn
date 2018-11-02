@@ -1,6 +1,6 @@
 ;; shadow-cljs configuration
 {:source-paths
- ["src" "test"]
+ ["src" "test" "examples"]
 
  :nrepl {:port 8777}
 
@@ -12,7 +12,7 @@
  {:workshop {:target :browser
              :output-dir "public/workshop/js"
              :asset-path "/js"
-             :modules {:main {:entries [hx.workshop.core]}}
+             :modules {:main {:entries [workshop]}}
              :compiler-options {:devcards true}
              :devtools {:http-root    "public/workshop"
                         :http-port    8700

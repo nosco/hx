@@ -1,4 +1,4 @@
-(ns hx.workshop.core
+(ns workshop.core
   (:require [devcards.core :as dc :include-macros true]
             ["react" :as react]
             [hx.hiccup :as hiccup]
@@ -92,10 +92,3 @@
    [react/StrictMode
     [:div "hello"]
     [ComponentOne]]))
-
-(defn ^:dev/after-load start! []
-  (dc/start-devcard-ui!))
-
-(defn init! [] (start!))
-
-(init!)
