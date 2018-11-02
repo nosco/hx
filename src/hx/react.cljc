@@ -9,6 +9,8 @@
              (hiccup/parse body)
              body)))
 
+#?(:cljs (def f hiccup/parse))
+
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
   [display-name constructor & body]
