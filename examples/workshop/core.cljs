@@ -1,16 +1,15 @@
 (ns workshop.core
   (:require [devcards.core :as dc :include-macros true]
             ["react" :as react]
-            [hx.hiccup :as hiccup]
             [hx.react :as hx :include-macros true]))
 
 (defn example [props]
   (react/createElement "div" nil (prn-str props)))
 
 (dc/defcard hiccup
-  (hx.hiccup/parse [:div {:style {:background-color "red"}}
-                    [:h1 "foo"]
-                    [:button {:on-click #(js/alert "hi")} "click"]]))
+  (hx/f [:div {:style {:background-color "red"}}
+         [:h1 "foo"]
+         [:button {:on-click #(js/alert "hi")} "click"]]))
 
 (hx/defnc defnc-example [{:keys [foo children]}]
   [:<>
@@ -32,7 +31,6 @@
 
 (dc/defcard render-fn-child
   (hx/$ rc
-        nil
         (fn [n]
           [:<>
            [:div (hx/$ "span" "hi")]
@@ -68,7 +66,7 @@
     [context-consumer]]])
 
 (dc/defcard context
-  (hx/$ context-provider nil nil))
+  (hx/$ context-provider))
 
 (hx/defnc ref-consumer* [{:keys [on-click] :as props} ref]
   [:button {:ref ref :on-click on-click} "Click me"])
@@ -80,7 +78,7 @@
   [ref-consumer {:ref ref :on-click #(println ref)}])
 
 (dc/defcard ref
-  (hx/$ ref-provider nil nil))
+  (hx/$ ref-provider))
 
 (hx/defnc ComponentOne [_]
   [:<>
@@ -88,7 +86,7 @@
    [:div "bye"]])
 
 (dc/defcard strict-mode
-  (hiccup/parse
+  (hx/f
    [react/StrictMode
     [:div "hello"]
     [ComponentOne]]))

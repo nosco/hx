@@ -4,12 +4,12 @@
             [hx.hiccup :as hiccup]
             [hx.utils :as utils]))
 
+#?(:cljs (def f hiccup/parse))
+
 #?(:cljs (defn parse-body [body]
            (if (vector? body)
-             (hiccup/parse body)
+             (f body)
              body)))
-
-#?(:cljs (def f hiccup/parse))
 
 (defmacro defcomponent
   {:style/indent [1 :form [1]]}
@@ -63,17 +63,19 @@
            (let [props (utils/shallow-js->clj props :keywordize-keys true)]
              [props maybe-ref])))
 
-#?(:clj (defn $ [el p & c]
+#?(:clj (defn $ [el & args]
           nil)
-   :cljs (defn $ [el p & c]
-           (if (or (string? p) (number? p) (react/isValidElement p))
-             (apply react/createElement el nil p c)
+   :cljs (defn $ [el & args] (hiccup/make-element el args))
+   ;; (defn $ [el p & c]
+         ;;   (if (or (string? p) (number? p) (react/isValidElement p))
+         ;;     (apply react/createElement el nil p c)
 
-             ;; if el is a keyword, or is not marked as an hx component,
-             ;; we recursively convert styles
-             (let [js-interop? (string? el)
-                   props (utils/clj->props p)]
-               (apply react/createElement el props c)))))
+         ;;     ;; if el is a keyword, or is not marked as an hx component,
+         ;;     ;; we recursively convert styles
+         ;;     (let [js-interop? (string? el)
+         ;;           props (utils/clj->props p)]
+         ;;       (apply react/createElement el props c))))
+   )
 
 #?(:cljs (defn assign-methods [class method-map]
            (doseq [[method-name method-fn] method-map]
