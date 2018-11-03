@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "shadow-cljs watch workshop",
+    "release": "shadow-cljs release workshop",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
