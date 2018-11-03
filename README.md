@@ -1,7 +1,5 @@
 # hx
 
-**WORK IN PROGRESS!**
-
 [![Clojars Project](https://img.shields.io/clojars/v/lilactown/hx.svg)](https://clojars.org/lilactown/hx)
 
 A simple, easy to use library for React development in ClojureScript.
@@ -19,6 +17,37 @@ A simple, easy to use library for React development in ClojureScript.
   (hx/f [MyComponent {:name "React in CLJS"}])
   (. js/document getElementById "app"))
 ```
+
+## Project status
+
+- [x] Hiccup interpreter
+
+The hiccup interpreter is done other than bugs AFAICT. Please open any issues 
+you find with using components in hiccup forms.
+
+- [-] `def<thing>` helper macros
+
+The helper macros are pretty much done, but are subject to change as they are
+used in anger and either limitations or potential improvements are found.
+
+- [ ] Easier use of React context / ref forwarding / other misc. enhancements
+
+React context, ref forwarding, suspense, etc. work perfectly in `hx`. However,
+they could be made more idiomatic to use in CLJS with a few tweaks.
+
+- [ ] React Hooks enhancements
+
+[React Hooks](https://reactjs.org/docs/hooks-intro.html) is a new proposal for
+a way of representing state and other side effects as function calls and data,
+removing the need for functional components.
+
+These will work out of the box with `hx`, but there are some improvements to be
+made (IMO) to make them even more ergonomic for developers.
+
+- [ ] CLJ support
+
+Support for interpretation of hiccup and definition of components in JVM 
+Clojure.
 
 ## Dependencies
 
