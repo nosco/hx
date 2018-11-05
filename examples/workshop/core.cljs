@@ -96,13 +96,13 @@
    :post [(not false)]}
   [:div "prepost"])
 
-(hx/defnc PreFail [_]
-  {:pre [(= "pre" nil)]}
-  [:div "prepost"])
+(hx/defnc PreCond [{:keys [name]}]
+  {:pre [(= name "Suzy")]}
+  [:div "Pre pass: " name])
 
-(hx/defnc PostFail [_]
-  {:pre [(= "post" nil)]}
-  [:div "prepost"])
+(hx/defnc PostCond [{:keys [age]}]
+  {:post [(= % [:div "Age: " 19])]}
+  [:div "Age: " age])
 
 (hx/defcomponent ErrorBoundary
   (constructor
@@ -125,5 +125,11 @@
 (dc/defcard pre-post
   (hx/f [:<>
          [PrePostPass]
-         [ErrorBoundary [PreFail]]
-         [ErrorBoundary [PostFail]]]))
+         [ErrorBoundary
+          [PreCond {:name "Suzy"}]]
+         [ErrorBoundary
+          [PreCond {:name "Bill"}]]
+         [ErrorBoundary
+          [PostCond {:age 19}]]
+         [ErrorBoundary
+          [PostCond {:age 42}]]]))

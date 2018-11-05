@@ -41,12 +41,19 @@
          class#))))
 
 (defmacro defnc [name props-bindings & body]
-  (let [opts-map? (map? (first body))]
+  (let [opts-map? (map? (first body))
+        ret (gensym "return_value")]
     `(defn ~name [props# maybe-ref#]
-       ~(when opts-map? (first body))
        (let [~props-bindings (hx.react/props->clj props# maybe-ref#)]
+         ~@(when (and opts-map? (:pre (first body)))
+             (map (fn [x] `(assert ~x)) (:pre (first body))))
          (hx.react/parse-body
-          (do ~@(if opts-map? (rest body) body)))))))
+          ~(if (and opts-map? (:post (first body)))
+             `(let [~ret (do ~@(rest body))]
+                ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
+                       (:post (first body)))
+                ~ret)
+             `(do ~@body)))))))
 
 (defmacro shallow-render [& body]
   `(with-redefs [hx.react/parse-body identity]
@@ -70,14 +77,14 @@
           nil)
    :cljs (defn $ [el & args] (hiccup/make-element el args))
    ;; (defn $ [el p & c]
-         ;;   (if (or (string? p) (number? p) (react/isValidElement p))
-         ;;     (apply react/createElement el nil p c)
+   ;;   (if (or (string? p) (number? p) (react/isValidElement p))
+   ;;     (apply react/createElement el nil p c)
 
-         ;;     ;; if el is a keyword, or is not marked as an hx component,
-         ;;     ;; we recursively convert styles
-         ;;     (let [js-interop? (string? el)
-         ;;           props (utils/clj->props p)]
-         ;;       (apply react/createElement el props c))))
+   ;;     ;; if el is a keyword, or is not marked as an hx component,
+   ;;     ;; we recursively convert styles
+   ;;     (let [js-interop? (string? el)
+   ;;           props (utils/clj->props p)]
+   ;;       (apply react/createElement el props c))))
    )
 
 #?(:cljs (defn assign-methods [class method-map]
