@@ -2,7 +2,7 @@
   (:require ["react" :as react]
             [goog.object :as gobj]))
 
-(deftype State [react-ref]
+(deftype Atomified [react-ref]
   IDeref
   (-deref [_]
     (first react-ref))
@@ -26,7 +26,7 @@
   "Takes an initial value. Returns an atom that will re-render component on
   change."
   [initial]
-  (State. (react/useState initial)))
+  (Atomified. (react/useState initial)))
 
 (defn <-ref
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
@@ -34,7 +34,7 @@
   [initial]
   (let [react-ref (react/useRef)
         update-ref (fn [v] (gobj/set react-ref "current" v))]
-  (State. [react-ref update-ref])))
+  (Atomified. [react-ref update-ref])))
 
 (defn <-watch
   "Takes an atom. Returns the currently derefed value of the atom, and re-renders
