@@ -41,10 +41,12 @@
          class#))))
 
 (defmacro defnc [name props-bindings & body]
-  `(defn ~name [props# maybe-ref#]
-     (let [~props-bindings (hx.react/props->clj props# maybe-ref#)]
-       (hx.react/parse-body
-        (do ~@body)))))
+  (let [opts-map? (map? (first body))]
+    `(defn ~name [props# maybe-ref#]
+       ~(when opts-map? (first body))
+       (let [~props-bindings (hx.react/props->clj props# maybe-ref#)]
+         (hx.react/parse-body
+          (do ~@(if opts-map? (rest body) body)))))))
 
 (defmacro shallow-render [& body]
   `(with-redefs [hx.react/parse-body identity]
@@ -99,6 +101,9 @@
                (gobj/set ctor k v))
              (goog/inherits ctor super-class)
              ctor)))
+
+#?(:cljs (defn create-component [init-fn static-properties method-names]
+           (create-class react/Component init-fn static-properties method-names)))
 
 #?(:cljs (defn create-pure-component [init-fn static-properties method-names]
            (create-class react/PureComponent init-fn static-properties method-names)))
