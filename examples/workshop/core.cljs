@@ -94,7 +94,7 @@
 (hx/defnc PrePostPass [_]
   {:pre [(true? true)]
    :post [(not false)]}
-  [:div "prepost"])
+  [:div "Pre-post always passes"])
 
 (hx/defnc PreCond [{:keys [name]}]
   {:pre [(= name "Suzy")]}
@@ -107,8 +107,9 @@
 (hx/defcomponent ErrorBoundary
   (constructor
    [this]
-   (set! (. this -state) #js {:hasError false
-                              :message ""})
+   (set! (. this -state)
+         #js {:hasError false
+              :message ""})
    this)
 
   ^:static (getDerivedStateFromError
