@@ -25,7 +25,7 @@ A simple, easy to use library for React development in ClojureScript.
 The hiccup interpreter is done other than bugs AFAICT. Please open any issues 
 you find with using components in hiccup forms.
 
-- [-] `def<thing>` helper macros
+- [x] `def<thing>` helper macros
 
 The helper macros are pretty much done, but are subject to change as they are
 used in anger and either limitations or potential improvements are found.
