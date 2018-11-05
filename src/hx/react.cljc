@@ -43,17 +43,26 @@
 (defmacro defnc [name props-bindings & body]
   (let [opts-map? (map? (first body))
         ret (gensym "return_value")]
+    ;; maybe-ref for react/forwardRef support
     `(defn ~name [props# maybe-ref#]
        (let [~props-bindings (hx.react/props->clj props# maybe-ref#)]
+         ;; pre-conditions
          ~@(when (and opts-map? (:pre (first body)))
              (map (fn [x] `(assert ~x)) (:pre (first body))))
          (hx.react/parse-body
-          ~(if (and opts-map? (:post (first body)))
-             `(let [~ret (do ~@(rest body))]
-                ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
-                       (:post (first body)))
-                ~ret)
-             `(do ~@body)))))))
+          ;; hooks support
+          (let ~(if (and opts-map? (:hooks (first body)))
+                  (:hooks (first body))
+                  [])
+            ~(if (and opts-map? (:post (first body)))
+               ;; save hiccup value of body
+               `(let [~ret (do ~@(rest body))]
+                  ;; apply post-conditions
+                  ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
+                         (:post (first body)))
+                  ~ret)
+               ;; if no post-conditions, do nothing
+               `(do ~@body))))))))
 
 (defmacro shallow-render [& body]
   `(with-redefs [hx.react/parse-body identity]
