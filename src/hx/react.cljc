@@ -97,9 +97,9 @@
 
                           (init-fn this props)))]
              ;; set static properties on prototype
+             (goog/inherits ctor super-class)
              (doseq [[k v] static-properties]
                (gobj/set ctor k v))
-             (goog/inherits ctor super-class)
              ctor)))
 
 #?(:cljs (defn create-component [init-fn static-properties method-names]

@@ -90,3 +90,40 @@
    [react/StrictMode
     [:div "hello"]
     [ComponentOne]]))
+
+(hx/defnc PrePostPass [_]
+  {:pre [(true? true)]
+   :post [(not false)]}
+  [:div "prepost"])
+
+(hx/defnc PreFail [_]
+  {:pre [(= "pre" nil)]}
+  [:div "prepost"])
+
+(hx/defnc PostFail [_]
+  {:pre [(= "post" nil)]}
+  [:div "prepost"])
+
+(hx/defcomponent ErrorBoundary
+  (constructor
+   [this]
+   (set! (. this -state) #js {:hasError false
+                              :message ""})
+   this)
+
+  ^:static (getDerivedStateFromError
+            (fn [error]
+              #js {:hasError true
+                   :message (.toString error)}))
+
+  (render
+   [this]
+   (if (.. this -state -hasError)
+     [:div "💥 " (.. this -state -message)]
+     (.. this -props -children))))
+
+(dc/defcard pre-post
+  (hx/f [:<>
+         [PrePostPass]
+         [ErrorBoundary [PreFail]]
+         [ErrorBoundary [PostFail]]]))
