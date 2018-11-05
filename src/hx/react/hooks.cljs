@@ -36,12 +36,12 @@
         update-ref (fn [v] (gobj/set react-ref "current" v))]
   (Atomified. [react-ref update-ref])))
 
-(defn <-watch
+(defn <-deref
   "Takes an atom. Returns the currently derefed value of the atom, and re-renders
   the component on change."
   ;; if no deps are passed in, we assume we only want to run
   ;; subscrib/unsubscribe on mount/unmount
-  ([a] (<-watch a []))
+  ([a] (<-deref a []))
   ([a deps]
    ;; create a react/useState hook to track and trigger renders
    (let [[v u] (react/useState @a)]
