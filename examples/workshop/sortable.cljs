@@ -25,7 +25,6 @@
 
   (onSortEnd
    [this ev]
-   (println "end")
    (let [old-index (.-oldIndex ^js ev)
          new-index (.-newIndex ^js ev)]
      (. this setState
