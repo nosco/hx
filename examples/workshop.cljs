@@ -2,7 +2,8 @@
   (:require [devcards.core :as dc :include-macros true]
             [workshop.core]
             [workshop.material]
-            [workshop.react-dnd]))
+            [workshop.react-dnd]
+            [workshop.sortable]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
