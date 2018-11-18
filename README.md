@@ -30,11 +30,6 @@ you find with using components in hiccup forms.
 The helper macros are pretty much done, but are subject to change as they are
 used in anger and either limitations or potential improvements are found.
 
-- [ ] Easier use of React context / ref forwarding / other misc. enhancements
-
-React context, ref forwarding, suspense, etc. work perfectly in `hx`. However,
-they could be made more idiomatic to use in CLJS with a few tweaks.
-
 - [ ] React Hooks enhancements
 
 [React Hooks](https://reactjs.org/docs/hooks-intro.html) is a new proposal for
