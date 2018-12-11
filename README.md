@@ -30,7 +30,7 @@ you find with using components in hiccup forms.
 The helper macros are pretty much done, but are subject to change as they are
 used in anger and either limitations or potential improvements are found.
 
-- [ ] React Hooks enhancements
+- [x] React Hooks enhancements
 
 [React Hooks](https://reactjs.org/docs/hooks-intro.html) is a new proposal for
 a way of representing state and other side effects as function calls and data,
