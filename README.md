@@ -18,6 +18,22 @@ A simple, easy to use library for React development in ClojureScript.
   (. js/document getElementById "app"))
 ```
 
+## Dependencies
+
+You'll want to make sure you have the latest version of `react`, `react-is`, and
+whatever renderer you are targeting (e.g. `react-dom`).
+
+```
+npm i react react-is react-dom
+```
+
+If you want to use the React Hooks API (`hx.react.hooks`), you'll need to install
+the 16.7.0-alpha version:
+
+```
+npm i react@next react-dom@next react-is
+```
+
 ## Project status
 
 - [x] Hiccup interpreter
@@ -43,15 +59,6 @@ made (IMO) to make them even more ergonomic for developers.
 
 Support for interpretation of hiccup and definition of components in JVM 
 Clojure.
-
-## Dependencies
-
-You'll want to make sure you have the latest version of `react`, `react-is`, and
-whatever renderer you are targeting (e.g. `react-dom`).
-
-```
-npm i react react-is react-dom
-```
 
 ## What problems does `hx` solve?
 
