@@ -1,12 +1,13 @@
 ;; shadow-cljs configuration
-{:source-paths
- ["src" "test" "examples"]
+{;; :source-paths
+ ;; ["src" "test" "examples"]
+ :deps true
 
  :nrepl {:port 8777}
 
- :dependencies
- [[binaryage/devtools "0.9.7"]
-  [devcards "0.2.5"]]
+ ;; :dependencies
+ ;; [[binaryage/devtools "0.9.7"]
+ ;;  [devcards "0.2.5"]]
 
  :builds
  {:workshop {:target :browser
