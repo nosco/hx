@@ -1,5 +1,5 @@
 {:paths ["src" "test" "examples"]
  :deps {org.clojure/clojurescript {:git/url "https://github.com/clojure/clojurescript.git"
-                                   :sha "848e10a9dac539b9271d83577fc1266f18e949da"}
+                                   :sha "6ccb629e365f46a9516e4defeced652cce9d4d35"}
         binaryage/devtools {:mvn/version "0.9.7"}
         devcards {:mvn/version "0.2.5"}}}
