@@ -85,9 +85,17 @@
   (-parse-element [el args]
     (cond
       (react/isValidElement el) el
+
       (react-is/isValidElementType el)
       (make-element el args)
+
+      ;; handle array of children already parsed
+      (and (array? el) (every? react/isValidElement el))
+      el
+
       :default
-      (throw
-       (js/Error. (str "Unknown element type found while parsing hiccup form: "
-                       (.toString el)))))))
+      (do
+        (js/console.log el)
+        (throw
+         (js/Error. (str "Unknown element type found while parsing hiccup form: "
+                         (.toString el))))))))

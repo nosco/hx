@@ -25,6 +25,14 @@
 (dc/defcard defnc
   (hx/$ DefncExample {:foo "bar"} "child"))
 
+(hx/defnc ChildrenEx [{:keys [children]}]
+  [:div {:id "childrenex"} children])
+
+(dc/defcard children
+  (hx/f [ChildrenEx
+         [:span "hi"]
+         [:strong "bye"]]))
+
 (hx/defnc Rc [{:keys [children]}]
   [:div
    (children 3)])
