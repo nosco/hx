@@ -93,6 +93,10 @@
       (and (array? el) (every? react/isValidElement el))
       el
 
+      (var? el)
+      (make-element (fn VarEl [& args] (apply el args))
+                    args)
+
       :default
       (do
         (js/console.log el)

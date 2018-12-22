@@ -39,6 +39,12 @@
 (dc/defcard single-letters
   (hx/f [SingleLetters {:k 1 :v 2}]))
 
+(hx/defnc VarQuote [_]
+  [:div "var qoute"])
+
+(dc/defcard single-letters
+  (hx/f [#'VarQuote]))
+
 (hx/defnc Rc [{:keys [children]}]
   [:div
    (children 3)])
