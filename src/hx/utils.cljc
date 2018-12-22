@@ -6,7 +6,9 @@
   "Converts from camel case (e.g. Foo or FooBar) to kebab case
    (e.g. foo or foo-bar)."
   [s]
-  (str/join "-" (map str/lower-case (re-seq #"\w[a-z]+" s))))
+  (if (> (count s) 1)
+    (str/join "-" (map str/lower-case (re-seq #"\w[a-z]+" s)))
+    s))
 
 #?(:cljs (defn shallow-clj->js
            "Shallowly transforms ClojureScript values to JavaScript.

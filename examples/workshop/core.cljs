@@ -33,6 +33,12 @@
          [:span "hi"]
          [:strong "bye"]]))
 
+(hx/defnc SingleLetters [{:keys [k v]}]
+  [:div "Working: " (str (not= k v))])
+
+(dc/defcard single-letters
+  (hx/f [SingleLetters {:k 1 :v 2}]))
+
 (hx/defnc Rc [{:keys [children]}]
   [:div
    (children 3)])
