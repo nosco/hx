@@ -57,7 +57,10 @@ a Clojure-y interface to creating plain, unadulterated React components.
 ## Documentation
 
  - [Hiccup](./docs/hiccup.md)
-   - [What's hiccup?](./docs/hiccup.md#what)
+   - [What's hiccup?](./docs/hiccup.md#whats-hiccup)
+   - [Hiccup forms & interpreter behavior](./docs/hiccup.md#hiccup-forms--interpreter-behavior)
+ - [Authoring Components](./docs/authoring-components.md)
+ - [API documentation](./docs/api.md)
 
 ## License
 
