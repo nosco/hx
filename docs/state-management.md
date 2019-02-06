@@ -38,17 +38,17 @@ Takes an initial value. Returns an atom that will re-render component on change.
 Takes an initial value. Returns an atom that will _NOT_ re-render component on
 change.
 
-### <-deref
+### <-deref: ([iref])
 
 Takes an atom. Returns the currently derefed value of the atom, and re-renders 
 the component on change.
 
-### <-reducer ([reducer, initialArg, init])
+### <-reducer: ([reducer, initialArg, init])
 Just [react/useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer).
 
-### <-effect
+### <-effect: ([f, deps])
 Just [react/useEffect](https://reactjs.org/docs/hooks-reference.html#useeffect).
 
 
-### <-context
+### <-context: ([context])
 Just [react/useContext](https://reactjs.org/docs/hooks-reference.html#usecontext).
