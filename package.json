@@ -31,8 +31,8 @@
     "showdown": "^1.8.6"
   },
   "dependencies": {
-    "react": "^16.6.0",
-    "react-dom": "^16.6.0",
-    "react-is": "^16.6.0"
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "react-is": "^16.8.1"
   }
 }
