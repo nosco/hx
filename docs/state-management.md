@@ -17,6 +17,10 @@ You may also leverage any Hooks libraries that you may find, since `hx`
 components are pure React components that are compatible with all of the 
 external React ecosystem.
 
+## Examples:
+ - [workshop.sortable](../examples/workshop/sortable.cljs): An example using the
+ "react-sortable-hoc" library and React Hooks.
+
 ## hx.react.hooks
 
 The idiom that this library provides is: any Hook starts with `<-` 
