@@ -11,9 +11,9 @@ A simple, easy to use library for React development in ClojureScript.
 
 ;; `defnc` creates a function that takes a props object and returns React
 ;; elements. You may use it just like any normal React component.
-(defnc MyComponent [{:keys [default-name]}]
+(defnc MyComponent [{:keys [initial-name]}]
   ;; use React Hooks for state management
-  (let [name (<-state default-name)]
+  (let [name (<-state initial-name)]
     [:<>
      [:div "Hello " 
       [:span {:style {:font-weight "bold"}} @name] "!"]
@@ -21,7 +21,7 @@ A simple, easy to use library for React development in ClojureScript.
 
 (react-dom/render
   ;; hx/f transforms Hiccup into a React element
-  (hx/f [MyComponent {:default-name "React in CLJS"}])
+  (hx/f [MyComponent {:initial-name "React in CLJS"}])
   (. js/document getElementById "app"))
 ```
 
