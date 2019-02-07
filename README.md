@@ -70,6 +70,19 @@ a Clojure-y interface to creating plain, unadulterated React components.
    - [hx.react.hooks API](./docs/state-management.md#hxreacthooks)
  - [API documentation](./docs/api.md)
  - [Why not Reagent?](./docs/why-not-reagent.md)
+ 
+## Examples
+
+Interop:
+
+ - [Material UI](./examples/workshop/material.cljs)
+ - [react-dnd](./examples/workshop/react_dnd.cljs)
+ - [react-sortable-hoc](./examples/workshop/sortable.cljs)
+ 
+## Projects that use it
+
+ - [punk](https://github.com/Lokeh/punk): A data REBL built for the web
+ - [hx-frisk]: A fork of [data-frisk-reagent](https://github.com/Odinodin/data-frisk-reagent)
 
 ## License
 
