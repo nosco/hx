@@ -6,18 +6,22 @@ A simple, easy to use library for React development in ClojureScript.
 
 ```clojure
 (ns my-app.core
-  (:require [hx.react :as hx :refer [defnc]]
+  (:require [hx.react :as hx :refer [defnc <-state]]
             ["react-dom" :as react-dom]))
 
 ;; `defnc` creates a function that takes a props object and returns React
 ;; elements. You may use it just like any normal React component.
-(defnc MyComponent [{:keys [name]}]
-  [:div "Hello " 
-   [:span {:style {:font-weight "bold"}} name] "!"])
+(defnc MyComponent [{:keys [default-name]}]
+  ;; use React Hooks for state management
+  (let [name (<-state default-name)]
+    [:<>
+     [:div "Hello " 
+      [:span {:style {:font-weight "bold"}} @name] "!"]
+     [:div [:input {:on-change #(reset! name (-> % .-target .-value))}]]]))
 
 (react-dom/render
   ;; hx/f transforms Hiccup into a React element
-  (hx/f [MyComponent {:name "React in CLJS"}])
+  (hx/f [MyComponent {:default-name "React in CLJS"}])
   (. js/document getElementById "app"))
 ```
 
@@ -39,7 +43,7 @@ you are using React 16.8 or later.
 within ClojureScript. It is your bridge to the wide world of React.js in 
 idiomatic CLJS.
 
-The library is split into (currently) two sections, which you can feel free to 
+The library is split into (currently) three sections, which you can feel free to 
 mix as your project sees fit:
 
 1. A hiccup interpreter. Takes in `[:div {:style {:color "red"}} [:span "foo"]]` and
@@ -47,6 +51,8 @@ spits out `React.createElement` calls.
 
 2. Helpers for creating components. `defnc` and `defcomponent` help us write
 plain React.js components in idiomatic ClojureScript.
+
+3. Helpers for using React Hooks.
 
 ## What problems does `hx` _not_ solve?
 
