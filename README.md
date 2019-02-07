@@ -69,6 +69,7 @@ a Clojure-y interface to creating plain, unadulterated React components.
  - [State management](./docs/state-management.md)
    - [hx.react.hooks API](./docs/state-management.md#hxreacthooks)
  - [API documentation](./docs/api.md)
+ - [Why not Reagent?](./docs/why-not-reagent.md)
 
 ## License
 
