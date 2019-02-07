@@ -82,7 +82,7 @@ Interop:
 ## Projects that use it
 
  - [punk](https://github.com/Lokeh/punk): A data REBL built for the web
- - [hx-frisk]: A fork of [data-frisk-reagent](https://github.com/Odinodin/data-frisk-reagent)
+ - [hx-frisk](https://github.com/Lokeh/hx-frisk/): A fork of [data-frisk-reagent](https://github.com/Odinodin/data-frisk-reagent)
 
 ## License
 
