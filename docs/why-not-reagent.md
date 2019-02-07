@@ -27,22 +27,26 @@ This is insanely long, but I want to leave you with a couple examples. A short s
 
 Reagent code:
 
-    (defn count-widget [foo bar]
-      (let [state (r/atom {:count 0})]
-        (fn [foo bar]
-          [:div 
-           [:div "Foo: " foo] [:div "Bar: " bar]
-           [:div "Count: " count]
-           [:button {:on-click #(swap! state update :count inc)} "+"]])))
+```clojure
+(defn count-widget [foo bar]
+  (let [state (r/atom {:count 0})]
+    (fn [foo bar]
+      [:div 
+       [:div "Foo: " foo] [:div "Bar: " bar]
+       [:div "Count: " count]
+       [:button {:on-click #(swap! state update :count inc)} "+"]])))
+```
 
 hx + Hooks code:
 
-    (defnc count-widget [{:keys [foo bar]}]
-      (let [state (<-state {:count 0})]
-        [:div 
-         [:div "Foo: " foo] [:div "Bar: " bar]
-         [:div "Count: " count]
-         [:button {:on-click #(swap! state update :count inc)} "+"]]))
+```clojure
+(defnc count-widget [{:keys [foo bar]}]
+  (let [state (<-state {:count 0})]
+    [:div 
+     [:div "Foo: " foo] [:div "Bar: " bar]
+     [:div "Count: " count]
+     [:button {:on-click #(swap! state update :count inc)} "+"]]))
+```
 
 Another, more complex example:
 
