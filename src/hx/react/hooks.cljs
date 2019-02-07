@@ -59,9 +59,9 @@
      v)))
 
 (defn <-deref-in
-  "Takes an atom and a sequence of keys in a nested associative structure the . 
-   Returns the currently derefed value on the key path in the atom, 
-   and re-renders the component if the value on the path changes."
+  "Takes an atom and a sequence of keys in a nested associative structure atom
+  references. Returns the currently derefed value on the key path,
+  and re-renders the component if the value changes."
   ;; if no deps are passed in, we assume we only want to run
   ;; subscrib/unsubscribe on mount/unmount
   ([a k] (<-deref-in a k []))
