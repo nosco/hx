@@ -58,6 +58,30 @@
      ;; return value of useState on each run
      v)))
 
+(defn <-deref-in
+  "Takes an atom and a sequence of keys in a nested associative structure the . 
+   Returns the currently derefed value on the key path in the atom, 
+   and re-renders the component if the value on the path changes."
+  ;; if no deps are passed in, we assume we only want to run
+  ;; subscrib/unsubscribe on mount/unmount
+  ([a k] (<-deref-in a k []))
+  ([a k deps]
+   ;; create a react/useState hook to track and trigger renders
+   (let [[v u] (react/useState (get-in @a k))]
+     ;; react/useEffect hook to create and track the subscription to the iref
+     (react/useEffect
+      (fn []
+        (add-watch a :use-in-atom
+                   ;; update the react state on each change
+                   (fn [_ _ v v']
+                     (if-not (= (get-in v k) (get-in v' k)) (u v'))))
+        ;; return a function to tell react hook how to unsubscribe
+        #(remove-watch a :use-in-atom))
+      ;; pass in deps vector as an array
+      (clj->js deps))
+     ;; return value of useState on each run
+     v)))
+
 (def <-reducer
   "Just react/useReducer."
   react/useReducer)
