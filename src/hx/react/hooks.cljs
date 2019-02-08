@@ -73,8 +73,8 @@
       (fn []
         (add-watch a :use-in-atom
                    ;; update the react state on each change
-                   (fn [_ _ v v']
-                     (if-not (= (get-in v k) (get-in v' k)) (u v'))))
+                   (fn [_ _ _ v']
+                     (if-not (= v (get-in v' k)) (u (get-in v' k)))))
         ;; return a function to tell react hook how to unsubscribe
         #(remove-watch a :use-in-atom))
       ;; pass in deps vector as an array
