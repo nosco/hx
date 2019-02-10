@@ -35,7 +35,7 @@ whatever renderer you are targeting (e.g. `react-dom`).
 npm i react react-is react-dom
 ```
 
-If you want to use the React Hooks API (`hx.react.hooks`), you'll need to ensure
+If you want to use the React Hooks API (`hx.hooks`), you'll need to ensure
 you are using React 16.8 or later.
 
 ## What problems does `hx` solve?
