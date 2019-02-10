@@ -7,7 +7,7 @@ A simple, easy to use library for React development in ClojureScript.
 ```clojure
 (ns my-app.core
   (:require [hx.react :as hx :refer [defnc]]
-            [hx.react.hooks :as hx.hooks :refer [<-state]]
+            [hx.hooks :refer [<-state]]
             ["react-dom" :as react-dom]))
 
 ;; `defnc` creates a function that takes a props object and returns React
@@ -68,7 +68,7 @@ a Clojure-y interface to creating plain, unadulterated React components.
    - [Hiccup forms & interpreter behavior](./docs/hiccup.md#hiccup-forms--interpreter-behavior)
  - [Authoring Components](./docs/authoring-components.md)
  - [State management](./docs/state-management.md)
-   - [hx.react.hooks API](./docs/state-management.md#hxreacthooks)
+   - [hx.hooks API](./docs/state-management.md#hxhooks)
  - [API documentation](./docs/api.md)
  - [Why not Reagent?](./docs/why-not-reagent.md)
  

@@ -10,7 +10,7 @@ React Hooks are a powerful system for representing side effects we want to occur
 while our application is operating such as changing state, firing network
 requests, subscribing to external sources, etc.
 
-`hx` provides a small helper library called `hx.react.hooks` that offers a
+`hx` provides a small helper library called `hx.hooks` that offers a
 Clojure-first API to the React Hooks API.
 
 You may also leverage any Hooks libraries that you may find, since `hx` 
@@ -21,7 +21,7 @@ external React ecosystem.
  - [workshop.sortable](../examples/workshop/sortable.cljs): An example using the
  "react-sortable-hoc" library and React Hooks.
 
-## hx.react.hooks
+## hx.hooks
 
 The idiom that this library provides is: any Hook starts with `<-` 
 (instead of `use`) to provide at-a-glance recognition of what Hooks a component
@@ -47,12 +47,31 @@ change.
 Takes an atom. Returns the currently derefed value of the atom, and re-renders 
 the component on change.
 
-### <-reducer: ([reducer, initialArg, init])
+### <-reducer: ([reducer initialArg init])
 Just [react/useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer).
 
-### <-effect: ([f, deps])
+### <-effect: ([f deps])
 Just [react/useEffect](https://reactjs.org/docs/hooks-reference.html#useeffect).
-
+`deps` can be a CLJS collection.
 
 ### <-context: ([context])
 Just [react/useContext](https://reactjs.org/docs/hooks-reference.html#usecontext).
+
+### <-memo: ([f deps])
+Just [react/useMemo](https://reactjs.org/docs/hooks-reference.html#usememo).
+`deps` can be a CLJS collection.
+
+### <-callback: ([f])
+Just [react/useCallback](https://reactjs.org/docs/hooks-reference.html#useCallback).
+
+### <-imperative-handle: ([ref createHandle deps])
+Just [react/useImperativeHandle](https://reactjs.org/docs/hooks-reference.html#useimperativehandle).
+`deps` can be a CLJS collection.
+
+### <-layout-effect: ([f deps])
+Just [react/useLayoutEffect](https://reactjs.org/docs/hooks-reference.html#uselayouteffect).
+`deps` can be a CLJS collection.
+
+### <-debug-value: ([v formatter])
+Just [react/useDebugValue](https://reactjs.org/docs/hooks-reference.html#usedebugvalue).
+`deps` can be a CLJS collection.
