@@ -62,7 +62,7 @@ Just [react/useMemo](https://reactjs.org/docs/hooks-reference.html#usememo).
 `deps` can be a CLJS collection.
 
 ### <-callback: ([f])
-Just [react/useCallback](https://reactjs.org/docs/hooks-reference.html#useCallback).
+Just [react/useCallback](https://reactjs.org/docs/hooks-reference.html#usecallback).
 
 ### <-imperative-handle: ([ref createHandle deps])
 Just [react/useImperativeHandle](https://reactjs.org/docs/hooks-reference.html#useimperativehandle).
