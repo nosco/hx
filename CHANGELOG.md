@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.3.0]
+## [0.3.0] - Feb 10, 2019
 ### Changed
 
 - Moved `hx.react.hooks` to `hx.hooks` (breaking)
