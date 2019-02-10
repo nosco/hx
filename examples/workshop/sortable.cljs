@@ -1,7 +1,7 @@
 (ns workshop.sortable
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx]
-            [hx.react.hooks :as hooks :refer [<-state]]
+            [hx.hooks :as hooks :refer [<-state]]
             ["react-sortable-hoc" :as sort]))
 
 (hx/defnc Item [{:keys [value]}]
