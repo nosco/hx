@@ -33,7 +33,7 @@ Reagent code:
     (fn [foo bar]
       [:div 
        [:div "Foo: " foo] [:div "Bar: " bar]
-       [:div "Count: " count]
+       [:div "Count: " (:count @state)]
        [:button {:on-click #(swap! state update :count inc)} "+"]])))
 ```
 
@@ -44,7 +44,7 @@ hx + Hooks code:
   (let [state (<-state {:count 0})]
     [:div 
      [:div "Foo: " foo] [:div "Bar: " bar]
-     [:div "Count: " count]
+     [:div "Count: " (:count state)]
      [:button {:on-click #(swap! state update :count inc)} "+"]]))
 ```
 
