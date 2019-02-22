@@ -1,4 +1,7 @@
 # Changelog
+## [0.3.1] - Feb 20, 2019
+### Fixed
+- `<-ref`: Pass initial value to `react/useRef`
 
 ## [0.3.0] - Feb 10, 2019
 ### Changed

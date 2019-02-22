@@ -32,7 +32,7 @@
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
   on change."
   [initial]
-  (let [react-ref (react/useRef)
+  (let [react-ref (react/useRef initial)
         update-ref (fn [v] (gobj/set react-ref "current" v))]
   (Atomified. [react-ref update-ref] #(.-current ^js %))))
 
