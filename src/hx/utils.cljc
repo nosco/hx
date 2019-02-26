@@ -24,7 +24,7 @@
   Maps become Objects. Arbitrary keys are encoded to by `key->js`.
   Options is a key-value pair, where the only valid key is
   :keyword-fn, which should point to a single-argument function to be
-  called on keyword keys. Default to `name`."
+  called on keyword keys. Default to `name` but with namespace added."
            [x & {:keys [keyword-fn]
                  :or   {keyword-fn keyword->str}
                  :as options}]
