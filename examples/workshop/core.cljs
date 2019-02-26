@@ -164,3 +164,11 @@
 
 (dc/defcard class-name-prop
   (hx/f [ClassNameProp {:class "foo"}]))
+
+(hx/defnc NamespaceKeywords [{:keys [namespace/value] :as props}]
+  [:<>
+   [:div (prn-str props)]
+   [:div "namespace/value: " value]])
+
+(dc/defcard namespace-keywords
+  (hx/f [NamespaceKeywords {:namespace/value "hhhhh"}]))

@@ -7,8 +7,16 @@
    (e.g. foo or foo-bar)."
   [s]
   (if (> (count s) 1)
-    (str/join "-" (map str/lower-case (re-seq #"\w[a-z]+" s)))
+    (str/join "-" (map str/lower-case (re-seq #"\w[a-z/]+" s)))
     s))
+
+(defn keyword->str [k]
+  (let [kw-ns (namespace k)
+        kw-name (name k)]
+    (if (nil? kw-ns)
+      kw-name
+
+      (str kw-ns "/" kw-name))))
 
 #?(:cljs (defn shallow-clj->js
            "Shallowly transforms ClojureScript values to JavaScript.
@@ -18,7 +26,7 @@
   :keyword-fn, which should point to a single-argument function to be
   called on keyword keys. Default to `name`."
            [x & {:keys [keyword-fn]
-                 :or   {keyword-fn name}
+                 :or   {keyword-fn keyword->str}
                  :as options}]
            (letfn [(keyfn [k] (key->js k thisfn))
                    (thisfn [x] (cond
@@ -56,6 +64,8 @@
 
 #_(shallow-clj->js [1 2 3])
 #_(shallow-clj->js {:a "asdf" :b :y :c 2})
+
+#_(shallow-clj->js {:a/b "asdf" :b/c :y :c/d 2})
 
 #?(:cljs (defn shallow-js->clj
            ([x] (shallow-js->clj x :keywordize-keys false))
