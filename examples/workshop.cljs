@@ -3,7 +3,9 @@
             [workshop.core]
             [workshop.material]
             [workshop.react-dnd]
-            [workshop.sortable]))
+            [workshop.sortable]
+            [workshop.state]))
+
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))
