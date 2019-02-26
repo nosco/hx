@@ -45,7 +45,7 @@
         ret (gensym "return_value")]
     ;; maybe-ref for react/forwardRef support
     `(defn ~name [props# maybe-ref#]
-       (let [~props-bindings (hx.react/props->clj props# maybe-ref#)]
+       (let [~props-bindings [(hx.react/props->clj props#) maybe-ref#]]
          ;; pre-conditions
          ~@(when (and opts-map? (:pre (first body)))
              (map (fn [x] `(assert ~x)) (:pre (first body))))
@@ -78,9 +78,10 @@
             args)))
 
 
-#?(:cljs (defn props->clj [props maybe-ref]
+#?(:cljs (defn props->clj [props]
            (let [props (utils/shallow-js->clj props :keywordize-keys true)]
-             [props maybe-ref])))
+             ;; provide `:class-name` property also as `:class`
+             (assoc props :class (:class-name props)))))
 
 #?(:clj (defn $ [el & args]
           nil)

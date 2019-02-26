@@ -154,3 +154,13 @@
           [PostCond {:age 19}]]
          [ErrorBoundary
           [PostCond {:age 42}]]]))
+
+(hx/defnc ClassNameProp [{:keys [class class-name]}]
+  [:<>
+   [:ul
+    [:li "class: \"" class "\""]
+    [:li "class-name: \"" class-name "\""]]
+   (str (= class class-name))])
+
+(dc/defcard class-name-prop
+  (hx/f [ClassNameProp {:class "foo"}]))
