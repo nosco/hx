@@ -14,13 +14,13 @@
 
   ISwap
   (-swap! [o f]
-    (-reset! o (f (-deref o))))
+    ((second react-ref) f))
   (-swap! [o f a]
-    (-reset! o (f (-deref o) a)))
+    ((second react-ref) #(f % a)))
   (-swap! [o f a b]
-    (-reset! o (f (-deref o) a b)))
+    ((second react-ref) #(f % a b)))
   (-swap! [o f a b xs]
-    (-reset! o (apply f (-deref o) a b xs))))
+    ((second react-ref) #(apply f % a b xs))))
 
 (defn <-state
   "Takes an initial value. Returns an atom that will re-render component on
