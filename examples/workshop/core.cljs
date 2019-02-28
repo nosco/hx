@@ -71,7 +71,7 @@
 (dc/defcard class-component
   (hx/$ ClassComp))
 
-(def some-context (hx/create-context))
+(def some-context (hx/create-context "default context value"))
 
 (hx/defnc ContextConsumer [_]
   [:div
@@ -79,9 +79,12 @@
     (fn [v]
       [:div v])]])
 
+(dc/defcard context-default
+  (hx/$ ContextConsumer))
+
 (hx/defnc ContextProvider [_]
   [:provider {:context some-context
-              :value "context value 42"}
+              :value "provider context value"}
    [:div
     [ContextConsumer]]])
 
