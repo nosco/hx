@@ -77,6 +77,13 @@
             hx.react/fragment
             args)))
 
+#?(:cljs (defmethod hiccup/parse-element
+           :provider
+           [el {:keys [context value]} args]
+           (hiccup/-parse-element
+            (.-Provider context)
+            [{:value value}
+             args])))
 
 #?(:cljs (defn props->clj [props]
            (let [props (utils/shallow-js->clj props :keywordize-keys true)]

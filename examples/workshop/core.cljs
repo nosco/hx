@@ -71,7 +71,7 @@
 (dc/defcard class-component
   (hx/$ ClassComp))
 
-(def some-context (react/createContext))
+(def some-context (hx/create-context))
 
 (hx/defnc ContextConsumer [_]
   [:div
@@ -80,8 +80,8 @@
       [:div v])]])
 
 (hx/defnc ContextProvider [_]
-  [(.-Provider some-context)
-   {:value "context value"}
+  [:provider {:context some-context
+              :value "context value 42"}
    [:div
     [ContextConsumer]]])
 
