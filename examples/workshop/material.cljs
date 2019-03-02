@@ -16,13 +16,13 @@
       (for [color [nil "primary" "secondary"]]
         [Button {:variant variant :color color
                  :style {:margin "5px"}}
-         (or color "default")])])]
+         (or color "default")])])])
 
 (dc/defcard button
   ;; hx/f is used here to instantiate the `ButtonExample` component as a React element
   ;; to work with devcards
   (hx/f [ButtonExample]))
-  
+
 (defnc CircularProgressExample [_]
   [:<>
    [:div "Indeterminate "
@@ -35,7 +35,7 @@
    [:div "Static"
     [:div {:style {:padding "5px"}}
      [CircularProgress {:color "primary" :value 33
-                        :variant "static"}]]]]
+                        :variant "static"}]]]])
 
 (dc/defcard circular-progress
   (hx/f [CircularProgressExample]))
