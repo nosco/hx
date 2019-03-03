@@ -59,4 +59,7 @@ Sometimes we also need access to React's various lifecycle methods like
 React component class. `hx` exposes a very barebones `hx/defcomponent` macro that
 binds closely to the OOP, class-based API React has for maximum flexibility. You 
 can also leverage libraries like Om.Next, Reagent, Rum, or other frameworks that
-have state management built in.
+have state management built in. Note though that React Hooks takes away most, if 
+not all of the need to use the class-based React lifecycle methods, in a very nice
+and functional way that meshes very well with ClojureScript. It is advised that
+you read more on React Hooks at the [official documentation](https://reactjs.org/docs/hooks-intro.html).
