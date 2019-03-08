@@ -1,6 +1,20 @@
 # Changelog
-## [0.3.2] - Feb 25, 2019
+
+## Unreleased
+
+### Added
+
+- `:provider` component and `hx.react/create-context` function
+
 ### Fixed
+
+- Race condition in `<-deref` hook
+
+
+## [0.3.2] - Feb 25, 2019
+
+### Fixed
+
 - `<-state`: `swap!` works on a `<-state` atom inside of `<-effect`
 - `className` prop is available as either `:class` or `:class-name` when 
 parsing props in `defnc` to provide parity with hiccup parser's conversion of
@@ -8,10 +22,13 @@ parsing props in `defnc` to provide parity with hiccup parser's conversion of
 - namespaced keywords are now preserved in props maps
 
 ## [0.3.1] - Feb 20, 2019
+
 ### Fixed
+
 - `<-ref`: Pass initial value to `react/useRef`
 
 ## [0.3.0] - Feb 10, 2019
+
 ### Changed
 
 - Moved `hx.react.hooks` to `hx.hooks` (breaking)

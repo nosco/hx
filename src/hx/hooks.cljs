@@ -51,6 +51,11 @@
           (add-watch a k
                      ;; update the react state on each change
                      (fn [_ _ _ v'] (u v')))
+          ;; Check to ensure that a change has not occurred to the atom between
+          ;; the component rendering and running this effect.
+          ;; If it has updated, then update the state to the current value.
+          (when (not= @a v)
+            (u @a))
           ;; return a function to tell react hook how to unsubscribe
           #(remove-watch a k)))
       ;; pass in deps vector as an array
