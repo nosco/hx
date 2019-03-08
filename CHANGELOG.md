@@ -9,6 +9,7 @@
 ### Fixed
 
 - Race condition in `<-deref` hook
+- Props with numbers, two-letter camel-case were dropped or truncated
 
 
 ## [0.3.2] - Feb 25, 2019

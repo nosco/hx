@@ -7,8 +7,30 @@
    (e.g. foo or foo-bar)."
   [s]
   (if (> (count s) 1)
-    (str/join "-" (map str/lower-case (re-seq #"\w[a-z/]+" s)))
+    (str/join "-" (map str/lower-case (re-seq #"\w[a-z0-9/]*" s)))
     s))
+
+(comment
+  (camel->kebab "x")
+
+  (camel->kebab "x1")
+
+  (camel->kebab "xx1")
+
+  (camel->kebab "xX")
+
+  (camel->kebab "xX1")
+
+  (camel->kebab "x1X")
+
+  (camel->kebab "xxX")
+
+  (camel->kebab "xXx")
+
+  (camel->kebab "xxXx")
+
+  (camel->kebab "x1xXx1")
+  )
 
 (defn keyword->str [k]
   (let [kw-ns (namespace k)
