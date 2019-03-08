@@ -90,6 +90,13 @@
              ;; provide `:class-name` property also as `:class`
              (assoc props :class (:class-name props)))))
 
+#?(:cljs (comment
+           (props->clj #js {"x0" 1})
+
+           (props->clj #js {"test0" 1})
+
+           ))
+
 #?(:clj (defn $ [el & args]
           nil)
    :cljs (defn $ [el & args] (hiccup/make-element el args))
