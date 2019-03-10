@@ -21,7 +21,8 @@ A simple, easy to use library for React development in ClojureScript.
      [:div [:input {:on-change #(reset! name (-> % .-target .-value))}]]]))
 
 (react-dom/render
-  ;; hx/f transforms Hiccup into a React element
+  ;; hx/f transforms Hiccup into a React element.
+  ;; We only have to use it when we want to use hiccup outside of `defnc` / `defcomponent`
   (hx/f [MyComponent {:initial-name "React in CLJS"}])
   (. js/document getElementById "app"))
 ```
