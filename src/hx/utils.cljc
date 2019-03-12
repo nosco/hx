@@ -7,7 +7,7 @@
    (e.g. foo or foo-bar)."
   [s]
   (if (> (count s) 1)
-    (str/join "-" (map str/lower-case (re-seq #"\w[a-z0-9/]*" s)))
+    (str/join "-" (map str/lower-case (re-seq #"\w[a-z0-9\?_\./]*" s)))
     s))
 
 (comment
@@ -30,7 +30,14 @@
   (camel->kebab "xxXx")
 
   (camel->kebab "x1xXx1")
-  )
+
+  (camel->kebab "x?")
+
+  (camel->kebab "x_x")
+
+  (camel->kebab "xX.x")
+
+ )
 
 (defn keyword->str [k]
   (let [kw-ns (namespace k)
@@ -231,3 +238,32 @@
                (reactify-props)
                (styles->js)
                (shallow-clj->js))))
+
+(comment
+  (let [case {:x-x? "asdf"}]
+    (-> (clj->props case)
+      (shallow-js->clj :keywordize-keys true)
+      (= case)))
+
+  (let [case {:x-x.x? "asdf"}]
+    (-> (clj->props case)
+        (shallow-js->clj :keywordize-keys true)
+        (= case)))
+
+  (let [case {:xa1-xb2.x? "asdf"}]
+    (-> (clj->props case)
+        (shallow-js->clj :keywordize-keys true)
+        (= case)))
+
+
+  (let [case {:ns/xb2.x? "asdf"}]
+    (-> (clj->props case)
+        (shallow-js->clj :keywordize-keys true)
+        (= case)))
+
+  (let [case {:ns/-xb2.x? "asdf"}]
+    (-> (clj->props case)
+        #_(shallow-js->clj :keywordize-keys true)
+        #_(= case)))
+
+  )

@@ -111,6 +111,12 @@
 
            (props->clj #js {"test0" 1})
 
+           (props->clj #js {"testAsdf?" 1})
+
+           (props->clj #js {"test_asdf?" 1})
+
+           (props->clj #js {"testTest.asdf?" 1})
+
            ))
 
 #?(:clj (defn $ [el & args]
