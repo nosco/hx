@@ -85,10 +85,26 @@
             [{:value value}
              args])))
 
+(defn also-as
+  "If key `k1` is contained in `m`, assocs the value of it into `m` at key `k2`"
+  [m k1 k2]
+  (if-let [entry (find m k1)]
+    (let [[_ v] entry]
+      (assoc m k2 v))
+    m))
+
+(comment
+  (also-as {:a 1} :a :b)
+
+  (also-as {:a 1} :b :c)
+
+  )
+
 #?(:cljs (defn props->clj [props]
            (let [props (utils/shallow-js->clj props :keywordize-keys true)]
              ;; provide `:class-name` property also as `:class`
-             (assoc props :class (:class-name props)))))
+             (-> props
+                 (also-as :class-name :class)))))
 
 #?(:cljs (comment
            (props->clj #js {"x0" 1})
