@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `:class` prop having value `nil` when `:class-name` not present
+
 ## [0.3.3] - Mar 08, 2019
 
 ### Added
