@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/clojure:openjdk-8-lein
+      - image: atlassianlabs/docker-node-jdk-chrome-firefox
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -27,7 +27,7 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: sudo apt-get install -y libappindicator1 fonts-liberation & wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb & sudo dpkg -i google-chrome*.deb
+      # - run: sudo apt-get install -y libappindicator1 fonts-liberation & wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb & sudo dpkg -i google-chrome*.deb
 
       - run: npm ci
 
