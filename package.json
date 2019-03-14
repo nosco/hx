@@ -10,7 +10,7 @@
   "scripts": {
     "start": "shadow-cljs watch workshop",
     "release": "shadow-cljs release workshop",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./scripts/test.sh"
   },
   "repository": {
     "type": "git",
@@ -24,6 +24,9 @@
   "homepage": "https://github.com/Lokeh/hx#readme",
   "devDependencies": {
     "@material-ui/core": "^3.3.2",
+    "karma": "^4.0.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-cljs-test": "^0.1.0",
     "react-dnd": "^5.0.0",
     "react-dnd-html5-backend": "^5.0.1",
     "react-sortable-hoc": "^0.8.3",

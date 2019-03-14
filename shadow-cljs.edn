@@ -21,4 +21,8 @@
              :test-dir  "public/test/js"
              :ns-regexp "-test$"
              :devtools  {:http-port 8021
-                         :http-root "public/test/js"}}}}
+                         :http-root "public/test/js"}}
+
+  :ci       {:target :karma
+             :output-to  "target/ci.js"
+             :ns-regexp  "-test$"}}}}

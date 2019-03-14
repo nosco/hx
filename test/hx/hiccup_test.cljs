@@ -15,7 +15,6 @@
       (.-firstChild)))
 
 (defn node= [x y]
-  (js/console.log x y)
   (.isEqualNode x y))
 
 (defn html [s]
@@ -65,6 +64,5 @@
                  (h/parse)
                  (rtl/render)
                  (root))]
-    (js/console.log node)
     (.click rtl/fireEvent node)
     (t/is (= 1 (call-count on-click)))))
