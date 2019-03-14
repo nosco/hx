@@ -19,6 +19,79 @@
 
 
 ;;
+;; Demonstrating the issue with <-state and atom semantics
+;;
+
+(defnc AtomStateChild [{:keys [on-update]}]
+  (let [state (<-state 0)]
+    [:<>
+     [:div "Child state: " @state]
+     [:div [:button {:on-click (fn [e]
+                                 (swap! state inc)
+                                 (on-update @state))} "Inc"]]]))
+
+(defnc AtomStateParent [_]
+  (let [parent-state (<-state nil)]
+    [:<>
+     [:div "Parent state: " @parent-state]
+     [AtomStateChild {:on-update #(reset! parent-state %)}]]))
+
+
+(dc/defcard atom-state-issues
+  (hx/f [AtomStateParent]))
+
+(deftype AtomRef [react-ref]
+  IDeref
+  (-deref [_]
+    (deref (.-current react-ref)))
+
+  IReset
+  (-reset! [_ v']
+    (reset! (.-current react-ref) v'))
+
+  ISwap
+  (-swap! [o f]
+    (swap! (.-current react-ref) f))
+  (-swap! [o f a]
+    (swap! (.-current react-ref) #(f % a)))
+  (-swap! [o f a b]
+    (swap! (.-current react-ref) #(f % a b)))
+  (-swap! [o f a b xs]
+    (swap! (.-current react-ref) #(apply f % a b xs))))
+
+
+(defn <-atom [initial-value]
+  (let [r (react/useRef (atom initial-value))
+        k (gensym "<-atom")
+        [v u] (react/useState initial-value)]
+    (react/useEffect
+     (fn []
+       (add-watch (.-current r) k (fn [_ _ _ v']
+                        (u v')))
+       (fn [] (remove-watch (.-current r) k)))
+     #js [])
+    (AtomRef. r)))
+
+
+(defnc NewAtomStateChild [{:keys [on-update]}]
+  (let [state (<-atom 0)]
+    [:<>
+     [:div "Child state: " @state]
+     [:div [:button {:on-click (fn [e]
+                                 (swap! state inc)
+                                 (on-update @state))} "Inc"]]]))
+
+(defnc NewAtomStateParent [_]
+  (let [parent-state (<-atom nil)]
+    [:<>
+     [:div "Parent state: " @parent-state]
+     [NewAtomStateChild {:on-update #(reset! parent-state %)}]]))
+
+
+(dc/defcard  new-atom-state-issues
+  (hx/f [NewAtomStateParent]))
+
+;;
 ;; A timer that increments each second
 ;;
 
@@ -75,4 +148,3 @@
          [PrintStateConsumer]
          [TimerConsumer]
          [CounterConsumer]]))
-
