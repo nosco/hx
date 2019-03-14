@@ -66,3 +66,12 @@
                  (root))]
     (.click rtl/fireEvent node)
     (t/is (= 1 (call-count on-click)))))
+
+(t/deftest input-on-change-prop
+  (let [on-change (func)
+        node (-> [:input {:on-change on-change}]
+                 (h/parse)
+                 (rtl/render)
+                 (root))]
+    (.change rtl/fireEvent node #js {:target #js {:value "a"}})
+    (t/is (= 1 (call-count on-change)))))
