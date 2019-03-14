@@ -16,4 +16,9 @@
              :compiler-options {:devcards true}
              :devtools {:http-root    "public/workshop"
                         :http-port    8700
-                        :preloads     [devtools.preload]}}}}
+                        :preloads     [devtools.preload]}}
+  :test     {:target    :browser-test
+             :test-dir  "public/test/js"
+             :ns-regexp "-test$"
+             :devtools  {:http-port 8021
+                         :http-root "public/test/js"}}}}
