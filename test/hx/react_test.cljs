@@ -1,6 +1,6 @@
-(ns hx.hiccup-test
+(ns hx.react-test
   (:require [cljs.test :as t :include-macros true]
-            [hx.hiccup :as h]
+            [hx.react :as hx]
             [goog.dom :as dom]
             [goog.object :as gobj]
             [clojure.string :as str]
@@ -8,6 +8,12 @@
 
 (t/use-fixtures :each
   {:after rtl/cleanup})
+
+;;
+;; Utils
+;;
+
+(def render rtl/render)
 
 (defn root [result]
   (-> result
@@ -32,46 +38,76 @@
 (defn call-count [f]
   @(.-callCount f))
 
+(defn click [node]
+  (.click rtl/fireEvent node))
+
+(defn change [node data]
+  (.change rtl/fireEvent node data))
+
+
+;;
+;; Tests
+;;
+
 (t/deftest create-element
   (t/is (node= (html "<div>hi</div>")
-               (root (rtl/render (h/parse [:div "hi"])))))
+               (root (render (hx/f [:div "hi"])))))
   (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
-               (root (rtl/render (h/parse [:div
+               (root (render (hx/f [:div
                                            [:span "hi"]
                                            [:span "bye"]]))))))
 
+(t/deftest create-fragment
+  ;; for fragments, the firstChild of the container is the first element
+  (t/is (node= (html "<div>hi</div>")
+               (root (render (hx/f [:<> [:div "hi"]])))))
+
+  ;; so here we test to see if the container matches
+  (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
+               (.-container (render (hx/f [:<>
+                                           [:span "hi"]
+                                           [:span "bye"]]))))))
+
+(t/deftest create-provider
+  (let [c (hx/create-context)]
+  (t/is (node= (html "<div>hi</div>")
+               (-> (hx/f [:provider {:context c}
+                          [:div "hi"]])
+                   (render)
+                   (root))))))
+
 (t/deftest style-prop
   (t/is (node= (html "<div style=\"color: red;\">hi</div>")
-               (root (rtl/render (h/parse [:div {:style {:color "red"}} "hi"])))))
+               (root (render (hx/f [:div {:style {:color "red"}} "hi"])))))
 
   (t/is (node= (html "<div style=\"color: red; background: green;\">hi</div>")
-               (root (rtl/render (h/parse [:div {:style {:color "red"
+               (root (render (hx/f [:div {:style {:color "red"
                                                          :background "green"}} "hi"]))))))
 
 (t/deftest class-prop
   (t/is (node= (html "<div class=\"foo\">hi</div>")
-               (root (rtl/render (h/parse [:div {:class "foo"} "hi"])))))
+               (root (render (hx/f [:div {:class "foo"} "hi"])))))
 
   (t/is (node= (html "<div class=\"foo\">hi</div>")
-               (root (rtl/render (h/parse [:div {:class ["foo"]} "hi"])))))
+               (root (render (hx/f [:div {:class ["foo"]} "hi"])))))
 
   (t/is (node= (html "<div class=\"foo bar\">hi</div>")
-               (root (rtl/render (h/parse [:div {:class ["foo" "bar"]} "hi"]))))))
+               (root (render (hx/f [:div {:class ["foo" "bar"]} "hi"]))))))
 
 (t/deftest on-click-prop
   (let [on-click (func)
         node (-> [:div {:on-click on-click}]
-                 (h/parse)
-                 (rtl/render)
+                 (hx/f)
+                 (render)
                  (root))]
-    (.click rtl/fireEvent node)
+    (click node)
     (t/is (= 1 (call-count on-click)))))
 
 (t/deftest input-on-change-prop
   (let [on-change (func)
         node (-> [:input {:on-change on-change}]
-                 (h/parse)
-                 (rtl/render)
+                 (hx/f)
+                 (render)
                  (root))]
-    (.change rtl/fireEvent node #js {:target #js {:value "a"}})
+    (change node #js {:target #js {:value "a"}})
     (t/is (= 1 (call-count on-change)))))
