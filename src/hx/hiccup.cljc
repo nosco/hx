@@ -46,24 +46,35 @@
                        ret)))
                  (map (partial parse-element config) children)))))
 
+#?(:clj (defn array? [x]
+          (coll? x)))
+
+(defn ex [s]
+  #?(:clj (Exception. s)
+     :cljs (js/Error. s)))
+
 (extend-protocol IElement
   nil
   (-parse-element [_ _ _]
     nil)
 
-  number
+  #?(:clj Number
+     :cljs number)
   (-parse-element [n _ _]
     n)
 
-  string
+  #?(:clj String
+     :cljs string)
   (-parse-element [s _ _]
     s)
 
-  PersistentVector
+  #?(:clj clojure.lang.PersistentVector 
+     :cljs PersistentVector)
   (-parse-element [form config _]
     (apply parse-element config form))
 
-  LazySeq
+  #?(:clj clojure.lang.LazySeq
+     :cljs LazySeq)
   (-parse-element [a config b]
     (make-node
      config
@@ -71,15 +82,18 @@
      nil
      (map (partial parse-element config) a)))
 
-  Keyword
+  #?(:clj clojure.lang.Keyword
+     :cljs Keyword)
   (-parse-element [el config args]
     (make-element config (name el) args))
 
-  function
+  #?(:clj clojure.lang.AFn
+     :cljs function)
   (-parse-element [el config args]
     (make-element config el args))
 
-  default
+  #?(:clj Object
+     :cljs default)
   (-parse-element [el config args]
     (cond
       ((:is-element? config) el) el
@@ -97,8 +111,7 @@
                     args)
 
       :default
-      (do
-        (throw
-         (js/Error. (str "Unknown element type " (prn-str (type el))
-                         " found while parsing hiccup form: "
-                         (.toString el))))))))
+      (throw
+       (ex (str "Unknown element type " (prn-str (type el))
+                       " found while parsing hiccup form: "
+                       (.toString el)))))))
