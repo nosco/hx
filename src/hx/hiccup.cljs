@@ -18,7 +18,7 @@
   ([config el & args]
    (-parse-element el config args)))
 
-(defn make-node [config el props children]
+(defn- make-node [config el props children]
   (let [{:keys [create-element]} config]
     (if (seq? children)
       (apply create-element el props children)
@@ -31,33 +31,34 @@
   (let [props? (map? (first args))
         props (if props? (first args) nil)
         children (if props? (rest args) args)]
-    (make-node
-     config
-     el
-     (if props?
-       (-> props
-           (util/clj->props))
-       nil)
-     (if (and (= (count children) 1) (fn? (first children)))
-       ;; fn-as-child
-       ;; wrap in a function to parse hiccup from render-fn
-       (fn [& args]
-         (let [ret (apply (first children) args)]
-           (if (vector? ret)
-             (apply parse-element config ret)
-             ret)))
-       (map (partial parse-element config) children)))))
+    (make-node config el
+               (if props?
+                 (-> props
+                     (util/clj->props))
+                 nil)
+               (if (and (= (count children) 1) (fn? (first children)))
+                 ;; fn-as-child
+                 ;; wrap in a function to parse hiccup from render-fn
+                 (fn [& args]
+                   (let [ret (apply (first children) args)]
+                     (if (vector? ret)
+                       (apply parse-element config ret)
+                       ret)))
+                 (map (partial parse-element config) children)))))
 
 (extend-protocol IElement
   nil
   (-parse-element [_ _ _]
     nil)
+
   number
   (-parse-element [n _ _]
     n)
+
   string
   (-parse-element [s _ _]
     s)
+
   PersistentVector
   (-parse-element [form config _]
     (apply parse-element config form))
@@ -98,5 +99,6 @@
       :default
       (do
         (throw
-         (js/Error. (str "Unknown element type found while parsing hiccup form: "
+         (js/Error. (str "Unknown element type " (prn-str (type el))
+                         " found while parsing hiccup form: "
                          (.toString el))))))))

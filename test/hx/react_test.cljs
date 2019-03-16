@@ -45,6 +45,10 @@
   (.change rtl/fireEvent node data))
 
 
+(defn pret [x]
+  (js/console.log x)
+  x)
+
 ;;
 ;; Tests
 ;;
@@ -55,7 +59,13 @@
   (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
                (root (render (hx/f [:div
                                            [:span "hi"]
-                                           [:span "bye"]]))))))
+                                    [:span "bye"]])))))
+  (t/testing "LazySeq"
+    (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
+                 (-> [:div (map identity [[:span "hi"] [:span "bye"]])]
+                     (hx/f)
+                     (render)
+                     (root))))))
 
 (t/deftest create-fragment
   ;; for fragments, the firstChild of the container is the first element
