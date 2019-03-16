@@ -5,7 +5,14 @@
             [hx.utils :as utils])
   #?(:cljs (:require-macros [hx.react])))
 
-#?(:cljs (def f hiccup/parse))
+#?(:cljs (def react-hiccup-config
+           {:create-element react/createElement
+            :is-element? nil
+            :is-element-type? nil
+            :fragment nil}))
+
+#?(:cljs (defn f [form]
+           (hiccup/parse react-hiccup-config form)))
 
 #?(:cljs (defn parse-body [body]
            (if (vector? body)
@@ -72,16 +79,18 @@
 
 #?(:cljs (defmethod hiccup/parse-element
            :<>
-           [el & args]
+           [config el & args]
            (hiccup/-parse-element
             hx.react/fragment
+            react-hiccup-config
             args)))
 
 #?(:cljs (defmethod hiccup/parse-element
            :provider
-           [el {:keys [context value]} args]
+           [config el {:keys [context value]} args]
            (hiccup/-parse-element
             (.-Provider context)
+            react-hiccup-config
             [{:value value}
              args])))
 
@@ -121,7 +130,7 @@
 
 #?(:clj (defn $ [el & args]
           nil)
-   :cljs (defn $ [el & args] (hiccup/make-element el args))
+   :cljs (defn $ [el & args] (hiccup/make-element react-hiccup-config el args))
    ;; (defn $ [el p & c]
    ;;   (if (or (string? p) (number? p) (react/isValidElement p))
    ;;     (apply react/createElement el nil p c)

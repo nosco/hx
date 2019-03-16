@@ -5,34 +5,35 @@
             ["react-is" :as react-is]))
 
 (defprotocol IElement
-  (-parse-element [el args] "Parses an element"))
+  (-parse-element [el config args] "Parses an element"))
 
 ;; we use a multimethod to dispatch on identity so that consumers
 ;; can override this for custom values e.g. :<> for React fragments
 (defmulti parse-element
-  (fn [el & more]
+  (fn [config el & more]
     (identity el))
   :default ::default)
 
 ;; if no multimethod for specific el, then apply general parsing rules
 (defmethod parse-element
   ::default
-  ([el & args]
-   (-parse-element el args)))
+  ([config el & args]
+   (-parse-element el config args)))
 
-(defn make-node [el props children]
+(defn make-node [config el props children]
   (if (seq? children)
     (apply react/createElement el props children)
     (react/createElement el props children)))
 
-(defn parse [hiccup]
-  (apply parse-element hiccup))
+(defn parse [config hiccup]
+  (apply parse-element config hiccup))
 
-(defn make-element [el args]
+(defn make-element [config el args]
   (let [props? (map? (first args))
         props (if props? (first args) nil)
         children (if props? (rest args) args)]
     (make-node
+     config
      el
      (if props?
        (-> props
@@ -44,62 +45,63 @@
        (fn [& args]
          (let [ret (apply (first children) args)]
            (if (vector? ret)
-             (apply parse-element ret)
+             (apply parse-element config ret)
              ret)))
-       (map parse-element children)))))
+       (map (partial parse-element config) children)))))
 
 (extend-protocol IElement
   nil
-  (-parse-element [_ _]
+  (-parse-element [_ _ _]
     nil)
   number
-  (-parse-element [n _]
+  (-parse-element [n _ _]
     n)
   string
-  (-parse-element [s _]
+  (-parse-element [s _ _]
     s)
   PersistentVector
-  (-parse-element [form _]
-    (apply parse-element form))
+  (-parse-element [form config _]
+    (apply parse-element config form))
 
   LazySeq
-  (-parse-element [a b]
+  (-parse-element [a config b]
     (make-node
+     config
      react/Fragment
      nil
-     (map parse-element a)))
+     (map (partial parse-element config) a)))
 
   Keyword
-  (-parse-element [el args]
-    (make-element (name el) args))
+  (-parse-element [el config args]
+    (make-element config (name el) args))
 
   function
-  (-parse-element [el args]
-    (make-element el args))
+  (-parse-element [el config args]
+    (make-element config el args))
 
   react/Component
-  (-parse-element [el args]
-    (make-element el args))
+  (-parse-element [el config args]
+    (make-element config el args))
 
   default
-  (-parse-element [el args]
+  (-parse-element [el config args]
     (cond
       (react/isValidElement el) el
 
       (react-is/isValidElementType el)
-      (make-element el args)
+      (make-element config el args)
 
       ;; handle array of children already parsed
       (and (array? el) (every? react/isValidElement el))
       el
 
       (var? el)
-      (make-element (fn VarEl [& args] (apply el args))
+      (make-element config
+                    (fn VarEl [& args] (apply el args))
                     args)
 
       :default
       (do
-        (js/console.log el)
         (throw
          (js/Error. (str "Unknown element type found while parsing hiccup form: "
                          (.toString el))))))))
