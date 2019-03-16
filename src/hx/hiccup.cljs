@@ -1,8 +1,6 @@
 (ns hx.hiccup
   (:require [clojure.walk :as walk]
-            [hx.utils :as util]
-            ["react" :as react]
-            ["react-is" :as react-is]))
+            [hx.utils :as util]))
 
 (defprotocol IElement
   (-parse-element [el config args] "Parses an element"))
@@ -21,9 +19,10 @@
    (-parse-element el config args)))
 
 (defn make-node [config el props children]
-  (if (seq? children)
-    (apply react/createElement el props children)
-    (react/createElement el props children)))
+  (let [{:keys [create-element]} config]
+    (if (seq? children)
+      (apply create-element el props children)
+      (create-element el props children))))
 
 (defn parse [config hiccup]
   (apply parse-element config hiccup))
@@ -67,7 +66,7 @@
   (-parse-element [a config b]
     (make-node
      config
-     react/Fragment
+     (:fragment config)
      nil
      (map (partial parse-element config) a)))
 
@@ -79,20 +78,16 @@
   (-parse-element [el config args]
     (make-element config el args))
 
-  react/Component
-  (-parse-element [el config args]
-    (make-element config el args))
-
   default
   (-parse-element [el config args]
     (cond
-      (react/isValidElement el) el
+      ((:is-element? config) el) el
 
-      (react-is/isValidElementType el)
+      ((:is-element-type? config) el)
       (make-element config el args)
 
       ;; handle array of children already parsed
-      (and (array? el) (every? react/isValidElement el))
+      (and (array? el) (every? (:is-element? config) el))
       el
 
       (var? el)

@@ -1,15 +1,21 @@
 (ns hx.react
   (:require #?(:cljs [goog.object :as gobj])
             #?(:cljs ["react" :as react])
+            #?(:cljs ["react-is" :as react-is])
             [hx.hiccup :as hiccup]
             [hx.utils :as utils])
   #?(:cljs (:require-macros [hx.react])))
 
+#?(:cljs (extend-type react/Component
+           hiccup/IElement
+           (-parse-element [el config args]
+             (hiccup/make-element config el args))))
+
 #?(:cljs (def react-hiccup-config
            {:create-element react/createElement
-            :is-element? nil
-            :is-element-type? nil
-            :fragment nil}))
+            :is-element? react/isValidElement
+            :is-element-type? react-is/isValidElementType
+            :fragment react/Fragment}))
 
 #?(:cljs (defn f [form]
            (hiccup/parse react-hiccup-config form)))
