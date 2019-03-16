@@ -233,7 +233,8 @@
 
     :default props)))
 
-#?(:cljs (defn clj->props [props]
+#?(:clj (defn clj->props [props] props)
+   :cljs (defn clj->props [props]
            (-> props
                (reactify-props)
                (styles->js)
