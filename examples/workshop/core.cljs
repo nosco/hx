@@ -42,7 +42,7 @@
 (hx/defnc VarQuote [_]
   [:div "var qoute"])
 
-(dc/defcard single-letters
+(dc/defcard var-quote
   (hx/f [#'VarQuote]))
 
 (hx/defnc Rc [{:keys [children]}]
