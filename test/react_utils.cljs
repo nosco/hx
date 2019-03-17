@@ -5,6 +5,10 @@
    [clojure.string :as str]
    ["react-testing-library" :as rtl]))
 
+(defn pret [x]
+  (js/console.log x)
+  x)
+
 (def render rtl/render)
 
 (defn root [result]
