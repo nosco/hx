@@ -73,7 +73,21 @@
   ([f]
    (react/useEffect f))
   ([f deps]
-   (react/useEffect f (to-array deps))))
+   ;; React uses JS equality to check of the current deps are different than
+   ;; previous deps values. This means that CLJS data (e.g. maps, sets, vecs)
+   ;; equality is not respected and will trigger if you e.g. pass in a vec of
+   ;; strings as props and need to depend on that inside of an effect.
+   ;;
+   ;; We can work around this by assigning the previous deps to a ref, and do
+   ;; our own equality check to see if they have changed. If so, we update the
+   ;; ref to equal the current value.
+   ;;
+   ;; We can then just pass this one value into `useEffect` and it will only
+   ;; change if Clojure's equality detects a difference.
+   (let [-deps (react/useRef deps)]
+     (when (not= deps (.-current -deps))
+       (set! (.-current -deps) deps))
+     (react/useEffect f #js [(.-current -deps)]))))
 
 (def <-context
   "Just react/useContext"

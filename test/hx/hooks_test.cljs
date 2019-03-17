@@ -94,7 +94,7 @@
     (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])
         (re-render))
     (t/is (u/node= (u/html "<div>1</div>")
-                   (u/pret (u/root val-test))) "map")))
+                   (u/root val-test)) "map")))
 
 (t/deftest <-effects-deps-vec
   (let [val-test (-> (hx/f [ValTest {:some-val [:asdf :jkl]}])
