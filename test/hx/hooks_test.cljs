@@ -56,32 +56,30 @@
     [:div (.-current counter)]))
 
 (t/deftest <-effect-deps
-  (t/testing "dependencies compared as value"
-    (let [val-test (-> (hx/f [ValTest {:some-val 1}])
-                       (u/render))
-          re-render (.-rerender val-test)]
-      (-> (hx/f [ValTest {:some-val 1}])
-          (re-render))
-      (-> (hx/f [ValTest {:some-val 2}])
-          (re-render))
-      (-> (hx/f [ValTest {:some-val 2}])
-          (re-render))
-      (-> (hx/f [ValTest {:some-val 2}])
-          (re-render))
-      (t/is (u/node= (u/html "<div>2</div>")
-                     (u/root val-test)) "number"))))
+  (let [val-test (-> (hx/f [ValTest {:some-val 1}])
+                     (u/render))
+        re-render (.-rerender val-test)]
+    (-> (hx/f [ValTest {:some-val 1}])
+        (re-render))
+    (-> (hx/f [ValTest {:some-val 2}])
+        (re-render))
+    (-> (hx/f [ValTest {:some-val 2}])
+        (re-render))
+    (-> (hx/f [ValTest {:some-val 2}])
+        (re-render))
+    (t/is (u/node= (u/html "<div>2</div>")
+                   (u/root val-test)) "number")))
 
 (t/deftest <-effect-deps-native-val
-  (t/testing "dependencies compared as value"
-    (let [val-test (-> (hx/f [ValTest {:some-val 1}])
-                       (u/render))
-          re-render (.-rerender val-test)]
-      (-> (hx/f [ValTest {:some-val 1}])
-          (re-render))
-      (-> (hx/f [ValTest {:some-val 1}])
-          (re-render))
-      (t/is (u/node= (u/html "<div>1</div>")
-                     (u/root val-test)) "number"))))
+  (let [val-test (-> (hx/f [ValTest {:some-val 1}])
+                     (u/render))
+        re-render (.-rerender val-test)]
+    (-> (hx/f [ValTest {:some-val 1}])
+        (re-render))
+    (-> (hx/f [ValTest {:some-val 1}])
+        (re-render))
+    (t/is (u/node= (u/html "<div>1</div>")
+                   (u/root val-test)) "number")))
 
 (t/deftest <-effects-deps-map
   (let [val-test (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])

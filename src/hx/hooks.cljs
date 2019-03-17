@@ -74,7 +74,7 @@
    (react/useEffect f))
   ([f deps]
    ;; React uses JS equality to check of the current deps are different than
-   ;; previous deps values. This means that CLJS data (e.g. maps, sets, vecs)
+   ;; previous deps values. This means that Clojure data (e.g. maps, sets, vecs)
    ;; equality is not respected and will trigger if you e.g. pass in a vec of
    ;; strings as props and need to depend on that inside of an effect.
    ;;
