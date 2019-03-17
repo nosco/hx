@@ -65,26 +65,41 @@
                  (-> [:div (map identity [[:span "hi"] [:span "bye"]])]
                      (hx/f)
                      (render)
-                     (root))))))
+                     (root)))))
 
-(t/deftest create-fragment
-  ;; for fragments, the firstChild of the container is the first element
-  (t/is (node= (html "<div>hi</div>")
-               (root (render (hx/f [:<> [:div "hi"]])))))
+  (t/testing "fragment"
+    ;; for fragments, the firstChild of the container is the first element
+    (t/is (node= (html "<div>hi</div>")
+                 (root (render (hx/f [:<> [:div "hi"]])))))
 
-  ;; so here we test to see if the container matches
-  (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
-               (.-container (render (hx/f [:<>
-                                           [:span "hi"]
-                                           [:span "bye"]]))))))
+    ;; so here we test to see if the container matches
+    (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
+                 (.-container (render (hx/f [:<>
+                                             [:span "hi"]
+                                             [:span "bye"]]))))))
 
-(t/deftest create-provider
-  (let [c (hx/create-context)]
-  (t/is (node= (html "<div>hi</div>")
-               (-> (hx/f [:provider {:context c}
-                          [:div "hi"]])
-                   (render)
-                   (root))))))
+  (t/testing "provider"
+    (let [c (hx/create-context)]
+      (t/is (node= (html "<div>hi</div>")
+                   (-> (hx/f [:provider {:context c}
+                              [:div "hi"]])
+                       (render)
+                       (root))))))
+
+  (t/testing "function"
+    (let [f (fn test-fn [_] (hx/f [:div "hi"]))]
+      (t/is (node= (html "<div>hi</div>")
+                   (-> (hx/f [f])
+                       (render)
+                       (root)))))
+
+    (let [f (fn f-fn [_] (hx/f [:span "hi"]))
+          g (fn g-fn [_] (hx/f [:h1 [f]]))
+          h (fn h-fn [_] (hx/f [:div [g]]))]
+      (t/is (node= (html "<div><h1><span>hi</span></h1></div>")
+                   (-> (hx/f [h])
+                       (render)
+                       (root)))))))
 
 (t/deftest style-prop
   (t/is (node= (html "<div style=\"color: red;\">hi</div>")
