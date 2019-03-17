@@ -2,9 +2,15 @@
 
 ## [Unreleased]
 
+### Added
+
+- `hx.hiccup` is now cross-platform (CLJ + CLJS) and has been decoupled from React
+
 ### Fixed
 
 - `:class` prop having value `nil` when `:class-name` not present
+- Special chars (e.g. `?`) in props being dropped
+- `<-effect` deps didn't respect Clojure equality
 
 ## [0.3.3] - Mar 08, 2019
 
