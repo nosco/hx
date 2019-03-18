@@ -35,7 +35,9 @@
   @(.-callCount f))
 
 (defn click [node]
-  (.click rtl/fireEvent node))
+  (.click rtl/fireEvent node)
+  node)
 
 (defn change [node data]
-  (.change rtl/fireEvent node data))
+  (.change rtl/fireEvent node data)
+  node)

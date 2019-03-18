@@ -119,3 +119,58 @@
         (re-render))
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "set")))
+
+(hx/defnc OnClickState [_]
+  (let [count (hooks/<-state 0)]
+    [:div {:on-click #(swap! count inc)}
+     @count]))
+
+(t/deftest <-state
+  (let [state-test (-> (hx/f [OnClickState])
+                       (u/render)
+                       (u/root)
+                       ;; click 3 times
+                       (u/click)
+                       (u/click)
+                       (u/click))]
+    (t/is (u/node= (u/html "<div>3</div>")
+                   state-test))))
+
+(hx/defnc StateWithEffect [{:keys [receive]}]
+  (let [count (hooks/<-state 0)]
+    (hooks/<-effect
+     (fn []
+       (js/setTimeout
+        (fn []
+          (receive @count))
+        100)
+       js/undefined))
+    [:div {:on-click #(swap! count inc)}
+     @count]))
+
+(defn receiver
+  "Returns a function and a promise. The promise resolves after `timeout` ms
+  with a vector of the values that the function has been called with."
+  [timeout]
+  (let [called (atom [])
+        p (js/Promise. (fn [res rej]
+                         (js/setTimeout
+                          (fn [] (res @called))
+                          timeout)))
+        f #(swap! called conj %)]
+    [f p]))
+
+(t/deftest <-state-with-effect
+  (let [[receive received] (receiver 104)
+        state-test (-> (hx/f [StateWithEffect {:receive receive}])
+                       (u/render)
+                       (u/root)
+                       ;; click 3 times
+                       (u/click)
+                       (u/click)
+                       (u/click))]
+    (t/async done
+             (-> received
+                 (.then (fn [called-with]
+                          (t/is (= [0 1 2 3] called-with))
+                          (done)))))))
