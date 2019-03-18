@@ -36,6 +36,38 @@
         update-ref (fn [v] (gobj/set react-ref "current" v))]
   (Atomified. [react-ref update-ref] #(.-current ^js %))))
 
+(deftype AtomRef [react-ref]
+  IDeref
+  (-deref [_]
+    (deref (.-current react-ref)))
+
+  IReset
+  (-reset! [_ v']
+    (reset! (.-current react-ref) v'))
+
+  ISwap
+  (-swap! [o f]
+    (swap! (.-current react-ref) f))
+  (-swap! [o f a]
+    (swap! (.-current react-ref) #(f % a)))
+  (-swap! [o f a b]
+    (swap! (.-current react-ref) #(f % a b)))
+  (-swap! [o f a b xs]
+    (swap! (.-current react-ref) #(apply f % a b xs))))
+
+
+(defn <-atom [initial-value]
+  (let [r (react/useRef (atom initial-value))
+        k (gensym "<-atom")
+        [v u] (react/useState initial-value)]
+    (react/useEffect
+     (fn []
+       (add-watch (.-current r) k (fn [_ _ _ v']
+                                    (u v')))
+       (fn [] (remove-watch (.-current r) k)))
+     #js [])
+    (AtomRef. r)))
+
 (defn <-deref
   "Takes an atom. Returns the currently derefed value of the atom, and re-renders
   the component on change."

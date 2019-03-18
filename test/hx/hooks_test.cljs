@@ -143,7 +143,7 @@
        (js/setTimeout
         (fn []
           (receive @count))
-        100)
+        10)
        js/undefined))
     [:div {:on-click #(swap! count inc)}
      @count]))
@@ -161,8 +161,35 @@
     [f p]))
 
 (t/deftest <-state-with-effect
-  (let [[receive received] (receiver 104)
+  (let [[receive received] (receiver 100)
         state-test (-> (hx/f [StateWithEffect {:receive receive}])
+                       (u/render)
+                       (u/root)
+                       ;; click 3 times
+                       (u/click)
+                       (u/click)
+                       (u/click))]
+    (t/async done
+             (-> received
+                 (.then (fn [called-with]
+                          (t/is (= [0 1 2 3] called-with))
+                          (done)))))))
+
+(hx/defnc AtomWithEffect [{:keys [receive]}]
+  (let [count (hooks/<-atom 0)]
+    (hooks/<-effect
+     (fn []
+       (js/setTimeout
+        (fn []
+          (receive @count))
+        10)
+       js/undefined))
+    [:div {:on-click #(swap! count inc)}
+     @count]))
+
+(t/deftest <-atom-with-effect
+  (let [[receive received] (receiver 20)
+        state-test (-> (hx/f [AtomWithEffect {:receive receive}])
                        (u/render)
                        (u/root)
                        ;; click 3 times
