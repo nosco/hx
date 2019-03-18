@@ -74,23 +74,6 @@
                                  :else x))]
              (thisfn x))))
 
-#?(:clj (defn shallow-clj->js
-          [x & {:keys [keyword-fn]
-                :or   {keyword-fn name}
-                :as options}]
-          x
-          (cond
-            (nil? x) nil
-            (keyword? x) (keyword-fn x)
-            (symbol? x) (str x)
-            (map? x) (let [kvs (reduce-kv
-                                (fn [c k v]
-                                  (conj c (hx.utils/shallow-clj->js k) v)) [] x)]
-                       (list* 'js-obj kvs))
-            (coll? x) (list* 'js/Array x)
-            :else x)
-          ))
-
 #_(shallow-clj->js [1 2 3])
 #_(shallow-clj->js {:a "asdf" :b :y :c 2})
 
