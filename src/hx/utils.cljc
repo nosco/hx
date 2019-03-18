@@ -180,7 +180,8 @@
             (string? value))
         value
 
-        (coll? value)
+        (or (sequential? value)
+            (set? value))
         (join-classes value)
 
         :else value))
