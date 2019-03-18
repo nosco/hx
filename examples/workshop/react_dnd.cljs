@@ -17,8 +17,8 @@
                          :top (gobj/get props "top")
                          :text (gobj/get props "text")})})
 
-(hx/defnc BoxRender [{:keys [connect-drag-source top left text] :as props}]
-  (connect-drag-source
+(hx/defnc BoxRender [{:keys [connectDragSource top left text] :as props}]
+  (connectDragSource
    ;; we have to call hx/f directly here since `connect-drag-source` expects
    ;; a react element as it's argument, and returns a react element
    (hx/f [:div {:style {:top top
