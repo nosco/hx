@@ -61,9 +61,9 @@
 
 (defn props->clj [props]
   (let [props (utils/shallow-js->clj props :keywordize-keys true)]
-    ;; provide `:class-name` property also as `:class`
+    ;; provide `:class-name` property also as `:class` for backwards compat
     (-> props
-        (also-as :class-name :class))))
+        (also-as :class :class-name))))
 
 (comment
   (props->clj #js {"x0" 1})
@@ -76,6 +76,7 @@
 
   (props->clj #js {"testTest.asdf?" 1})
 
+  (props->clj #js {"class" ["asdf"]})
   )
 
 (defn $ [el & args] (hiccup/make-element react-hiccup-config el args))
