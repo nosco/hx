@@ -120,6 +120,11 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "set")))
 
+
+;;
+;; <-state
+;;
+
 (hx/defnc OnClickState [_]
   (let [count (hooks/<-state 0)]
     [:div {:on-click #(swap! count inc)}
@@ -174,6 +179,26 @@
                  (.then (fn [called-with]
                           (t/is (= [0 1 2 3] called-with))
                           (done)))))))
+
+;;
+;; <-atom
+;;
+
+(hx/defnc OnClickAtom [_]
+  (let [count (hooks/<-atom 0)]
+    [:div {:on-click #(swap! count inc)}
+     @count]))
+
+(t/deftest <-atom
+  (let [state-test (-> (hx/f [OnClickAtom])
+                       (u/render)
+                       (u/root)
+                       ;; click 3 times
+                       (u/click)
+                       (u/click)
+                       (u/click))]
+    (t/is (u/node= (u/html "<div>3</div>")
+                   state-test))))
 
 (hx/defnc AtomWithEffect [{:keys [receive]}]
   (let [count (hooks/<-atom 0)]
