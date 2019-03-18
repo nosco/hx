@@ -143,7 +143,7 @@
        (js/setTimeout
         (fn []
           (receive @count))
-        100)
+        10)
        js/undefined))
     [:div {:on-click #(swap! count inc)}
      @count]))
@@ -161,7 +161,7 @@
     [f p]))
 
 (t/deftest <-state-with-effect
-  (let [[receive received] (receiver 104)
+  (let [[receive received] (receiver 20)
         state-test (-> (hx/f [StateWithEffect {:receive receive}])
                        (u/render)
                        (u/root)
