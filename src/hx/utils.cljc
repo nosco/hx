@@ -133,17 +133,10 @@
 
 ;; I stole most of this from https://github.com/rauhs/hicada/blob/master/src/hicada/util.clj
 
-;; in CLJS construct an array out of args
-#?(:cljs (defn join-classes-js
-           ([] "")
-           ([& xs]
-            (apply js/Array xs))))
-
 (defn join-classes
   "Join the `classes` with a whitespace."
   [classes]
-  (->> (map #(if (string? %) % (seq %)) classes)
-       (flatten)
+  (->> classes
        (remove nil?)
        (str/join " ")))
 
@@ -187,13 +180,8 @@
             (string? value))
         value
 
-        (and (or (sequential? value)
-                 (set? value))
-             (every? string? value))
+        (coll? value)
         (join-classes value)
-
-        (vector? value)
-        (apply join-classes-js value)
 
         :else value))
 
@@ -238,8 +226,12 @@
                (shallow-clj->js))))
 
 (comment
+  (reactify-props {:class ["foo" nil]})
+
   (clj->props {:class "foo"
                :style {:color "red"}})
+
+  (clj->props {:class [nil "foo"]})
 
   (let [case {:x-x? "asdf"}]
     (-> (clj->props case)

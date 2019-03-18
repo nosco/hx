@@ -111,13 +111,20 @@
 
 (t/deftest class-prop
   (t/is (node= (html "<div class=\"foo\">hi</div>")
-               (root (render (hx/f [:div {:class "foo"} "hi"])))))
+               (root (render (hx/f [:div {:class "foo"} "hi"]))))
+        "bare string")
 
   (t/is (node= (html "<div class=\"foo\">hi</div>")
-               (root (render (hx/f [:div {:class ["foo"]} "hi"])))))
+               (root (render (hx/f [:div {:class ["foo"]} "hi"]))))
+        "vec")
 
   (t/is (node= (html "<div class=\"foo bar\">hi</div>")
-               (root (render (hx/f [:div {:class ["foo" "bar"]} "hi"]))))))
+               (root (render (hx/f [:div {:class ["foo" "bar"]} "hi"]))))
+        "vec with multi")
+
+  (t/is (node= (html "<div class=\"foo bar\">hi</div>")
+               (pret (root (render (hx/f [:div {:class ["foo" nil "bar"]} "hi"])))))
+        "vec with nils"))
 
 (t/deftest on-click-prop
   (let [on-click (func)
