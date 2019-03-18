@@ -144,7 +144,7 @@
                        (u/click)
                        (u/click))]
     (t/is (u/node= (u/html "<div>3</div>")
-                   (u/pret state-test)))))
+                   state-test))))
 
 (hx/defnc StateWithEffect [{:keys [receive]}]
   (let [count (hooks/<-state 0)]
