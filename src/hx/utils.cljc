@@ -97,10 +97,16 @@
 #_(shallow-clj->js {:a/b "asdf" :b/c :y :c/d 2})
 
 #?(:cljs (defn shallow-js->clj
-           ([x] (shallow-js->clj x :keywordize-keys false))
+           ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
            ([x & opts]
-            (let [{:keys [keywordize-keys]} opts
-                  keyfn (if keywordize-keys (comp keyword camel->kebab) str)
+            (let [{:keys [keywordize-keys camel-kebab]
+                   :or {keywordize-keys false
+                        camel-kebab false}} opts
+                  keyfn (if keywordize-keys
+                          (if camel-kebab
+                            (comp keyword camel->kebab)
+                            keyword)
+                          str)
                   f (fn thisfn [x]
                       (cond
                         (satisfies? IEncodeClojure x)
@@ -126,15 +132,6 @@
               (f x)))))
 
 ;; I stole most of this from https://github.com/rauhs/hicada/blob/master/src/hicada/util.clj
-
-#?(:clj (defn join-classes-js
-          "Joins strings space separated"
-          ([] "")
-          ([& xs]
-           (let [strs (->> (repeat (count xs) "~{}")
-                           (interpose ",")
-                           (apply str))]
-             (list* 'js* (str "[" strs "].join(' ')") xs)))))
 
 ;; in CLJS construct an array out of args
 #?(:cljs (defn join-classes-js
@@ -221,17 +218,17 @@
     attrs))
 
 #?(:cljs (defn styles->js [props]
-  (cond
-    (and (map? props) (:style props))
-    (assoc props :style (clj->js (:style props)))
+           (cond
+             (and (map? props) (:style props))
+             (assoc props :style (clj->js (:style props)))
 
-    (gobj/containsKey props "style")
-    (do (->> (gobj/get props "style")
-             (clj->js)
-             (gobj/set props "style"))
-        props)
+             (gobj/containsKey props "style")
+             (do (->> (gobj/get props "style")
+                      (clj->js)
+                      (gobj/set props "style"))
+                 props)
 
-    :default props)))
+             :default props)))
 
 #?(:clj (defn clj->props [props] props)
    :cljs (defn clj->props [props]
@@ -241,10 +238,13 @@
                (shallow-clj->js))))
 
 (comment
+  (clj->props {:class "foo"
+               :style {:color "red"}})
+
   (let [case {:x-x? "asdf"}]
     (-> (clj->props case)
-      (shallow-js->clj :keywordize-keys true)
-      (= case)))
+        (shallow-js->clj :keywordize-keys true)
+        (= case)))
 
   (let [case {:x-x.x? "asdf"}]
     (-> (clj->props case)

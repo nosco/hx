@@ -32,9 +32,9 @@
         props (if props? (first args) nil)
         children (if props? (rest args) args)]
     (make-node config el
-               (if props?
-                 (-> props
-                     (util/clj->props))
+               (case [(string? el) props?]
+                 [true true] (util/clj->props props)
+                 [false true] (util/shallow-clj->js props)
                  nil)
                (if (and (= (count children) 1) (fn? (first children)))
                  ;; fn-as-child

@@ -9,6 +9,11 @@
 (t/use-fixtures :each
   {:after rtl/cleanup})
 
+
+;;
+;; <-effect
+;;
+
 (t/deftest <-effect
   (t/testing "no deps, fires on every render"
     (let [counter (atom 0)
@@ -132,6 +137,11 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "set")))
 
+
+;;
+;; <-state
+;;
+
 (hx/defnc OnClickState [_]
   (let [[count update-count] (hooks/<-state 0)]
     [:div {:on-click #(update-count inc)}
@@ -162,7 +172,7 @@
                        (u/click)
                        (u/click))]
     (t/is (u/node= (u/html "<div>3</div>")
-                   state-test))))
+                   (u/pret state-test)))))
 
 (hx/defnc StateWithEffect [{:keys [receive]}]
   (let [[count update-count] (hooks/<-state 0)]
