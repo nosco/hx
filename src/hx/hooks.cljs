@@ -68,26 +68,29 @@
   "Just react/useReducer."
   react/useReducer)
 
+;; React uses JS equality to check of the current deps are different than
+;; previous deps values. This means that Clojure data (e.g. maps, sets, vecs)
+;; equality is not respected and will trigger if you e.g. pass in a vec of
+;; strings as props and need to depend on that inside of an effect.
+;;
+;; We can work around this by assigning the previous deps to a ref, and do
+;; our own equality check to see if they have changed. If so, we update the
+;; ref to equal the current value.
+;;
+;; We can then just pass this one value into e.g. `useEffect` and it will only
+;; change if Clojure's equality detects a difference.
+(defn- <-clj-deps [deps]
+  (let [-deps (react/useRef deps)]
+    (when (not= deps (.-current -deps))
+      (set! (.-current -deps) deps))
+    (.-current -deps)))
+
 (defn <-effect
   "Just react/useEffect"
   ([f]
    (react/useEffect f))
   ([f deps]
-   ;; React uses JS equality to check of the current deps are different than
-   ;; previous deps values. This means that Clojure data (e.g. maps, sets, vecs)
-   ;; equality is not respected and will trigger if you e.g. pass in a vec of
-   ;; strings as props and need to depend on that inside of an effect.
-   ;;
-   ;; We can work around this by assigning the previous deps to a ref, and do
-   ;; our own equality check to see if they have changed. If so, we update the
-   ;; ref to equal the current value.
-   ;;
-   ;; We can then just pass this one value into `useEffect` and it will only
-   ;; change if Clojure's equality detects a difference.
-   (let [-deps (react/useRef deps)]
-     (when (not= deps (.-current -deps))
-       (set! (.-current -deps) deps))
-     (react/useEffect f #js [(.-current -deps)]))))
+   (react/useEffect f #js [(<-clj-deps deps)])))
 
 (def <-context
   "Just react/useContext"
@@ -100,19 +103,20 @@
 (defn <-callback
   "Just react/useCallback"
   ([f] (react/useCallback f))
-  ([f deps] (react/useCallback f (to-array deps))))
+  ([f deps] (react/useCallback f #js [(<-clj-deps deps)])))
 
 (defn <-imperative-handle
   "Just react/useImperativeHandle"
   ([ref create-handle]
    (react/useImperativeHandle ref create-handle))
   ([ref create-handle deps]
-   (react/useImperativeHandle ref create-handle (to-array deps))))
+   (react/useImperativeHandle ref create-handle
+                              #js [(<-clj-deps deps)])))
 
 (defn <-layout-effect
   "Just react/useLayoutEffect"
   ([f] (react/useLayoutEffect f))
-  ([f deps] (react/useLayoutEffect f (to-array deps))))
+  ([f deps] (react/useLayoutEffect f #js [<-clj-deps deps])))
 
 (def <-debug-value
   "Just react/useDebugValue"
