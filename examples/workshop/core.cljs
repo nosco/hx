@@ -1,7 +1,10 @@
 (ns workshop.core
   (:require [devcards.core :as dc :include-macros true]
             ["react" :as react]
-            [hx.react :as hx]))
+            ["react-dom" :as react-dom]
+            [hx.react :as hx]
+            [hx.hooks :as hooks]
+            ["scheduler" :as scheduler]))
 
 (defn Example [props]
   (react/createElement "div" nil (prn-str props)))
@@ -175,3 +178,57 @@
 
 (dc/defcard namespace-keywords
   (hx/f [NamespaceKeywords {:namespace/value "hhhhh"}]))
+
+(hx/defnc StateWithEffect [{:keys [receive]}]
+  (let [count (hooks/<-state 0)]
+    (hooks/<-effect
+     (fn []
+       (js/setTimeout
+        (fn []
+          (prn @count))
+        3000)
+       js/undefined))
+    [:div {:on-click #(swap! count inc)}
+     @count]))
+
+(dc/defcard state-with-effect
+  (hx/f [StateWithEffect]))
+
+(def lifecycle (atom nil))
+
+(add-watch lifecycle :lifecycle (fn [_ _ o n] (prn "watch:" n)))
+
+(hx/defnc WhenApplied [_]
+  (reset! lifecycle :rendering)
+  (let [count (hooks/<-state 0)]
+    (reset! lifecycle nil)
+    [:div {:on-click #(swap! count (fn [n]
+                                     (prn "update:" @lifecycle)
+                                     (inc n)))}
+     @count]))
+
+(dc/defcard when-applied
+  (hx/f [WhenApplied]))
+
+(def schedule (atom :high))
+
+(hx/defnc Scheduler [_]
+  (let [updates (hooks/<-state [])]
+    [:div
+     [:div "Updates: " (prn-str @updates)]
+     [:div
+      [:input
+       {:on-change (fn update []
+                     (case @schedule
+                       :low (do
+                              (reset! schedule :high)
+                              (scheduler/unstable_scheduleCallback
+                               #(swap! updates conj :low)))
+                       :high (do
+                               (reset! schedule :low)
+                               (swap! updates conj :high))))}]]
+     [:div [:button {:on-click #(reset! updates [])} "reset"]]]))
+
+(dc/defcard scheduler
+  (hx/f [react/unstable_ConcurrentMode
+         [Scheduler]]))
