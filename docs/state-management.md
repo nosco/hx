@@ -53,8 +53,8 @@ change.
 
 ### <-deref: ([iref])
 
-Takes an atom. Returns the currently derefed value of the atom, and re-renders 
-the component on change.
+Takes an atom. Returns the currently derefed value of the atom, and queues a 
+re-render of the component on change.
 
 ### <-reducer: ([reducer initialArg init])
 
