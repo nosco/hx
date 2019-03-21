@@ -46,7 +46,7 @@
   (-parse-element [s _ _]
     s)
 
-  #?(:clj clojure.lang.PersistentVector 
+  #?(:clj clojure.lang.PersistentVector
      :cljs PersistentVector)
   (-parse-element [form config _]
     (apply parse-element config form))
