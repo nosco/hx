@@ -180,16 +180,15 @@
   (hx/f [NamespaceKeywords {:namespace/value "hhhhh"}]))
 
 (hx/defnc StateWithEffect [{:keys [receive]}]
-  (let [count (hooks/<-state 0)]
+  (let [[count update-count] (hooks/<-state 0)]
     (hooks/<-effect
      (fn []
        (js/setTimeout
         (fn []
-          (prn @count))
-        3000)
-       js/undefined))
-    [:div {:on-click #(swap! count inc)}
-     @count]))
+          (prn count))
+        3000)))
+    [:div {:on-click #(update-count inc)}
+     count]))
 
 (dc/defcard state-with-effect
   (hx/f [StateWithEffect]))
@@ -200,12 +199,12 @@
 
 (hx/defnc WhenApplied [_]
   (reset! lifecycle :rendering)
-  (let [count (hooks/<-state 0)]
+  (let [[count update-count] (hooks/<-state 0)]
     (reset! lifecycle nil)
-    [:div {:on-click #(swap! count (fn [n]
-                                     (prn "update:" @lifecycle)
-                                     (inc n)))}
-     @count]))
+    [:div {:on-click #(update-count (fn [n]
+                                      (prn "update:" @lifecycle)
+                                      (inc n)))}
+     count]))
 
 (dc/defcard when-applied
   (hx/f [WhenApplied]))
@@ -213,9 +212,9 @@
 (def schedule (atom :high))
 
 (hx/defnc Scheduler [_]
-  (let [updates (hooks/<-state [])]
+  (let [[updates set-updates] (hooks/<-state [])]
     [:div
-     [:div "Updates: " (prn-str @updates)]
+     [:div "Updates: " (prn-str updates)]
      [:div
       [:input
        {:on-change (fn update []
@@ -223,11 +222,11 @@
                        :low (do
                               (reset! schedule :high)
                               (scheduler/unstable_scheduleCallback
-                               #(swap! updates conj :low)))
+                               #(set-updates conj :low)))
                        :high (do
                                (reset! schedule :low)
-                               (swap! updates conj :high))))}]]
-     [:div [:button {:on-click #(reset! updates [])} "reset"]]]))
+                               (set-updates conj :high))))}]]
+     [:div [:button {:on-click #(set-updates [])} "reset"]]]))
 
 (dc/defcard scheduler
   (hx/f [react/unstable_ConcurrentMode
