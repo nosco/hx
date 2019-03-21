@@ -199,7 +199,7 @@
     [f p]))
 
 (t/deftest <-state-with-effect
-  (let [[receive received] (receiver 20)
+  (let [[receive received] (receiver 30)
         state-test (-> (hx/f [StateWithEffect {:receive receive}])
                        (u/render)
                        (u/root)
