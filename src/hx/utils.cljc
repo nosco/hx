@@ -2,6 +2,14 @@
   (:require [clojure.string :as str]
             #?(:cljs [goog.object :as gobj])))
 
+(defn also-as
+  "If key `k1` is contained in `m`, assocs the value of it into `m` at key `k2`"
+  [m k1 k2]
+  (if-let [entry (find m k1)]
+    (let [[_ v] entry]
+      (assoc m k2 v))
+    m))
+
 (defn camel->kebab
   "Converts from camel case (e.g. Foo or FooBar) to kebab case
    (e.g. foo or foo-bar)."

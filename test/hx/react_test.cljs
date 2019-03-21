@@ -107,7 +107,13 @@
 
   (t/is (node= (html "<div style=\"color: red; background: green;\">hi</div>")
                (root (render (hx/f [:div {:style {:color "red"
-                                                         :background "green"}} "hi"]))))))
+                                                  :background "green"}} "hi"])))))
+
+  (let [c (fn [props] (hx/f [:div {:style (.-style props)} "hi"]))]
+    (t/is (node= (html "<div style=\"color: red; background: green;\">hi</div>")
+                 (root (render (hx/f [c {:style {:color "red"
+                                                 :background "green"}} "hi"]))))
+          "style pass-through")))
 
 (t/deftest class-prop
   (t/is (node= (html "<div class=\"foo\">hi</div>")
@@ -123,8 +129,19 @@
         "vec with multi")
 
   (t/is (node= (html "<div class=\"foo bar\">hi</div>")
-               (pret (root (render (hx/f [:div {:class ["foo" nil "bar"]} "hi"])))))
-        "vec with nils"))
+               (root (render (hx/f [:div {:class ["foo" nil "bar"]} "hi"]))))
+        "vec with nils")
+
+  (let [c (fn [props]
+            (hx/f [:div (str (= (.-className props) "foo"))]))]
+    (t/is (node= (html "<div>true</div>")
+                 (-> [c {:class "foo"}] (hx/f) (render) (root))))))
+
+(t/deftest for-prop
+  (let [c (fn [props]
+            (hx/f [:div (str (= (.-htmlFor props) "foo"))]))]
+    (t/is (node= (html "<div>true</div>")
+                 (-> [c {:for "foo"}] (hx/f) (render) (root))))))
 
 (t/deftest on-click-prop
   (let [on-click (func)

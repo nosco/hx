@@ -23,7 +23,11 @@
      ;; props
      (case [(string? el) props?]
        [true true] (utils/clj->props props)
-       [false true] (utils/shallow-clj->js props)
+       [false true] (-> props
+                        (utils/also-as :class :className)
+                        (utils/also-as :for :htmlFor)
+                        (utils/styles->js)
+                        (utils/shallow-clj->js))
        nil)
 
      ;; children
@@ -71,13 +75,7 @@
    [{:value value}
     args]))
 
-(defn also-as
-  "If key `k1` is contained in `m`, assocs the value of it into `m` at key `k2`"
-  [m k1 k2]
-  (if-let [entry (find m k1)]
-    (let [[_ v] entry]
-      (assoc m k2 v))
-    m))
+
 
 (comment
   (also-as {:a 1} :a :b)
@@ -90,7 +88,9 @@
   (let [props (utils/shallow-js->clj props :keywordize-keys true)]
     ;; provide `:class-name` property also as `:class` for backwards compat
     (-> props
-        (also-as :class :class-name))))
+        (utils/also-as :class :class-name)
+        ;; (also-as :for :htmlFor)
+        )))
 
 (comment
   (props->clj #js {"x0" 1})
