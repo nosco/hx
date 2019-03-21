@@ -11,8 +11,35 @@
   (-parse-element [el config args]
     (hiccup/make-element config el args)))
 
+(defn create-element [config el args]
+  (let [props? (map? (first args))
+        props (if props? (first args) nil)
+        children (if props? (rest args) args)]
+    (apply
+     react/createElement
+     ;; element
+     el
+
+     ;; props
+     (case [(string? el) props?]
+       [true true] (utils/clj->props props)
+       [false true] (utils/shallow-clj->js props)
+       nil)
+
+     ;; children
+     (if (and (= (count children) 1) (fn? (first children)))
+       ;; fn-as-child
+       ;; wrap in a function to parse hiccup from render-fn
+       (list
+        (fn [& args]
+          (let [ret (apply (first children) args)]
+            (if (vector? ret)
+              (apply hiccup/parse-element config ret)
+              ret))))
+       (map (partial hiccup/parse-element config) children)))))
+
 (def react-hiccup-config
-  {:create-element react/createElement
+  {:create-element create-element
    :is-element? react/isValidElement
    :is-element-type? react-is/isValidElementType
    :fragment react/Fragment})

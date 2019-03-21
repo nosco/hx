@@ -18,33 +18,11 @@
   ([config el & args]
    (-parse-element el config args)))
 
-(defn- make-node [config el props children]
-  (let [{:keys [create-element]} config]
-    (if (seq? children)
-      (apply create-element el props children)
-      (create-element el props children))))
-
 (defn parse [config hiccup]
   (apply parse-element config hiccup))
 
 (defn make-element [config el args]
-  (let [props? (map? (first args))
-        props (if props? (first args) nil)
-        children (if props? (rest args) args)]
-    (make-node config el
-               (case [(string? el) props?]
-                 [true true] (util/clj->props props)
-                 [false true] (util/shallow-clj->js props)
-                 nil)
-               (if (and (= (count children) 1) (fn? (first children)))
-                 ;; fn-as-child
-                 ;; wrap in a function to parse hiccup from render-fn
-                 (fn [& args]
-                   (let [ret (apply (first children) args)]
-                     (if (vector? ret)
-                       (apply parse-element config ret)
-                       ret)))
-                 (map (partial parse-element config) children)))))
+  ((:create-element config) config el args))
 
 #?(:clj (defn array? [x]
           (coll? x)))
@@ -76,11 +54,10 @@
   #?(:clj clojure.lang.LazySeq
      :cljs LazySeq)
   (-parse-element [a config b]
-    (make-node
+    (make-element
      config
      (:fragment config)
-     nil
-     (map (partial parse-element config) a)))
+     (cons nil (map (partial parse-element config) a))))
 
   #?(:clj clojure.lang.Keyword
      :cljs Keyword)
