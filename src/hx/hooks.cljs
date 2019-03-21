@@ -90,7 +90,7 @@
   ([f]
    (react/useEffect f))
   ([f deps]
-   (react/useEffect f #js [(<-clj-deps deps)])))
+   (react/useEffect f (to-array deps))))
 
 (def <-context
   "Just react/useContext"
@@ -103,7 +103,7 @@
 (defn <-callback
   "Just react/useCallback"
   ([f] (react/useCallback f))
-  ([f deps] (react/useCallback f #js [(<-clj-deps deps)])))
+  ([f deps] (react/useCallback f (to-array deps))))
 
 (defn <-imperative-handle
   "Just react/useImperativeHandle"
@@ -111,12 +111,12 @@
    (react/useImperativeHandle ref create-handle))
   ([ref create-handle deps]
    (react/useImperativeHandle ref create-handle
-                              #js [(<-clj-deps deps)])))
+                              (to-array deps))))
 
 (defn <-layout-effect
   "Just react/useLayoutEffect"
   ([f] (react/useLayoutEffect f))
-  ([f deps] (react/useLayoutEffect f #js [<-clj-deps deps])))
+  ([f deps] (react/useLayoutEffect f (to-array deps))))
 
 (def <-debug-value
   "Just react/useDebugValue"
