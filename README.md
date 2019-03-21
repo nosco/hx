@@ -14,11 +14,11 @@ A simple, easy to use library for React development in ClojureScript.
 ;; elements. You may use it just like any normal React component.
 (defnc MyComponent [{:keys [initial-name]}]
   ;; use React Hooks for state management
-  (let [name (<-state initial-name)]
+  (let [[name update-name] (<-state initial-name)]
     [:<>
      [:div "Hello " 
-      [:span {:style {:font-weight "bold"}} @name] "!"]
-     [:div [:input {:on-change #(reset! name (-> % .-target .-value))}]]]))
+      [:span {:style {:font-weight "bold"}} name] "!"]
+     [:div [:input {:on-change #(update-name (-> % .-target .-value))}]]]))
 
 (react-dom/render
   ;; hx/f transforms Hiccup into a React element.

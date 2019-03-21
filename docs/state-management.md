@@ -27,15 +27,24 @@ The idiom that this library provides is: any Hook starts with `<-`
 (instead of `use`) to provide at-a-glance recognition of what Hooks a component
 uses.
 
-Anything missing from here can also be accessed via the React library, e.g.:
-`(react/useMemo)`.
-
 All of the [Rules of Hooks](https://reactjs.org/docs/hooks-overview.html#%EF%B8%8F-rules-of-hooks)
 apply.
 
 ### <-state: ([initial])
 
-Takes an initial value. Returns an atom that will re-render component on change.
+Takes an initial value. Returns a tuple `[value set-value]`, where `set-value`
+is a function that can be used like:
+
+```clojure
+;; a raw value
+(set-value {:this-is "new state"})
+
+;; a function to apply
+(set-value (fn [old-state] (conj old-state :updated)))
+
+;; a function to apply and arguments to prepend
+(set-value conj :update)
+```
 
 ### <-ref: ([initial])
 
@@ -48,30 +57,46 @@ Takes an atom. Returns the currently derefed value of the atom, and re-renders
 the component on change.
 
 ### <-reducer: ([reducer initialArg init])
+
 Just [react/useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer).
 
 ### <-effect: ([f deps])
+
 Just [react/useEffect](https://reactjs.org/docs/hooks-reference.html#useeffect).
 `deps` can be a CLJS collection.
 
 ### <-context: ([context])
+
 Just [react/useContext](https://reactjs.org/docs/hooks-reference.html#usecontext).
 
 ### <-memo: ([f deps])
+
 Just [react/useMemo](https://reactjs.org/docs/hooks-reference.html#usememo).
 `deps` can be a CLJS collection.
 
+### <-value: ([x])
+
+Caches `x`. When a new `x` is passed in, returns new `x` only if it is
+not equal to the previous `x`.
+
+Useful for optimizing `<-effect` et. al. when you have two values that might
+be structurally equal by referentially different.
+
 ### <-callback: ([f])
+
 Just [react/useCallback](https://reactjs.org/docs/hooks-reference.html#usecallback).
 
 ### <-imperative-handle: ([ref createHandle deps])
+
 Just [react/useImperativeHandle](https://reactjs.org/docs/hooks-reference.html#useimperativehandle).
 `deps` can be a CLJS collection.
 
 ### <-layout-effect: ([f deps])
+
 Just [react/useLayoutEffect](https://reactjs.org/docs/hooks-reference.html#uselayouteffect).
 `deps` can be a CLJS collection.
 
 ### <-debug-value: ([v formatter])
+
 Just [react/useDebugValue](https://reactjs.org/docs/hooks-reference.html#usedebugvalue).
 `deps` can be a CLJS collection.
