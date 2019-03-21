@@ -60,8 +60,17 @@
   on change."
   [initial]
   (let [react-ref (react/useRef initial)
-        update-ref (fn [v] (gobj/set react-ref "current" v))]
-  (Atomified. [react-ref update-ref] #(.-current ^js %))))
+        update-ref (fn updater
+                     ([x]
+                      (if-not (ifn? x)
+                        (gobj/set react-ref "current" x)
+                        (gobj/set react-ref "current"
+                                  (x (gobj/get react-ref "current")))))
+                     ([f & xs]
+                      (updater (fn spread-updater [x]
+                                 (apply f x xs)))))]
+    (prn react-ref)
+    (Atomified. [react-ref update-ref] #(.-current ^js %))))
 
 (defn <-deref
   "Takes an atom. Returns the currently derefed value of the atom, and re-renders

@@ -137,6 +137,22 @@
     [:div {:on-click #(update-count inc)}
      count]))
 
+(t/deftest <-ref
+  (let [ref-test (fn [props]
+                   (let [ref (hooks/<-ref 0)]
+                     (swap! ref inc)
+                     (hx/f [:div @ref])))
+        rendering (u/render (hx/f [ref-test]))
+        re-render (.-rerender rendering)]
+    (t/is (u/node= (u/html "<div>1</div>")
+                   (u/pret (u/root rendering))))
+    (re-render (hx/f [ref-test]))
+    (t/is (u/node= (u/html "<div>2</div>")
+                   (u/pret (u/root rendering))))
+    (re-render (hx/f [ref-test]))
+    (t/is (u/node= (u/html "<div>3</div>")
+                   (u/pret (u/root rendering))))   ))
+
 (t/deftest <-state
   (let [state-test (-> (hx/f [OnClickState])
                        (u/render)
