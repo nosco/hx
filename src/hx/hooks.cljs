@@ -22,11 +22,38 @@
   (-swap! [o f a b xs]
     ((second react-ref) #(apply f % a b xs))))
 
+;; (defn updater
+;;   ([x]
+;;    )
+;;   ([f & xs]
+;;    ))
+
 (defn <-state
   "Takes an initial value. Returns an atom that will re-render component on
   change."
   [initial]
-  (Atomified. (react/useState initial) identity))
+  (let [[v u] (react/useState initial)]
+    [v (fn updater
+         ([x]
+          ;; if x is not a fn, then it's likely not derived from previous state
+          ;; so we don't bother checking equality
+          (if-not (ifn? x)
+            (u x)
+
+            ;; When it is a function, new state will probably be derived from
+            ;; previous. We can take advantage of structural sharing to do fast
+            ;; equality here and avoid unnecessary re-renders
+            (u (fn update [current-state]
+                 (let [new-state (x current-state)]
+                   (if (= current-state new-state)
+                     ;; if equal, return the old one to preserve ref equality
+                     ;; for React
+                     current-state
+                     new-state))))))
+         ;; Support `(updater f a b c)`
+         ([f & xs]
+          (updater (fn spread-updater [x]
+                     (apply f x xs)))))]))
 
 (defn <-ref
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
@@ -79,18 +106,32 @@
 ;;
 ;; We can then just pass this one value into e.g. `useEffect` and it will only
 ;; change if Clojure's equality detects a difference.
-(defn- <-clj-deps [deps]
-  (let [-deps (react/useRef deps)]
-    (when (not= deps (.-current -deps))
-      (set! (.-current -deps) deps))
-    (.-current -deps)))
+(defn- <-value
+  "Caches `x`. When a new `x` is passed in, returns new `x` only if it is
+  not equal to the previous `x`.
+
+  Useful for optimizing `<-effect` et. al. when you have two values that might
+  be structurally equal by referentially different."
+  [x]
+  (let [-x (react/useRef x)]
+    (when (not= x (.-current -x))
+      (set! (.-current -x) x))
+    (.-current -x)))
+
+;; React `useEffect` expects either a function or undefined to be returned
+(defn- wrap-fx [f]
+  (fn wrap-fx-return []
+    (let [x (f)]
+      (if (fn? x)
+        x
+        js/undefined))))
 
 (defn <-effect
   "Just react/useEffect"
   ([f]
-   (react/useEffect f))
+   (react/useEffect (wrap-fx f)))
   ([f deps]
-   (react/useEffect f (to-array deps))))
+   (react/useEffect (wrap-fx f) (to-array deps))))
 
 (def <-context
   "Just react/useContext"

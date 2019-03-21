@@ -27,16 +27,16 @@
 
 (hx/defnc SortableComponent [_]
   ;; use the <-state Hook to keep track of and update the state
-  (let [items (<-state #js ["Item 1"
-                            "Item 2"
-                            "Item 3"
-                            "Item 4"
-                            "Item 5"
-                            "Item 6"])]
+  (let [[items update-items] (<-state #js ["Item 1"
+                                           "Item 2"
+                                           "Item 3"
+                                           "Item 4"
+                                           "Item 5"
+                                           "Item 6"])]
     [:div
      "Click and drag an item to re-arrange them!"
-     [SortableList {:items @items
-                    :onSortEnd #(swap! items move-item %)}]]))
+     [SortableList {:items items
+                    :onSortEnd #(update-items move-item %)}]]))
 
 (dc/defcard example
   (hx/f [SortableComponent]))

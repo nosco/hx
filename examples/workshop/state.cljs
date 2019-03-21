@@ -9,10 +9,10 @@
 ;;
 
 (defnc Simple [_]
-  (let [state (<-state 0)]
+  (let [[state set-state] (<-state 0)]
     [:<>
-     [:div "Counter: " @state]
-     [:div [:button {:on-click #(swap! state inc)} "inc"]]]))
+     [:div "Counter: " state]
+     [:div [:button {:on-click #(set-state inc)} "inc"]]]))
 
 (dc/defcard simple
   (hx/f [Simple]))
@@ -24,14 +24,14 @@
 
 (defnc Timer
   [opts]
-  (let [seconds (<-state 0)]
+  (let [[seconds update-seconds] (<-state 0)]
     (<-effect (fn []
-                (let [id (js/setInterval #(swap! seconds inc) 1000)]
+                (let [id (js/setInterval #(update-seconds inc) 1000)]
                   (fn []
                     (js/clearInterval id))))
               [])
     [:div
-     "Timer: " @seconds]))
+     "Timer: " seconds]))
 
 (dc/defcard timer
   (hx/f [Timer]))
@@ -44,26 +44,27 @@
 (def app-state (react/createContext))
 
 (defnc App [{:keys [children]}]
-  (let [state (<-state {})]
-    [(.-Provider app-state) {:value state}
+  (let [[state set-state] (<-state {})]
+    [:provider {:context app-state
+                :value [state set-state]}
      children]))
 
 (defnc CounterConsumer [_]
-  (let [state (<-context app-state)
-        {:keys [counter]} @state]
+  (let [[state set-state] (<-context app-state)
+        {:keys [counter]} state]
     [:<>
      [:div "Counter: " counter]
-     [:button {:on-click #(swap! state update :counter inc)} "inc"]]))
+     [:button {:on-click #(set-state update :counter inc)} "inc"]]))
 
 (defnc PrintStateConsumer [_]
-  (let [state (<-context app-state)]
-    [:pre (prn-str @state)]))
+  (let [[state] (<-context app-state)]
+    [:pre (prn-str state)]))
 
 (defnc TimerConsumer [_]
-  (let [state (<-context app-state)
-        {:keys [timer]} @state]
+  (let [[state set-state] (<-context app-state)
+        {:keys [timer]} state]
     (<-effect (fn []
-                (let [id (js/setInterval #(swap! state update :timer inc) 1000)]
+                (let [id (js/setInterval #(set-state update :timer inc) 1000)]
                   (fn []
                     (js/clearInterval id))))
               [])

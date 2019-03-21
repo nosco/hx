@@ -52,10 +52,10 @@
     (hooks/<-effect
      (fn [] (set! (.-current counter) (inc (.-current counter)))
        js/undefined)
-     [(:some-val props)])
+     [(hooks/<-value (:some-val props))])
     [:div (.-current counter)]))
 
-(t/deftest <-effect-deps
+(t/deftest <-value-new-val
   (let [val-test (-> (hx/f [ValTest {:some-val 1}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -70,7 +70,7 @@
     (t/is (u/node= (u/html "<div>2</div>")
                    (u/root val-test)) "number")))
 
-(t/deftest <-effect-deps-native-val
+(t/deftest <-value-native-val
   (let [val-test (-> (hx/f [ValTest {:some-val 1}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -81,7 +81,19 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "number")))
 
-(t/deftest <-effects-deps-map
+(t/deftest <-value-map
+  (let [val-test (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])
+                     (u/render))
+        re-render (.-rerender val-test)]
+    (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])
+        (re-render))
+    (-> (hx/f [ValTest {:some-val {:jkl "asdf"}}])
+        (re-render))
+    (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])
+        (re-render))
+    (t/is (u/node= (u/html "<div>2</div>")
+                   (u/root val-test)) "change map"))
+
   (let [val-test (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -94,7 +106,7 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "map")))
 
-(t/deftest <-effects-deps-vec
+(t/deftest <-value-vec
   (let [val-test (-> (hx/f [ValTest {:some-val [:asdf :jkl]}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -107,7 +119,7 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "vector")))
 
-(t/deftest <-effects-deps-set
+(t/deftest <-value-set
   (let [val-test (-> (hx/f [ValTest {:someVal #{:asdf :jkl}}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -121,9 +133,9 @@
                    (u/root val-test)) "set")))
 
 (hx/defnc OnClickState [_]
-  (let [count (hooks/<-state 0)]
-    [:div {:on-click #(swap! count inc)}
-     @count]))
+  (let [[count update-count] (hooks/<-state 0)]
+    [:div {:on-click #(update-count inc)}
+     count]))
 
 (t/deftest <-state
   (let [state-test (-> (hx/f [OnClickState])
@@ -137,16 +149,16 @@
                    state-test))))
 
 (hx/defnc StateWithEffect [{:keys [receive]}]
-  (let [count (hooks/<-state 0)]
+  (let [[count update-count] (hooks/<-state 0)]
     (hooks/<-effect
      (fn []
        (js/setTimeout
         (fn []
-          (receive @count))
+          (receive count))
         10)
        js/undefined))
-    [:div {:on-click #(swap! count inc)}
-     @count]))
+    [:div {:on-click #(update-count inc)}
+     count]))
 
 (defn receiver
   "Returns a function and a promise. The promise resolves after `timeout` ms
@@ -179,12 +191,12 @@
 
 (hx/defnc WhenApplied [_]
   (reset! lifecycle :rendering)
-  (let [count (hooks/<-state 0)]
+  (let [[count update-count] (hooks/<-state 0)]
     (reset! lifecycle nil)
-    [:div {:on-click #(swap! count (fn [n]
+    [:div {:on-click #(update-count (fn [n]
                                      (prn @lifecycle)
                                      (inc n)))}
-     @count]))
+     count]))
 
 (t/deftest when-applied
   (let [state-test (-> (hx/f [WhenApplied])
