@@ -21,7 +21,7 @@ However, in 2019, React is releasing a number of things in the core library:
 
 So far, only React Hooks has fully landed; Suspense is not stable yet except for lazy loading components, and async rendering is currently opt-in and considered unstable.
 
-However, in my experience, most of the value-add of Reagent comes from it's ability to access and update state in a very ergonomic way (atoms), and convert hiccup to React elements. This is why I think that `hx` is a better decision now: you can get the same ergonomics of Reagent with `hx` and React Hooks, today, with less code and better interop.
+However, in my experience, most of the value-add of Reagent comes from it's ability to access and update state in a very ergonomic way, and convert hiccup to React elements. This is why I think that `hx` is a better decision now: you can get the same ergonomics of Reagent with `hx` and React Hooks, today, with less code and better interop.
 
 This is insanely long, but I want to leave you with a couple examples. A short snippet of component-local state:
 
@@ -41,11 +41,11 @@ hx + Hooks code:
 
 ```clojure
 (defnc count-widget [{:keys [foo bar]}]
-  (let [state (<-state {:count 0})]
+  (let [[state set-state] (<-state {:count 0})]
     [:div 
      [:div "Foo: " foo] [:div "Bar: " bar]
      [:div "Count: " (:count state)]
-     [:button {:on-click #(swap! state update :count inc)} "+"]]))
+     [:button {:on-click #(set-state update :count inc)} "+"]]))
 ```
 
 Another, more complex example:
