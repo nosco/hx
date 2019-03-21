@@ -174,3 +174,25 @@
                  (.then (fn [called-with]
                           (t/is (= [0 1 2 3] called-with))
                           (done)))))))
+
+(def lifecycle (atom nil))
+
+(hx/defnc WhenApplied [_]
+  (reset! lifecycle :rendering)
+  (let [count (hooks/<-state 0)]
+    (reset! lifecycle nil)
+    [:div {:on-click #(swap! count (fn [n]
+                                     (prn @lifecycle)
+                                     (inc n)))}
+     @count]))
+
+(t/deftest when-applied
+  (let [state-test (-> (hx/f [WhenApplied])
+                       (u/render)
+                       (u/root)
+                       ;; click 3 times
+                       (u/click)
+                       (u/click)
+                       (u/click))]
+    (t/is (u/node= (u/html "<div>3</div>")
+                   state-test))))
