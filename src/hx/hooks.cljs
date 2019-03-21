@@ -69,7 +69,6 @@
                      ([f & xs]
                       (updater (fn spread-updater [x]
                                  (apply f x xs)))))]
-    (prn react-ref)
     (Atomified. [react-ref update-ref] #(.-current ^js %))))
 
 (defn <-deref
