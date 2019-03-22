@@ -30,30 +30,40 @@
 
 (defn <-state
   "Takes an initial value. Returns an atom that will re-render component on
-  change."
-  [initial]
-  (let [[v u] (react/useState initial)]
-    [v (fn updater
-         ([x]
-          ;; if x is not a fn, then it's likely not derived from previous state
-          ;; so we don't bother checking equality
-          (if-not (ifn? x)
-            (u x)
+  change.
+  If `eq?` is passed in, will use that function to determine whether to update
+  the React state. If it returns `true`, it will keep the old state, `false` it
+  will render with new state."
+  ([initial]
+   (let [[v u] (react/useState initial)]
+     [v (fn updater
+          ([x] (u x))
+          ([f & xs]
+           (updater (fn spread-updater [x]
+                      (apply f x xs)))))]))
+  ([initial eq?]
+   (let [[v u] (react/useState initial)]
+     [v (fn updater
+          ([x]
+           ;; if x is not a fn, then it's likely not derived from previous state
+           ;; so we don't bother checking equality
+           (if-not (ifn? x)
+             (u x)
 
-            ;; When it is a function, new state will probably be derived from
-            ;; previous. We can take advantage of structural sharing to do fast
-            ;; equality here and avoid unnecessary re-renders
-            (u (fn update [current-state]
-                 (let [new-state (x current-state)]
-                   (if (= current-state new-state)
-                     ;; if equal, return the old one to preserve ref equality
-                     ;; for React
-                     current-state
-                     new-state))))))
-         ;; Support `(updater f a b c)`
-         ([f & xs]
-          (updater (fn spread-updater [x]
-                     (apply f x xs)))))]))
+             ;; When it is a function, new state will probably be derived from
+             ;; previous. We can take advantage of structural sharing to do fast
+             ;; equality here and avoid unnecessary re-renders
+             (u (fn update [current-state]
+                  (let [new-state (x current-state)]
+                    (if (eq? current-state new-state)
+                      ;; if equal, return the old one to preserve ref equality
+                      ;; for React
+                      current-state
+                      new-state))))))
+          ;; Support `(updater f a b c)`
+          ([f & xs]
+           (updater (fn spread-updater [x]
+                      (apply f x xs)))))])))
 
 (defn <-ref
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
