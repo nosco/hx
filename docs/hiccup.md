@@ -20,10 +20,10 @@ hiccup form and transforms it into calls to React's `createElement` function:
 (require '[hx.hiccup :as hiccup])
 
 (hiccup/parse
-  [ReactComponent {:some-prop #js {:foo "bar"}}
+  [ReactComponent {:someProp #js {:foo "bar"}}
    [:div {:class "greeting"} "Hello, ReactJS!"]])
 ;; executes:
-;;    (react/createElement ReactComponent #js {:some-prop #js {:foo "bar"}}
+;;    (react/createElement ReactComponent #js {:someProp #js {:foo "bar"}}
 ;;      (react/createElement #js {:className "greeting"}
 ;;        "Hello, ReactJS!"))
 ```
