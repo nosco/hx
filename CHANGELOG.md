@@ -2,15 +2,29 @@
 
 ## [Unreleased]
 
+### Changed
+
+- `<-state` now returns a `[value set-value]` tuple instead of an atom.
+- props passed into hiccup are only converted camel->kebab and back if the element is a keyword.
+- `hx.hiccup` is now cross-platform (CLJ + CLJS) and has been decoupled from React
+
 ### Added
 
-- `hx.hiccup` is now cross-platform (CLJ + CLJS) and has been decoupled from React
+- `<-value` hook that caches the Clojure value passed into it, and only returns a
+(referentially) different value if it is `not=` the previous one. Useful for 
+optimizing renders with things that might return the same data structurally, but
+with a different reference.
+- `<-state`'s update function can take arguments like `swap!`, e.g. `(set-value assoc :foo "bar")`
+- `<-state` can take a third argument: a function that returns `true` if the new
+value and previous value are equal. If true, it will not apply the change.
+- Lots of tests
 
 ### Fixed
 
 - `:class` prop having value `nil` when `:class-name` not present
 - Special chars (e.g. `?`) in props being dropped
-- `<-effect` deps didn't respect Clojure equality
+- `<-effect` where a function is not returned by `f` caused an error
+- `<-ref` was just broken
 
 ## [0.3.3] - Mar 08, 2019
 
