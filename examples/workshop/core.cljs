@@ -244,15 +244,16 @@
     (set! (.-displayName hoc) (str "Header(" (.-displayName c) ")"))
     hoc))
 
-(defn hoc-example2 [c]
-  (let [hoc (hx/fnc Example [_]
-                    [:div {:style {:color "green"}} [c]])]
-    (set! (.-displayName hoc) (str "Green(" (.-displayName c) ")"))
-    hoc))
+(defn hoc-example2 [color]
+  (fn [c]
+    (let [hoc (hx/fnc Example [_]
+                      [:div {:style {:color color}} [c]])]
+      (set! (.-displayName hoc) (str "Color(" (.-displayName c) ")"))
+      hoc)))
 
 (hx/defnc HoCWrapper [_]
   {:wrap [hoc-example
-          hoc-example2]}
+          (hoc-example2 "green")]}
   [:span "HoC should be header and green"])
 
 (dc/defcard hoc-wrapper

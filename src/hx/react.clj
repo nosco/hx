@@ -60,7 +60,12 @@
              (when js/goog.DEBUG
                (set! (.-displayName ~wrapped-name) ~(str *ns* "/" display-name)))
              (def ~display-name (-> ~wrapped-name
-                                    ~@(-> body first :wrap)))))
+                                    ~@(-> body first :wrap
+                                          ;; wrap as a list so that you can do
+                                          ;; like `[hocA (returns-hocB some-config)]`
+                                          ;; and `(returns-hocB some-config)` will be
+                                          ;; called to return an HoC
+                                          (as-> w (map list w)))))))
 
       `(do (def ~display-name ~(fnc* display-name props-bindings body))
            (when js/goog.DEBUG
