@@ -240,7 +240,6 @@
 (defn hoc-example [c]
   (let [hoc (hx/fnc Example [_]
                     [:h1 [c]])]
-    (prn (.-displayName c))
     (set! (.-displayName hoc) (str "Header(" (.-displayName c) ")"))
     hoc))
 
