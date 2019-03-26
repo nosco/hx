@@ -231,3 +231,29 @@
 (dc/defcard scheduler
   (hx/f [react/unstable_ConcurrentMode
          [Scheduler]]))
+
+(def Hello (hx/fnc Hello [_] [:div "Fnc"]))
+
+(dc/defcard fnc
+  (hx/f [Hello]))
+
+(defn hoc-example [c]
+  (let [hoc (hx/fnc Example [_]
+                    [:h1 [c]])]
+    (prn (.-displayName c))
+    (set! (.-displayName hoc) (str "Header(" (.-displayName c) ")"))
+    hoc))
+
+(defn hoc-example2 [c]
+  (let [hoc (hx/fnc Example [_]
+                    [:div {:style {:color "green"}} [c]])]
+    (set! (.-displayName hoc) (str "Green(" (.-displayName c) ")"))
+    hoc))
+
+(hx/defnc HoCWrapper [_]
+  {:wrap [hoc-example
+          hoc-example2]}
+  [:span "HoC should be header and green"])
+
+(dc/defcard hoc-wrapper
+  (hx/f [HoCWrapper]))
