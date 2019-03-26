@@ -1,7 +1,7 @@
 (ns workshop.state
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :refer [defnc]]
-            [hx.hooks :as hooks :refer [<-state <-effect <-context]]
+            [hx.hooks :as hooks :refer [<-state <-effect <-context <-reducer]]
             ["react" :as react]))
 
 ;;
@@ -43,28 +43,35 @@
 
 (def app-state (react/createContext))
 
+(defn state-reducer [state [type & args]]
+  (case type
+    :timer/tick (update state :timer inc)
+    :counter/click (update state :counter inc)
+    (do (js/console.warn "Unknown action type" type)
+        state)))
+
 (defnc App [{:keys [children]}]
-  (let [[state set-state] (<-state {})]
+  (let [[state dispatch] (<-reducer state-reducer {})]
     [:provider {:context app-state
-                :value [state set-state]}
+                :value [state dispatch]}
      children]))
 
 (defnc CounterConsumer [_]
-  (let [[state set-state] (<-context app-state)
+  (let [[state dispatch] (<-context app-state)
         {:keys [counter]} state]
     [:<>
      [:div "Counter: " counter]
-     [:button {:on-click #(set-state update :counter inc)} "inc"]]))
+     [:button {:on-click #(dispatch [:counter/click])} "inc"]]))
 
 (defnc PrintStateConsumer [_]
   (let [[state] (<-context app-state)]
     [:pre (prn-str state)]))
 
 (defnc TimerConsumer [_]
-  (let [[state set-state] (<-context app-state)
+  (let [[state dispatch] (<-context app-state)
         {:keys [timer]} state]
     (<-effect (fn []
-                (let [id (js/setInterval #(set-state update :timer inc) 1000)]
+                (let [id (js/setInterval #(dispatch [:timer/tick]) 1000)]
                   (fn []
                     (js/clearInterval id))))
               [])
