@@ -20,6 +20,9 @@ external React ecosystem.
 ## Examples:
  - [workshop.sortable](../examples/workshop/sortable.cljs): An example using the
  "react-sortable-hoc" library and React Hooks.
+ - [workshop.state](../examples/workshop/state.cljs): A few short examples of 
+ using React Hooks to handle a counter and a timer. Includes an example using
+ Context and reducer pattern.
 
 ## hx.hooks
 
