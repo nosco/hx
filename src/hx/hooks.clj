@@ -21,3 +21,15 @@
     `(<-effect (fn []
                  ~@body)
                ~deps)))
+
+(defmacro <-smart-layout-effect [& body]
+  (let [deps (resolve-vars &env body)]
+    `(<-layout-effect (fn []
+                 ~@body)
+               ~deps)))
+
+(defmacro <-smart-memo [& body]
+  (let [deps (resolve-vars &env body)]
+    `(<-memo (fn []
+               ~@body)
+             ~deps)))
