@@ -38,19 +38,16 @@
          ~@(when (and opts-map? (:pre (first body)))
              (map (fn [x] `(assert ~x)) (:pre (first body))))
          (hx.react/parse-body
-          ;; hooks support
-          (let ~(if (and opts-map? (:hooks (first body)))
-                  (:hooks (first body))
-                  [])
-            ~(if (and opts-map? (:post (first body)))
-               ;; save hiccup value of body
-               `(let [~ret (do ~@(rest body))]
-                  ;; apply post-conditions
-                  ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
-                         (:post (first body)))
-                  ~ret)
-               ;; if no post-conditions, do nothing
-               `(do ~@body))))))))
+          ;; post-conditions
+          ~(if (and opts-map? (:post (first body)))
+             ;; save hiccup value of body
+             `(let [~ret (do ~@(rest body))]
+                ;; apply post-conditions
+                ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
+                       (:post (first body)))
+                ~ret)
+             ;; if no post-conditions, do nothing
+             `(do ~@body)))))))
 
 (defmacro shallow-render [& body]
   `(with-redefs [hx.react/parse-body identity]
