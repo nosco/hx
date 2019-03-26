@@ -39,13 +39,15 @@
              (map (fn [x] `(assert ~x)) (:pre (first body))))
          (hx.react/parse-body
           ;; post-conditions
-          ~(if (and opts-map? (:post (first body)))
-             ;; save hiccup value of body
-             `(let [~ret (do ~@(rest body))]
-                ;; apply post-conditions
-                ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
-                       (:post (first body)))
-                ~ret)
+          ~(if opts-map?
+             (if (:post (first body))
+               ;; save hiccup value of body
+               `(let [~ret (do ~@(rest body))]
+                  ;; apply post-conditions
+                  ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
+                         (:post (first body)))
+                  ~ret)
+               `(do ~@(rest body)))
              ;; if no post-conditions, do nothing
              `(do ~@body)))))))
 
@@ -60,12 +62,7 @@
              (when js/goog.DEBUG
                (set! (.-displayName ~wrapped-name) ~(str *ns* "/" display-name)))
              (def ~display-name (-> ~wrapped-name
-                                    ~@(-> body first :wrap
-                                          ;; wrap as a list so that you can do
-                                          ;; like `[hocA (returns-hocB some-config)]`
-                                          ;; and `(returns-hocB some-config)` will be
-                                          ;; called to return an HoC
-                                          (as-> w (map list w)))))))
+                                    ~@(-> body first :wrap)))))
 
       `(do (def ~display-name ~(fnc* display-name props-bindings body))
            (when js/goog.DEBUG

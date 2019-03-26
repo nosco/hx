@@ -244,7 +244,7 @@
     hoc))
 
 (defn hoc-example2 [color]
-  (fn [c]
+  (fn example2 [c]
     (let [hoc (hx/fnc Example [_]
                       [:div {:style {:color color}} [c]])]
       (set! (.-displayName hoc) (str "Color(" (.-displayName c) ")"))
@@ -252,7 +252,9 @@
 
 (hx/defnc HoCWrapper [_]
   {:wrap [hoc-example
-          (hoc-example2 "green")]}
+          (react/memo =)
+          ((hoc-example2 "green"))
+          ]}
   [:span "HoC should be header and green"])
 
 (dc/defcard hoc-wrapper
