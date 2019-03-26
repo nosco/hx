@@ -1,6 +1,11 @@
 (ns hx.hooks
   (:require ["react" :as react]
-            [goog.object :as gobj]))
+            [goog.object :as gobj])
+  (:require-macros [hx.hooks]))
+
+(def <-debug-value
+  "Just react/useDebugValue"
+  react/useDebugValue)
 
 (deftype Atomified [react-ref deref-lens]
   IDeref
@@ -22,12 +27,6 @@
   (-swap! [o f a b xs]
     ((second react-ref) #(apply f % a b xs))))
 
-;; (defn updater
-;;   ([x]
-;;    )
-;;   ([f & xs]
-;;    ))
-
 (defn <-state
   "Takes an initial value. Returns an atom that will re-render component on
   change.
@@ -36,6 +35,7 @@
   will render with new state."
   ([initial]
    (let [[v u] (react/useState initial)]
+     (<-debug-value (prn-str v))
      [v (fn updater
           ([x] (u x))
           ([f & xs]
@@ -43,6 +43,7 @@
                       (apply f x xs)))))]))
   ([initial eq?]
    (let [[v u] (react/useState initial)]
+     (<-debug-value (prn-str v))
      [v (fn updater
           ([x]
            ;; if x is not a fn, then it's likely not derived from previous state
@@ -109,9 +110,16 @@
      ;; return value of useState on each run
      v)))
 
-(def <-reducer
+(defn <-reducer
   "Just react/useReducer."
-  react/useReducer)
+  ([reducer initial]
+   (let [[state dispatch] (react/useReducer reducer initial)]
+     (<-debug-value (prn-str state))
+     [state dispatch]))
+  ([reducer initial init-fn]
+   (let [[state dispatch] (react/useReducer reducer initial init-fn)]
+     (<-debug-value (prn-str state))
+     [state dispatch])))
 
 ;; React uses JS equality to check of the current deps are different than
 ;; previous deps values. This means that Clojure data (e.g. maps, sets, vecs)
@@ -176,7 +184,3 @@
   "Just react/useLayoutEffect"
   ([f] (react/useLayoutEffect f))
   ([f deps] (react/useLayoutEffect f (to-array deps))))
-
-(def <-debug-value
-  "Just react/useDebugValue"
-  react/useDebugValue)

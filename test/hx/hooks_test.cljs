@@ -20,8 +20,7 @@
           FxTest (fn [props]
                    (hooks/<-effect
                     (fn []
-                      (swap! counter inc)
-                      js/undefined))
+                      (swap! counter inc)))
                    (hx/f [:div @counter]))
           test (-> (hx/f [FxTest])
                    (u/render))
@@ -38,8 +37,7 @@
     (let [counter (atom 0)
           EmptyTest (fn [props]
                       (hooks/<-effect
-                       (fn [] (swap! counter inc)
-                         js/undefined)
+                       (fn [] (swap! counter inc))
                        [])
                       (hx/f [:div @counter]))
           empty-test (-> (hx/f [EmptyTest])
@@ -51,6 +49,55 @@
       (-> (hx/f [EmptyTest])
           (re-render))
       (t/is (= @counter 1)))))
+
+
+;;
+;; <-smart-effect
+;;
+
+(t/deftest <-smart-effect
+  (t/testing "fires only on first render"
+    (let [counter (atom 0)
+          FxTest (fn [props]
+                   (hooks/<-smart-effect
+                     (swap! counter inc))
+                   (hx/f [:div @counter]))
+          test (-> (hx/f [FxTest])
+                   (u/render))
+          re-render (.-rerender test)]
+      ;; re-render twice
+      (-> (hx/f [FxTest])
+          (re-render))
+      (-> (hx/f [FxTest])
+          (re-render))
+      (t/is (= @counter 1)))))
+
+(t/deftest <-smart-effect-detect-change
+  (t/testing "fires anytime `diff` changes before"
+    (let [counter (atom 0)
+          diff (atom 0)
+          FxTest (fn [props]
+                   (let [d @diff]
+                     (hooks/<-smart-effect
+                      d
+                      (swap! counter inc)))
+                   (hx/f [:div @counter]))
+          test (-> (hx/f [FxTest])
+                   (u/render))
+          re-render (.-rerender test)]
+      ;; re-render twice
+      (swap! diff inc)
+      (-> (hx/f [FxTest])
+          (re-render))
+      (swap! diff inc)
+      (-> (hx/f [FxTest])
+          (re-render))
+      (t/is (= @counter 3)))))
+
+
+;;
+;; <-value
+;;
 
 (hx/defnc ValTest [props]
   (let [counter (r/useRef 0)]
