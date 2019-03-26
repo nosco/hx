@@ -18,7 +18,9 @@ with a different reference.
 - `<-state` can take a third argument: a function that returns `true` if the new
 value and previous value are equal. If true, it will not apply the change.
 - Lots of tests
-- `defnc` components now have prettier display names (for e.g. React devtools)
+- `defnc` and `defcomponent` components now have prettier display names (for e.g. React devtools)
+- `defnc` now can be passed a `:wrap` option with a collection of higher-order 
+components to wrap the component in
 
 ### Fixed
 
