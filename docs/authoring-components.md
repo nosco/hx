@@ -54,6 +54,28 @@ simply peel it off of the props object:
    children])
 ```
 
+`defnc` has one other tricks up it's sleeve. It can take a map of options
+as it's first element of the body, just like defn:
+
+```clojure
+(hx/defnc HasOptions [_]
+  {:pre [(true? true)]
+   :post [(not false)]
+   :wrap [with-router
+          with-theme]}
+  [:div "Foo"])
+```
+
+The current list of options which can be passed in are:
+
+- `:pre` which acts like `defn`'s `:pre`
+- `:post` which acts like `defn`'s `:post`
+- `:wrap` which takes a collection of higher-order components and returns a component
+wrapped in all of them, like `(-> HasOptions with-router with-theme)`
+
+
+### Lifecycle
+
 Sometimes we also need access to React's various lifecycle methods like
 `componentDidMount`, `componentDidUpdate`, etc. In that case, we should create a
 React component class. `hx` exposes a very barebones `hx/defcomponent` macro that
