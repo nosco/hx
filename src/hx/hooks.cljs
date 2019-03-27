@@ -126,15 +126,20 @@
 ;; change if Clojure's equality detects a difference.
 (defn- <-value
   "Caches `x`. When a new `x` is passed in, returns new `x` only if it is
-  not equal to the previous `x`.
+  not structurally equal to the previous `x`.
 
   Useful for optimizing `<-effect` et. al. when you have two values that might
   be structurally equal by referentially different."
   [x]
   (let [-x (react/useRef x)]
-    (when (not= x (.-current -x))
-      (set! (.-current -x) x))
-    (.-current -x)))
+    ;; Set the ref to be the last value that was succesfully used to render
+    (<-effect (fn []
+                (set! (.-current -x) x))
+              [x])
+    ;; if they are equal, return the prev one to ensure ref equality
+    (if (= x (.-current -x))
+      (.-current -x)
+      x)))
 
 ;; React `useEffect` expects either a function or undefined to be returned
 (defn- wrap-fx [f]
