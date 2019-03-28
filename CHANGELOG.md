@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- `<-value` hook mutated ref in render, making it not safe for use in Concurrent React
+
 ## [0.4.0] - Mar 26, 2019
 
 ### Changed
