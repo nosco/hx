@@ -55,8 +55,7 @@
 (hx/defnc ValTest [props]
   (let [counter (r/useRef 0)]
     (hooks/<-effect
-     (fn [] (set! (.-current counter) (inc (.-current counter)))
-       js/undefined)
+     (fn [] (set! (.-current counter) (inc (.-current counter))))
      [(hooks/<-value (:some-val props))])
     [:div (.-current counter)]))
 
@@ -155,13 +154,13 @@
         rendering (u/render (hx/f [ref-test]))
         re-render (.-rerender rendering)]
     (t/is (u/node= (u/html "<div>1</div>")
-                   (u/pret (u/root rendering))))
+                   (u/root rendering)))
     (re-render (hx/f [ref-test]))
     (t/is (u/node= (u/html "<div>2</div>")
-                   (u/pret (u/root rendering))))
+                   (u/root rendering)))
     (re-render (hx/f [ref-test]))
     (t/is (u/node= (u/html "<div>3</div>")
-                   (u/pret (u/root rendering))))   ))
+                   (u/root rendering)))))
 
 (t/deftest <-state
   (let [state-test (-> (hx/f [OnClickState])

@@ -134,7 +134,8 @@
   (let [-x (react/useRef x)]
     ;; Set the ref to be the last value that was succesfully used to render
     (react/useEffect (fn []
-                       (set! (.-current -x) x)
+                       (when (not= x (.-current -x))
+                         (set! (.-current -x) x))
                        js/undefined)
               #js [x])
     ;; if they are equal, return the prev one to ensure ref equality
