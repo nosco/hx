@@ -132,16 +132,16 @@
   be structurally equal by referentially different."
   [x]
   (let [-x (react/useRef x)]
+    (let [x' (if (= x (.-current -x))
+               (.-current -x)
+               x)]
     ;; Set the ref to be the last value that was succesfully used to render
     (react/useEffect (fn []
-                       (when (not= x (.-current -x))
-                         (set! (.-current -x) x))
+                       (set! (.-current -x) x)
                        js/undefined)
-              #js [x])
+              #js [x'])
     ;; if they are equal, return the prev one to ensure ref equality
-    (if (= x (.-current -x))
-      (.-current -x)
-      x)))
+    x')))
 
 ;; React `useEffect` expects either a function or undefined to be returned
 (defn- wrap-fx [f]
