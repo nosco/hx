@@ -84,11 +84,11 @@
 
 (defonce states (atom {}))
 
-(add-watch states ::watch (fn [_ _ v v']
-                            (prn v')))
-
 (defn <-state-once
-  "Like <-state, but maintains your state across hot-reloads."
+  "Like <-state, but maintains your state across hot-reloads. `k` is a globally
+  unique key to ensure you always get the same state back.
+
+  Example: `(<-state-once ::counter 0)`"
   ([k initial]
    (let [[v u :as state] (<-state (if (contains? @states k)
                                     (@states k)
