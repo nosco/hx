@@ -1,7 +1,10 @@
 (ns workshop.state
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :refer [defnc]]
-            [hx.hooks :as hooks :refer [<-state <-effect <-context <-reducer]]
+            [hx.hooks :as hooks :refer [<-state
+                                        <-state-once
+                                        <-effect <-context
+                                        <-reducer]]
             ["react" :as react]))
 
 ;;
@@ -9,7 +12,7 @@
 ;;
 
 (defnc Simple [_]
-  (let [[state set-state] (<-state 0)]
+  (let [[state set-state] (<-state-once ::simple 0)]
     [:<>
      [:div "Counter: " state]
      [:div [:button {:on-click #(set-state inc)} "inc"]]]))
