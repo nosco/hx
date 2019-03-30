@@ -90,28 +90,20 @@
 
   Example: `(<-state-once ::counter 0)`"
   ([k initial]
-   (let [[v u :as state] (<-state (if (contains? @states k)
-                                    (@states k)
-                                    initial))]
-     (when js/goog.DEBUG
+   (if js/goog.DEBUG
+     (let [[v u :as state] (<-state (if (contains? @states k)
+                                      (@states k)
+                                      initial))]
        (let [has-mounted? (<-ref false)]
          (react/useEffect (fn []
                             (if @has-mounted?
                               (swap! states assoc k v)
                               (reset! has-mounted? true))
                             js/undefined)
-                          #js [v])))
-     state))
-  ;; ([k initial eq?]
-  ;;  (let [[v u :as state] (<-state initial eq?)]
-  ;;    (when js/goog.DEBUG
-  ;;      (let [has-]
-  ;;        (react/useEffect (fn []
-  ;;                           (swap! states assoc k v)
-  ;;                           js/undefined)
-  ;;                         #js [v])))
-  ;;    state))
-  )
+                          #js [v]))
+       state)
+     ;; in release mode, just return <-state
+     (<-state initial))))
 
 (defn <-deref
   "Takes an atom. Returns the currently derefed value of the atom, and re-renders
