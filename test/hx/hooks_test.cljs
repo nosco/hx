@@ -219,7 +219,7 @@
   (let [[count update-count] (hooks/<-state 0)]
     (reset! lifecycle nil)
     [:div {:on-click #(update-count (fn [n]
-                                     (prn @lifecycle)
+                                     ;; (prn @lifecycle)
                                      (inc n)))}
      count]))
 

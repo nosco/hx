@@ -88,7 +88,9 @@
   (let [props (utils/shallow-js->clj props :keywordize-keys true)]
     ;; provide `:class-name` property also as `:class` for backwards compat
     (-> props
+        (utils/also-as :className :class)
         (utils/also-as :class :class-name)
+        (utils/also-as :htmlFor :for)
         ;; (also-as :for :htmlFor)
         )))
 

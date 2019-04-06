@@ -259,3 +259,21 @@
 
 (dc/defcard hoc-wrapper
   (hx/f [HoCWrapper]))
+
+
+(hx/defnc Clones [{:keys [children]}]
+  [:<>
+   [:div "Cloned:"
+    (react/cloneElement children #js {:className "foo"})]
+   ;; [:div "Not cloned:"
+   ;;  children]
+   ])
+
+(hx/defnc Cloned [{:keys [className class] :as props}]
+  (js/console.log props)
+  [:<>
+   [:div "className: " className]
+   [:div "class: " class]])
+
+(dc/defcard clone-element
+  (hx/f [Clones [Cloned]]))
