@@ -5,6 +5,8 @@
 ### Fixed
 
 - `<-value` hook mutated ref in render, making it not safe for use in Concurrent React
+- Converting prop `className` to `class` was only done when hiccup parsing; now also happens in `defnc`
+so it works with `cloneElement`.
 
 ## [0.4.0] - Mar 26, 2019
 
