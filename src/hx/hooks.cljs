@@ -28,7 +28,7 @@
 ;;   ([f & xs]
 ;;    ))
 
-(defn <-state
+(defn useState
   "Takes an initial value. Returns an atom that will re-render component on
   change.
   If `eq?` is passed in, will use that function to determine whether to update
@@ -65,7 +65,10 @@
            (updater (fn spread-updater [x]
                       (apply f x xs)))))])))
 
-(defn <-ref
+(def ^{:deprecated "Use useState"} <-state useState)
+
+
+(defn useIRef
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
   on change."
   [initial]
@@ -80,7 +83,6 @@
                       (updater (fn spread-updater [x]
                                  (apply f x xs)))))]
     (Atomified. [react-ref update-ref] #(.-current ^js %))))
-
 
 (defonce states (atom {}))
 
@@ -105,7 +107,9 @@
      ;; in release mode, just return <-state
      (<-state initial))))
 
-(defn <-deref
+(def ^{:deprecated "Use useIRef"} <-ref useIRef)
+
+(defn ^{:deprecated "Use useState"} <-deref
   "Takes an atom. Returns the currently derefed value of the atom, and re-renders
   the component on change."
   ;; if no deps are passed in, we assume we only want to run
@@ -133,7 +137,11 @@
      ;; return value of useState on each run
      v)))
 
-(def <-reducer
+(def useReducer
+  "Just react/useReducer."
+  react/useReducer)
+
+(def ^{:deprecated "Use useReducer"} <-reducer
   "Just react/useReducer."
   react/useReducer)
 
@@ -148,7 +156,7 @@
 ;;
 ;; We can then just pass this one value into e.g. `useEffect` and it will only
 ;; change if Clojure's equality detects a difference.
-(defn- <-value
+(defn useValue
   "Caches `x`. When a new `x` is passed in, returns new `x` only if it is
   not structurally equal to the previous `x`.
 
@@ -167,6 +175,8 @@
                        #js [x'])
       x')))
 
+(def ^{:deprecated "Use useValue"} <-value useValue)
+
 ;; React `useEffect` expects either a function or undefined to be returned
 (defn- wrap-fx [f]
   (fn wrap-fx-return []
@@ -175,27 +185,39 @@
         x
         js/undefined))))
 
-(defn <-effect
+(defn useEffect
   "Just react/useEffect"
   ([f]
    (react/useEffect (wrap-fx f)))
   ([f deps]
    (react/useEffect (wrap-fx f) (to-array deps))))
 
-(def <-context
+(def ^{:deprecated "Use useEffect"} <-effect useEffect)
+
+(def useContext
   "Just react/useContext"
   react/useContext)
 
-(def <-memo
+(def ^{:deprecated "Use useContext"} <-context
+  "Just react/useContext"
+  react/useContext)
+
+(def useMemo
   "Just react/useMemo"
   react/useMemo)
 
-(defn <-callback
+(def ^{:deprecated "Use useMemo"}<-memo
+  "Just react/useMemo"
+  react/useMemo)
+
+(defn useCallback
   "Just react/useCallback"
   ([f] (react/useCallback f))
   ([f deps] (react/useCallback f (to-array deps))))
 
-(defn <-imperative-handle
+(def ^{:deprecated "Use useCallback"} <-callback useCallback)
+
+(defn useImperativeHandle
   "Just react/useImperativeHandle"
   ([ref create-handle]
    (react/useImperativeHandle ref create-handle))
@@ -203,11 +225,19 @@
    (react/useImperativeHandle ref create-handle
                               (to-array deps))))
 
-(defn <-layout-effect
+(def ^{:deprecated "Use useImperativeHandle"} <-imperative-handle useImperativeHandle)
+
+(defn useLayoutEffect
   "Just react/useLayoutEffect"
   ([f] (react/useLayoutEffect f))
   ([f deps] (react/useLayoutEffect f (to-array deps))))
 
-(def <-debug-value
+(def ^{:deprecated "Use useLayoutEffect"} <-layout-effect useLayoutEffect)
+
+(def useDebugValue
+  "Just react/useDebugValue"
+  react/useDebugValue)
+
+(def ^{:deprecated "Use useDebugValue"} <-debug-value
   "Just react/useDebugValue"
   react/useDebugValue)

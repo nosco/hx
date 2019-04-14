@@ -180,8 +180,8 @@
   (hx/f [NamespaceKeywords {:namespace/value "hhhhh"}]))
 
 (hx/defnc StateWithEffect [{:keys [receive]}]
-  (let [[count update-count] (hooks/<-state 0)]
-    (hooks/<-effect
+  (let [[count update-count] (hooks/useState 0)]
+    (hooks/useEffect
      (fn []
        (js/setTimeout
         (fn []
@@ -199,7 +199,7 @@
 
 (hx/defnc WhenApplied [_]
   (reset! lifecycle :rendering)
-  (let [[count update-count] (hooks/<-state 0)]
+  (let [[count update-count] (hooks/useState 0)]
     (reset! lifecycle nil)
     [:div {:on-click #(update-count (fn [n]
                                       (prn "update:" @lifecycle)
@@ -212,7 +212,7 @@
 (def schedule (atom :high))
 
 (hx/defnc Scheduler [_]
-  (let [[updates set-updates] (hooks/<-state [])]
+  (let [[updates set-updates] (hooks/useState [])]
     [:div
      [:div "Updates: " (prn-str updates)]
      [:div

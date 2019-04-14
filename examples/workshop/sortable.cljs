@@ -1,7 +1,7 @@
 (ns workshop.sortable
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx]
-            [hx.hooks :as hooks :refer [<-state]]
+            [hx.hooks :as hooks]
             ["react-sortable-hoc" :as sort]))
 
 (hx/defnc Item [{:keys [value]}]
@@ -26,13 +26,13 @@
     (sort/arrayMove items old-index new-index)) )
 
 (hx/defnc SortableComponent [_]
-  ;; use the <-state Hook to keep track of and update the state
-  (let [[items update-items] (<-state #js ["Item 1"
-                                           "Item 2"
-                                           "Item 3"
-                                           "Item 4"
-                                           "Item 5"
-                                           "Item 6"])]
+  ;; use the useState Hook to keep track of and update the state
+  (let [[items update-items] (hooks/useState #js ["Item 1"
+                                                  "Item 2"
+                                                  "Item 3"
+                                                  "Item 4"
+                                                  "Item 5"
+                                                  "Item 6"])]
     [:div
      "Click and drag an item to re-arrange them!"
      [SortableList {:items items
