@@ -65,9 +65,6 @@
            (updater (fn spread-updater [x]
                       (apply f x xs)))))])))
 
-(def ^{:deprecated "Use useState"} <-state useState)
-
-
 (defn useIRef
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
   on change."
@@ -84,64 +81,8 @@
                                  (apply f x xs)))))]
     (Atomified. [react-ref update-ref] #(.-current ^js %))))
 
-(defonce states (atom {}))
-
-(defn <-state-once
-  "Like <-state, but maintains your state across hot-reloads. `k` is a globally
-  unique key to ensure you always get the same state back.
-
-  Example: `(<-state-once ::counter 0)`"
-  ([k initial]
-   (if js/goog.DEBUG
-     (let [[v u :as state] (<-state (if (contains? @states k)
-                                      (@states k)
-                                      initial))]
-       (let [has-mounted? (<-ref false)]
-         (react/useEffect (fn []
-                            (if @has-mounted?
-                              (swap! states assoc k v)
-                              (reset! has-mounted? true))
-                            js/undefined)
-                          #js [v]))
-       state)
-     ;; in release mode, just return <-state
-     (<-state initial))))
-
-(def ^{:deprecated "Use useIRef"} <-ref useIRef)
-
-(defn ^{:deprecated "Use useState"} <-deref
-  "Takes an atom. Returns the currently derefed value of the atom, and re-renders
-  the component on change."
-  ;; if no deps are passed in, we assume we only want to run
-  ;; subscrib/unsubscribe on mount/unmount
-  ([a]
-   ;; create a react/useState hook to track and trigger renders
-   (let [[v u] (react/useState @a)]
-     ;; react/useEffect hook to create and track the subscription to the iref
-     (react/useEffect
-      (fn []
-        (let [k (gensym "<-deref")]
-          (add-watch a k
-                     ;; update the react state on each change
-                     (fn [_ _ _ v'] (u v')))
-          ;; Check to ensure that a change has not occurred to the atom between
-          ;; the component rendering and running this effect.
-          ;; If it has updated, then update the state to the current value.
-          (when (not= @a v)
-            (u @a))
-          ;; return a function to tell react hook how to unsubscribe
-          #(remove-watch a k)))
-      ;; pass in deps vector as an array
-      ;; resubscribe if `a` changes
-      #js [a])
-     ;; return value of useState on each run
-     v)))
 
 (def useReducer
-  "Just react/useReducer."
-  react/useReducer)
-
-(def ^{:deprecated "Use useReducer"} <-reducer
   "Just react/useReducer."
   react/useReducer)
 
@@ -175,8 +116,6 @@
                        #js [x'])
       x')))
 
-(def ^{:deprecated "Use useValue"} <-value useValue)
-
 ;; React `useEffect` expects either a function or undefined to be returned
 (defn- wrap-fx [f]
   (fn wrap-fx-return []
@@ -198,15 +137,7 @@
   "Just react/useContext"
   react/useContext)
 
-(def ^{:deprecated "Use useContext"} <-context
-  "Just react/useContext"
-  react/useContext)
-
 (def useMemo
-  "Just react/useMemo"
-  react/useMemo)
-
-(def ^{:deprecated "Use useMemo"}<-memo
   "Just react/useMemo"
   react/useMemo)
 
@@ -214,8 +145,6 @@
   "Just react/useCallback"
   ([f] (react/useCallback f))
   ([f deps] (react/useCallback f (to-array deps))))
-
-(def ^{:deprecated "Use useCallback"} <-callback useCallback)
 
 (defn useImperativeHandle
   "Just react/useImperativeHandle"
@@ -225,19 +154,110 @@
    (react/useImperativeHandle ref create-handle
                               (to-array deps))))
 
-(def ^{:deprecated "Use useImperativeHandle"} <-imperative-handle useImperativeHandle)
-
 (defn useLayoutEffect
   "Just react/useLayoutEffect"
   ([f] (react/useLayoutEffect f))
   ([f deps] (react/useLayoutEffect f (to-array deps))))
 
-(def ^{:deprecated "Use useLayoutEffect"} <-layout-effect useLayoutEffect)
 
 (def useDebugValue
   "Just react/useDebugValue"
   react/useDebugValue)
 
+(defonce states (atom {}))
+
+(defn useReloadable
+  [use-hook k & {:keys [initial derive]
+                 :or {initial nil
+                      derive identity}}]
+  (if js/goog.DEBUG
+    ;; if a state already exists with name `k`, then pass that value in
+    ;; otherwise, pass in the initial value.
+    ;; capture the hook returned by the higher-order hook passed in
+    (let [hook (use-hook (if (contains? @states k)
+                           (@states k)
+                           initial))]
+      (let [has-mounted? (useIRef false)]
+        (useEffect (fn []
+                     (if @has-mounted?
+                       (swap! states assoc k (derive hook))
+                       (reset! has-mounted? true)))
+                   [(derive hook)]))
+      hook)
+    ;; in release mode, just return <-state
+    (use-hook initial)))
+
+(defn useStateOnce
+  "Like useState, but maintains your state across hot-reloads. `k` is a globally
+  unique key to ensure you always get the same state back.
+
+  Example: `(useStateOnce ::counter 0)`"
+  [initial k]
+  (useReloadable
+   (fn useStateOnce* [state] (useState state))
+   k
+   :initial initial
+   :derive first))
+
+
+
+;;
+;; Deprecated
+;;
+
+
+(def ^{:deprecated "Use useState"} <-state useState)
+
+(def ^{:deprecated "Use useIRef"} <-ref useIRef)
+
+(defn ^{:deprecated "Use useState"} <-deref
+  "Takes an atom. Returns the currently derefed value of the atom, and re-renders
+  the component on change."
+  ;; if no deps are passed in, we assume we only want to run
+  ;; subscrib/unsubscribe on mount/unmount
+  ([a]
+   ;; create a react/useState hook to track and trigger renders
+   (let [[v u] (react/useState @a)]
+     ;; react/useEffect hook to create and track the subscription to the iref
+     (react/useEffect
+      (fn []
+        (let [k (gensym "<-deref")]
+          (add-watch a k
+                     ;; update the react state on each change
+                     (fn [_ _ _ v'] (u v')))
+          ;; Check to ensure that a change has not occurred to the atom between
+          ;; the component rendering and running this effect.
+          ;; If it has updated, then update the state to the current value.
+          (when (not= @a v)
+            (u @a))
+          ;; return a function to tell react hook how to unsubscribe
+          #(remove-watch a k)))
+      ;; pass in deps vector as an array
+      ;; resubscribe if `a` changes
+      #js [a])
+     ;; return value of useState on each run
+     v)))
+
+(def ^{:deprecated "Use useReducer"} <-reducer
+  "Just react/useReducer."
+  react/useReducer)
+
+(def ^{:deprecated "Use useValue"} <-value useValue)
+
+(def ^{:deprecated "Use useContext"} <-context
+  "Just react/useContext"
+  react/useContext)
+
+(def ^{:deprecated "Use useMemo"} <-memo
+  "Just react/useMemo"
+  react/useMemo)
+
+(def ^{:deprecated "Use useCallback"} <-callback useCallback)
+
+(def ^{:deprecated "Use useImperativeHandle"} <-imperative-handle useImperativeHandle)
+
 (def ^{:deprecated "Use useDebugValue"} <-debug-value
   "Just react/useDebugValue"
   react/useDebugValue)
+
+(def ^{:deprecated "Use useLayoutEffect"} <-layout-effect useLayoutEffect)

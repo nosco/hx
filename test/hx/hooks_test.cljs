@@ -11,14 +11,14 @@
 
 
 ;;
-;; <-effect
+;; useEffect
 ;;
 
-(t/deftest <-effect
+(t/deftest useEffect
   (t/testing "no deps, fires on every render"
     (let [counter (atom 0)
           FxTest (fn [props]
-                   (hooks/<-effect
+                   (hooks/useEffect
                     (fn []
                       (swap! counter inc)
                       js/undefined))
@@ -33,11 +33,11 @@
           (re-render))
       (t/is (= @counter 3)))))
 
-(t/deftest <-effect-empty-deps
+(t/deftest useEffect-empty-deps
   (t/testing "empty deps, fires only on first render"
     (let [counter (atom 0)
           EmptyTest (fn [props]
-                      (hooks/<-effect
+                      (hooks/useEffect
                        (fn [] (swap! counter inc)
                          js/undefined)
                        [])
@@ -54,12 +54,12 @@
 
 (hx/defnc ValTest [props]
   (let [counter (r/useRef 0)]
-    (hooks/<-effect
+    (hooks/useEffect
      (fn [] (set! (.-current counter) (inc (.-current counter))))
-     [(hooks/<-value (:some-val props))])
+     [(hooks/useValue (:some-val props))])
     [:div (.-current counter)]))
 
-(t/deftest <-value-new-val
+(t/deftest useValue-new-val
   (let [val-test (-> (hx/f [ValTest {:some-val 1}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -74,7 +74,7 @@
     (t/is (u/node= (u/html "<div>2</div>")
                    (u/root val-test)) "number")))
 
-(t/deftest <-value-native-val
+(t/deftest useValue-native-val
   (let [val-test (-> (hx/f [ValTest {:some-val 1}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -85,7 +85,7 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "number")))
 
-(t/deftest <-value-map
+(t/deftest useValue-map
   (let [val-test (-> (hx/f [ValTest {:some-val {:asdf "jkl"}}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -110,7 +110,7 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "map")))
 
-(t/deftest <-value-vec
+(t/deftest useValue-vec
   (let [val-test (-> (hx/f [ValTest {:some-val [:asdf :jkl]}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -123,7 +123,7 @@
     (t/is (u/node= (u/html "<div>1</div>")
                    (u/root val-test)) "vector")))
 
-(t/deftest <-value-set
+(t/deftest useValue-set
   (let [val-test (-> (hx/f [ValTest {:someVal #{:asdf :jkl}}])
                      (u/render))
         re-render (.-rerender val-test)]
@@ -138,17 +138,17 @@
 
 
 ;;
-;; <-state
+;; useState
 ;;
 
 (hx/defnc OnClickState [_]
-  (let [[count update-count] (hooks/<-state 0)]
+  (let [[count update-count] (hooks/useState 0)]
     [:div {:on-click #(update-count inc)}
      count]))
 
-(t/deftest <-ref
+(t/deftest useIRef
   (let [ref-test (fn [props]
-                   (let [ref (hooks/<-ref 0)]
+                   (let [ref (hooks/useIRef 0)]
                      (swap! ref inc)
                      (hx/f [:div @ref])))
         rendering (u/render (hx/f [ref-test]))
@@ -162,7 +162,7 @@
     (t/is (u/node= (u/html "<div>3</div>")
                    (u/root rendering)))))
 
-(t/deftest <-state
+(t/deftest useState
   (let [state-test (-> (hx/f [OnClickState])
                        (u/render)
                        (u/root)
@@ -174,8 +174,8 @@
                    state-test))))
 
 (hx/defnc StateWithEffect [{:keys [receive]}]
-  (let [[count update-count] (hooks/<-state 0)]
-    (hooks/<-effect
+  (let [[count update-count] (hooks/useState 0)]
+    (hooks/useEffect
      (fn []
        (js/setTimeout
         (fn []
@@ -197,7 +197,7 @@
         f #(swap! called conj %)]
     [f p]))
 
-(t/deftest <-state-with-effect
+(t/deftest useState-with-effect
   (let [[receive received] (receiver 30)
         state-test (-> (hx/f [StateWithEffect {:receive receive}])
                        (u/render)
@@ -216,7 +216,7 @@
 
 (hx/defnc WhenApplied [_]
   (reset! lifecycle :rendering)
-  (let [[count update-count] (hooks/<-state 0)]
+  (let [[count update-count] (hooks/useState 0)]
     (reset! lifecycle nil)
     [:div {:on-click #(update-count (fn [n]
                                      ;; (prn @lifecycle)
