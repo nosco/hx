@@ -26,17 +26,16 @@ external React ecosystem.
 
 ## hx.hooks
 
-The idiom that this library provides is: any Hook starts with `<-` 
-(instead of `use`) to provide at-a-glance recognition of what Hooks a component
-uses.
+The idiom that this library provides is: any Hook is named like `useAbcXyz` to
+provide at-a-glance recognition of what Hooks a component uses.
 
 All of the [Rules of Hooks](https://reactjs.org/docs/hooks-overview.html#%EF%B8%8F-rules-of-hooks)
 apply.
 
-### <-state: ([initial])
+### useState: ([initial])
 
 Takes an initial value. Returns a tuple `[value set-value]`, where `set-value`
-is a function that can be used like:
+is a function that can be used like `swap!`:
 
 ```clojure
 ;; a raw value
@@ -49,57 +48,57 @@ is a function that can be used like:
 (set-value conj :update)
 ```
 
-### <-ref: ([initial])
+### useIRef: ([initial])
 
 Takes an initial value. Returns an atom that will _NOT_ re-render component on
 change.
 
-### <-deref: ([iref])
+<!-- ### <-deref: ([iref]) -->
 
-Takes an atom. Returns the currently derefed value of the atom, and queues a 
-re-render of the component on change.
+<!-- Takes an atom. Returns the currently derefed value of the atom, and queues a  -->
+<!-- re-render of the component on change. -->
 
-### <-reducer: ([reducer initialArg init])
+### useReducer: ([reducer initialArg init])
 
 Just [react/useReducer](https://reactjs.org/docs/hooks-reference.html#usereducer).
 
-### <-effect: ([f deps])
+### useEffect: ([f deps])
 
 Just [react/useEffect](https://reactjs.org/docs/hooks-reference.html#useeffect).
 `deps` can be a CLJS collection.
 
-### <-context: ([context])
+### useContext: ([context])
 
 Just [react/useContext](https://reactjs.org/docs/hooks-reference.html#usecontext).
 
-### <-memo: ([f deps])
+### useMemo: ([f deps])
 
 Just [react/useMemo](https://reactjs.org/docs/hooks-reference.html#usememo).
 `deps` can be a CLJS collection.
 
-### <-value: ([x])
+### useValue: ([x])
 
 Caches `x`. When a new `x` is passed in, returns new `x` only if it is
 not equal to the previous `x`.
 
-Useful for optimizing `<-effect` et. al. when you have two values that might
+Useful for optimizing `useEffect` et. al. when you have two values that might
 be structurally equal by referentially different.
 
-### <-callback: ([f])
+### useCallback: ([f])
 
 Just [react/useCallback](https://reactjs.org/docs/hooks-reference.html#usecallback).
 
-### <-imperative-handle: ([ref createHandle deps])
+### useImperativeHandle: ([ref createHandle deps])
 
 Just [react/useImperativeHandle](https://reactjs.org/docs/hooks-reference.html#useimperativehandle).
 `deps` can be a CLJS collection.
 
-### <-layout-effect: ([f deps])
+### useLayoutEffect: ([f deps])
 
 Just [react/useLayoutEffect](https://reactjs.org/docs/hooks-reference.html#uselayouteffect).
 `deps` can be a CLJS collection.
 
-### <-debug-value: ([v formatter])
+### useDebugValue: ([v formatter])
 
 Just [react/useDebugValue](https://reactjs.org/docs/hooks-reference.html#usedebugvalue).
 `deps` can be a CLJS collection.

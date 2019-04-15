@@ -7,14 +7,14 @@ A simple, easy to use library for React development in ClojureScript.
 ```clojure
 (ns my-app.core
   (:require [hx.react :as hx :refer [defnc]]
-            [hx.hooks :refer [<-state]]
+            [hx.hooks :refer hooks]
             ["react-dom" :as react-dom]))
 
 ;; `defnc` creates a function that takes a props object and returns React
 ;; elements. You may use it just like any normal React component.
 (defnc MyComponent [{:keys [initial-name]}]
   ;; use React Hooks for state management
-  (let [[name update-name] (<-state initial-name)]
+  (let [[name update-name] (hooks/useState initial-name)]
     [:<>
      [:div "Hello " 
       [:span {:style {:font-weight "bold"}} name] "!"]

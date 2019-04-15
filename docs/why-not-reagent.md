@@ -41,7 +41,7 @@ hx + Hooks code:
 
 ```clojure
 (defnc count-widget [{:keys [foo bar]}]
-  (let [[state set-state] (<-state {:count 0})]
+  (let [[state set-state] (useState {:count 0})]
     [:div 
      [:div "Foo: " foo] [:div "Bar: " bar]
      [:div "Count: " (:count state)]
