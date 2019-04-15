@@ -8,6 +8,17 @@
 - Converting prop `className` to `class` was only done when hiccup parsing; now also happens in `defnc`
 so it works with `cloneElement`.
 
+### Changed
+
+- Deprecated Hooks names prepended with `<-`; adopted `useXyzAbc` convention
+
+### Added
+
+- A new `hx.hooks.alpha` namespace with experimental Hooks
+- Alpha-level "reloadable" hook `useReloadable` and `useStateOnce` that persist
+their state across hot reloads.
+
+
 ## [0.4.0] - Mar 26, 2019
 
 ### Changed
