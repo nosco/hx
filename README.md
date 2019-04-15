@@ -7,7 +7,7 @@ A simple, easy to use library for React development in ClojureScript.
 ```clojure
 (ns my-app.core
   (:require [hx.react :as hx :refer [defnc]]
-            [hx.hooks :refer hooks]
+            [hx.hooks :as hooks]
             ["react-dom" :as react-dom]))
 
 ;; `defnc` creates a function that takes a props object and returns React
