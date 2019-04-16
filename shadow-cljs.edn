@@ -1,12 +1,13 @@
 ;; shadow-cljs configuration
 {:source-paths
- ["src" "test" "examples"]
+ ["src" "test" "examples" "benchmark"]
 
  :nrepl {:port 8777}
 
  :dependencies
  [[binaryage/devtools "0.9.7"]
-  [devcards "0.2.5"]]
+  [devcards "0.2.5"]
+  [reagent "0.8.1"]]
 
  :builds
  {:workshop {:target :browser
@@ -25,4 +26,10 @@
 
   :ci       {:target :karma
              :output-to  "target/ci.js"
-             :ns-regexp  "-test$"}}}}
+             :ns-regexp  "-test$"}
+
+  :benchmark {:target :node-script
+              :main hx.benchmark/main
+              :output-to "target/benchmark/index.js"
+              :devtools {;; :enabled false
+                         :after-load hx.benchmark/main}}}}}

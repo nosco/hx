@@ -24,6 +24,7 @@
   "homepage": "https://github.com/Lokeh/hx#readme",
   "devDependencies": {
     "@material-ui/core": "^3.3.2",
+    "benchmark": "^2.1.4",
     "karma": "^4.0.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cljs-test": "^0.1.0",
@@ -35,6 +36,7 @@
     "showdown": "^1.8.6"
   },
   "dependencies": {
+    "create-react-class": "^15.6.3",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "react-is": "^16.8.1"
