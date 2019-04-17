@@ -35,10 +35,13 @@
                                      (hiccup/-parse-element ret config nil)
                                      ret))))
           (react/createElement el props (hiccup/-parse-element first-child config nil)))
-      (apply
-       react/createElement el props
-       ;; children
-       (mapv #(hiccup/-parse-element % config nil) children)))))
+      ;; use .apply here for performance
+      (.apply
+       react/createElement nil
+       (reduce (fn [a v]
+                 (.push a (hiccup/-parse-element v config nil))
+                 a)
+               #js [el props] children)))))
 
 (def react-hiccup-config
   {:create-element create-element
