@@ -4,6 +4,16 @@
 
 (def ^:dynamic *perf-debug?* false)
 
+#?(:cljs (defn memoize1 [f]
+           (let [mem (atom {})]
+             (fn [arg]
+               (let [v (get @mem arg lookup-sentinel)]
+                 (if (identical? v lookup-sentinel)
+                   (let [ret (f arg)]
+                     (swap! mem assoc arg ret)
+                     ret)
+                   v))))))
+
 (defmacro measure-perf [tag form]
   (if *perf-debug?*
     (let [begin (str tag "_begin")
@@ -103,43 +113,40 @@
 #_(shallow-clj->js {:a/b "asdf" :b/c :y :c/d 2})
 
 #?(:cljs
-   (do
-     (declare shallow-js->clj)
-     (defn shallow-js->clj*
-       ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
-       ([x & opts]
-        (let [{:keys [keywordize-keys camel-kebab]
-               :or {keywordize-keys false
-                    camel-kebab false}} opts
-              keyfn (if keywordize-keys
-                      (if camel-kebab
-                        (comp keyword camel->kebab)
-                        keyword)
-                      str)
-              f (fn thisfn [x]
-                  (cond
-                    (satisfies? IEncodeClojure x)
-                    (-js->clj x (apply array-map opts))
+   (defn shallow-js->clj
+     ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
+     ([x & opts]
+      (let [{:keys [keywordize-keys camel-kebab]
+             :or {keywordize-keys false
+                  camel-kebab false}} opts
+            keyfn (if keywordize-keys
+                    (if camel-kebab
+                      (comp keyword camel->kebab)
+                      keyword)
+                    str)
+            f (fn thisfn [x]
+                (cond
+                  (satisfies? IEncodeClojure x)
+                  (-js->clj x (apply array-map opts))
 
-                    (seq? x)
-                    x
+                  (seq? x)
+                  x
 
-                    (map-entry? x)
-                    (MapEntry. (key x) (val x) nil)
+                  (map-entry? x)
+                  (MapEntry. (key x) (val x) nil)
 
-                    (coll? x)
-                    x
+                  (coll? x)
+                  x
 
-                    (array? x)
-                    (vec x)
+                  (array? x)
+                  (vec x)
 
-                    (identical? (type x) js/Object)
-                    (into {} (for [k (js-keys x)]
-                               [(keyfn k) (unchecked-get x k)]))
+                  (identical? (type x) js/Object)
+                  (into {} (for [k (js-keys x)]
+                             [(keyfn k) (unchecked-get x k)]))
 
-                    :else x))]
-          (f x))))
-       (def shallow-js->clj (memoize shallow-js->clj*))))
+                  :else x))]
+        (f x)))))
 
 ;; I stole most of this from https://github.com/rauhs/hicada/blob/master/src/hicada/util.clj
 
@@ -216,19 +223,18 @@
                         (reactify-props-kv k v))) {} attrs)
     attrs))
 
-#?(:cljs (do (defn styles->js* [props]
-               (cond
-                 (and (map? props) (:style props))
-                 (assoc props :style (clj->js (:style props)))
+#?(:cljs (defn styles->js [props]
+           (cond
+             (and (map? props) (:style props))
+             (assoc props :style (clj->js (:style props)))
 
-                 (gobj/containsKey props "style")
-                 (do (->> (gobj/get props "style")
-                          (clj->js)
-                          (gobj/set props "style"))
-                     props)
+             (gobj/containsKey props "style")
+             (do (->> (gobj/get props "style")
+                      (clj->js)
+                      (gobj/set props "style"))
+                 props)
 
-                 :default props))
-             (def styles->js (memoize styles->js*))))
+             :default props)))
 
 #?(:clj (defn clj->props [props] props)
    :cljs (do (defn clj->props* [props]
@@ -236,7 +242,7 @@
                    (reactify-props)
                    (styles->js)
                    (shallow-clj->js)))
-             (def clj->props (memoize clj->props*))))
+             (def clj->props (memoize1 clj->props*))))
 
 (comment
   (reactify-props {:class ["foo" nil]})
