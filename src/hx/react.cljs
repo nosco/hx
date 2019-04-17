@@ -3,45 +3,75 @@
             ["react" :as react]
             ["react-is" :as react-is]
             [hx.hiccup :as hiccup]
-            [hx.utils :as utils])
+            [hx.utils :as utils :include-macros true])
   (:require-macros [hx.react]))
 
-(extend-type react/Component
-  hiccup/IElement
-  (-parse-element [el config args]
-    (hiccup/make-element config el args)))
+;; (extend-type react/Component
+;;   hiccup/IElement
+;;   (-parse-element [el config args]
+;;     (hiccup/make-element config el args)))
 
 (defn create-element [config el args]
-  (let [props? (map? (first args))
-        props (case [(string? el) props?]
-                [true true] (utils/clj->props (first args))
-                [false true] (-> (first args)
-                                 (utils/also-as :class :className)
-                                 (utils/also-as :for :htmlFor)
-                                 (utils/styles->js)
-                                 (utils/shallow-clj->js))
-                nil)
-        children (if props? (rest args) args)
-        first-child (first children)]
-    (case (count children)
-      0 (react/createElement el props)
-      1 (if (fn? first-child)
-          (react/createElement el
-                               ;; fn-as-child
-                               ;; wrap in a function to parse hiccup from render-fn
-                               (fn [& args]
-                                 (let [ret (apply first-child args)]
-                                   (if (vector? ret)
-                                     (hiccup/-parse-element ret config nil)
-                                     ret))))
-          (react/createElement el props (hiccup/-parse-element first-child config nil)))
-      ;; use .apply here for performance
-      (.apply
-       react/createElement nil
-       (reduce (fn [a v]
-                 (.push a (hiccup/-parse-element v config nil))
-                 a)
-               #js [el props] children)))))
+  (utils/measure-perf
+   "create_element"
+   (let [first-arg (utils/measure-perf
+                    "first-arg"
+                    (first args))
+         props? (map? first-arg)
+         props (utils/measure-perf
+                "props"
+                (cond
+                  (and (string? el) props?) (utils/clj->props first-arg)
+
+                  props? (-> first-arg
+                             (utils/also-as :class :className)
+                             (utils/also-as :for :htmlFor)
+                             (utils/styles->js)
+                             (utils/shallow-clj->js))
+
+                  true nil))
+         children (utils/measure-perf
+                   "children"
+                   (if props? (rest args) args))
+         first-child (utils/measure-perf
+                      "first-child"
+                      (-first children))]
+     (case (count children)
+       0 (utils/measure-perf
+          "no_children"
+          (react/createElement el props))
+       1 (if (utils/measure-perf
+              "fn?"
+              (fn? first-child))
+           (react/createElement el
+                                ;; fn-as-child
+                                ;; wrap in a function to parse hiccup from render-fn
+                                (fn [& args]
+                                  (let [ret (apply first-child args)]
+                                    (if (vector? ret)
+                                      (hiccup/-parse-element ret config nil)
+                                      ret))))
+           (utils/measure-perf
+            "one_child"
+            (react/createElement el props (utils/measure-perf
+                                           "one_child_parse"
+                                           (hiccup/-parse-element first-child config nil)))))
+       ;; use .apply here for performance
+       (utils/measure-perf
+        "has_children"
+        (.apply
+         react/createElement nil
+         (utils/measure-perf
+          "children_parse_loop"
+          (loop [a #js [el props]
+                 c children]
+            (if-not (nil? c)
+              (do
+                (.push a (hiccup/-parse-element (-first c) config nil))
+                (recur
+                 a
+                 (-next c)))
+              a)))))))))
 
 (def react-hiccup-config
   {:create-element create-element
