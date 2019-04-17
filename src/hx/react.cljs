@@ -13,34 +13,32 @@
 
 (defn create-element [config el args]
   (let [props? (map? (first args))
-        props (if props? (first args) nil)
-        children (if props? (rest args) args)]
-    (apply
-     react/createElement
-     ;; element
-     el
-
-     ;; props
-     (case [(string? el) props?]
-       [true true] (utils/clj->props props)
-       [false true] (-> props
-                        (utils/also-as :class :className)
-                        (utils/also-as :for :htmlFor)
-                        (utils/styles->js)
-                        (utils/shallow-clj->js))
-       nil)
-
-     ;; children
-     (if (and (= (count children) 1) (fn? (first children)))
-       ;; fn-as-child
-       ;; wrap in a function to parse hiccup from render-fn
-       (list
-        (fn [& args]
-          (let [ret (apply (first children) args)]
-            (if (vector? ret)
-              (apply hiccup/parse-element config ret)
-              ret))))
-       (map (partial hiccup/parse-element config) children)))))
+        props (case [(string? el) props?]
+                [true true] (utils/clj->props (first args))
+                [false true] (-> (first args)
+                                 (utils/also-as :class :className)
+                                 (utils/also-as :for :htmlFor)
+                                 (utils/styles->js)
+                                 (utils/shallow-clj->js))
+                nil)
+        children (if props? (rest args) args)
+        first-child (first children)]
+    (case (count children)
+      0 (react/createElement el props)
+      1 (if (fn? first-child)
+          (react/createElement el
+                               ;; fn-as-child
+                               ;; wrap in a function to parse hiccup from render-fn
+                               (fn [& args]
+                                 (let [ret (apply first-child args)]
+                                   (if (vector? ret)
+                                     (hiccup/-parse-element ret config nil)
+                                     ret))))
+          (react/createElement el props (hiccup/-parse-element first-child config nil)))
+      (apply
+       react/createElement el props
+       ;; children
+       (mapv #(hiccup/-parse-element % config nil) children)))))
 
 (def react-hiccup-config
   {:create-element create-element
@@ -60,7 +58,7 @@
 
 (defmethod hiccup/parse-element
   :<>
-  [config el & args]
+  [config el args]
   (hiccup/-parse-element
    hx.react/fragment
    react-hiccup-config
@@ -68,12 +66,14 @@
 
 (defmethod hiccup/parse-element
   :provider
-  [config el {:keys [context value]} args]
+  [config el args]
+  (let [{:keys [context value]} (first args)]
   (hiccup/-parse-element
    (.-Provider context)
    react-hiccup-config
-   [{:value value}
-    args]))
+   (into
+    [{:value value}]
+    (rest args)))))
 
 
 

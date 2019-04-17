@@ -8,18 +8,18 @@
 ;; we use a multimethod to dispatch on identity so that consumers
 ;; can override this for custom values e.g. :<> for React fragments
 (defmulti parse-element
-  (fn [config el & more]
+  (fn [config el args]
     (identity el))
   :default ::default)
 
 ;; if no multimethod for specific el, then apply general parsing rules
 (defmethod parse-element
   ::default
-  ([config el & args]
+  ([config el args]
    (-parse-element el config args)))
 
 (defn parse [config hiccup]
-  (apply parse-element config hiccup))
+  (parse-element config (first hiccup) (rest hiccup)))
 
 (defn make-element [config el args]
   ((:create-element config) config el args))
@@ -49,7 +49,7 @@
   #?(:clj clojure.lang.PersistentVector
      :cljs PersistentVector)
   (-parse-element [form config _]
-    (apply parse-element config form))
+    (parse-element config (first form) (rest form)))
 
   #?(:clj clojure.lang.LazySeq
      :cljs LazySeq)
@@ -57,7 +57,7 @@
     (make-element
      config
      (:fragment config)
-     (cons nil (map (partial parse-element config) a))))
+     (cons nil (map #(parse-element config (first %) (rest %)) a))))
 
   #?(:clj clojure.lang.Keyword
      :cljs Keyword)

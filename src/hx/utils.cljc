@@ -87,40 +87,44 @@
 
 #_(shallow-clj->js {:a/b "asdf" :b/c :y :c/d 2})
 
-#?(:cljs (defn shallow-js->clj
-           ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
-           ([x & opts]
-            (let [{:keys [keywordize-keys camel-kebab]
-                   :or {keywordize-keys false
-                        camel-kebab false}} opts
-                  keyfn (if keywordize-keys
-                          (if camel-kebab
-                            (comp keyword camel->kebab)
-                            keyword)
-                          str)
-                  f (fn thisfn [x]
-                      (cond
-                        (satisfies? IEncodeClojure x)
-                        (-js->clj x (apply array-map opts))
+#?(:cljs
+   (do
+     (declare shallow-js->clj)
+     (defn shallow-js->clj*
+       ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
+       ([x & opts]
+        (let [{:keys [keywordize-keys camel-kebab]
+               :or {keywordize-keys false
+                    camel-kebab false}} opts
+              keyfn (if keywordize-keys
+                      (if camel-kebab
+                        (comp keyword camel->kebab)
+                        keyword)
+                      str)
+              f (fn thisfn [x]
+                  (cond
+                    (satisfies? IEncodeClojure x)
+                    (-js->clj x (apply array-map opts))
 
-                        (seq? x)
-                        x
+                    (seq? x)
+                    x
 
-                        (map-entry? x)
-                        (MapEntry. (key x) (val x) nil)
+                    (map-entry? x)
+                    (MapEntry. (key x) (val x) nil)
 
-                        (coll? x)
-                        x
+                    (coll? x)
+                    x
 
-                        (array? x)
-                        (vec x)
+                    (array? x)
+                    (vec x)
 
-                        (identical? (type x) js/Object)
-                        (into {} (for [k (js-keys x)]
-                                   [(keyfn k) (unchecked-get x k)]))
+                    (identical? (type x) js/Object)
+                    (into {} (for [k (js-keys x)]
+                               [(keyfn k) (unchecked-get x k)]))
 
-                        :else x))]
-              (f x)))))
+                    :else x))]
+          (f x))))
+       (def shallow-js->clj (memoize shallow-js->clj*))))
 
 ;; I stole most of this from https://github.com/rauhs/hicada/blob/master/src/hicada/util.clj
 
@@ -211,11 +215,12 @@
              :default props)))
 
 #?(:clj (defn clj->props [props] props)
-   :cljs (defn clj->props [props]
-           (-> props
-               (reactify-props)
-               (styles->js)
-               (shallow-clj->js))))
+   :cljs (do (defn clj->props* [props]
+               (-> props
+                   (reactify-props)
+                   (styles->js)
+                   (shallow-clj->js)))
+             (def clj->props (memoize clj->props*))))
 
 (comment
   (reactify-props {:class ["foo" nil]})
