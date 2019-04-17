@@ -2,6 +2,21 @@
   (:require [clojure.string :as str]
             #?(:cljs [goog.object :as gobj])))
 
+(def ^:dynamic *perf-debug?* false)
+
+(defmacro measure-perf [tag form]
+  (if *perf-debug?*
+    (let [begin (str tag "_begin")
+          end (str tag "_end")]
+      `(do (js/performance.mark ~begin)
+           (let [ret# ~form]
+             (js/performance.mark ~end)
+             (js/performance.measure ~(str "measure_" tag)
+                                     ~begin
+                                     ~end)
+             ret#)))
+    form))
+
 (defn also-as
   "If key `k1` is contained in `m`, assocs the value of it into `m` at key `k2`"
   [m k1 k2]
