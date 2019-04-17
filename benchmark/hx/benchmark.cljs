@@ -66,11 +66,11 @@
     (when-not (= (rdom/renderToString (react-render test-data))
                  (rdom/renderToString (reagent-render test-data))
                  ;; (rdom/renderToString (shadow-render test-data))
-                 (rdom/renderToString (hx-render test-data nil)))
+                 (rdom/renderToString (hx-render test-data-js nil)))
       (throw (ex-info "not equal!" {})))
 
     (-> (b/Suite.)
-        (.add "react" #(react-render test-data))
+        ;; (.add "react" #(react-render test-data))
         (.add "reagent" #(reagent-render test-data))
         ;; (.add "shadow" #(shadow-render test-data))
         (.add "hx" #(hx-render test-data-js nil))
