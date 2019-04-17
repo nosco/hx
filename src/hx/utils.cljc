@@ -201,18 +201,19 @@
                         (reactify-props-kv k v))) {} attrs)
     attrs))
 
-#?(:cljs (defn styles->js [props]
-           (cond
-             (and (map? props) (:style props))
-             (assoc props :style (clj->js (:style props)))
+#?(:cljs (do (defn styles->js* [props]
+               (cond
+                 (and (map? props) (:style props))
+                 (assoc props :style (clj->js (:style props)))
 
-             (gobj/containsKey props "style")
-             (do (->> (gobj/get props "style")
-                      (clj->js)
-                      (gobj/set props "style"))
-                 props)
+                 (gobj/containsKey props "style")
+                 (do (->> (gobj/get props "style")
+                          (clj->js)
+                          (gobj/set props "style"))
+                     props)
 
-             :default props)))
+                 :default props))
+             (def styles->js (memoize styles->js*))))
 
 #?(:clj (defn clj->props [props] props)
    :cljs (do (defn clj->props* [props]
