@@ -31,5 +31,12 @@
   :benchmark {:target :node-script
               :main hx.benchmark/main
               :output-to "target/benchmark/index.js"
-              :devtools {;; :enabled false
-                         :after-load hx.benchmark/main}}}}}
+              :devtools {:enabled false
+                         ;; :after-load hx.benchmark/main
+                         }}
+  :benchmark-browser {:target :browser
+                      :output-dir "public/benchmark/js"
+                      :asset-path "/js"
+                      :modules {:main {:entries [hx.benchmark]}}
+                      :devtools {:http-root "public/benchmark"
+                                 :http-port    8800}}}}}
