@@ -37,14 +37,17 @@
         (rce "button" nil "ok")
         (rce "button" nil "cancel")))))
 
-(hx/defnc hx-render [{:keys [title body]}]
-  [:div {:class "card"}
-   [:div {:class "card-title"} title]
-   [:div {:class "card-body"} body]
-   [:div {:class "card-footer"}
-    [:div {:class "card-actions"}
-     [:button "ok"]
-     [:button "cancel"]]]])
+(defn hx-render [{:keys [title body]}]
+  (hx/f
+   [:div {:class "card"}
+    [:div {:class "card-title"} title]
+    [:div {:class "card-body"} body]
+    [:div {:class "card-footer"}
+     [:div {:class "card-actions"}
+      [:button "ok"]
+      [:button "cancel"]]]]))
+
+(def ^:export hx-render-manual hx-render)
 
 (defn log-cycle [event]
   (println (.toString (.-target event))))
@@ -53,7 +56,7 @@
   (this-as this
     (js/console.log this)))
 
-(defn main [& args]
+(defn ^:export main [& args]
   (let [test-data {:title "hello world"
                    :body "body"}
         test-data-js #js {:title "hello world"
@@ -61,19 +64,19 @@
     (println (rdom/renderToString (react-render test-data)))
     (println (rdom/renderToString (reagent-render test-data)))
     ;; (println (rdom/renderToString (shadow-render test-data)))
-    (println (rdom/renderToString (hx-render test-data-js nil)))
+    (println (rdom/renderToString (hx-render test-data)))
 
     (when-not (= (rdom/renderToString (react-render test-data))
                  (rdom/renderToString (reagent-render test-data))
                  ;; (rdom/renderToString (shadow-render test-data))
-                 (rdom/renderToString (hx-render test-data-js nil)))
+                 (rdom/renderToString (hx-render test-data)))
       (throw (ex-info "not equal!" {})))
 
     (-> (b/Suite.)
-        ;; (.add "react" #(react-render test-data))
+        (.add "react" #(react-render test-data))
         (.add "reagent" #(reagent-render test-data))
         ;; (.add "shadow" #(shadow-render test-data))
-        (.add "hx" #(hx-render test-data-js nil))
+        (.add "hx" #(hx-render test-data))
         (.on "cycle" log-cycle)
         ;; (.on "complete" log-complete)
         (.run))))
