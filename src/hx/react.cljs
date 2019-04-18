@@ -35,7 +35,7 @@
                    (if props? (-rest args) args))
          first-child (utils/measure-perf
                       "first-child"
-                      (-first children))]
+                      (first children))]
      (case (count children)
        0 (utils/measure-perf
           "no_children"
@@ -44,6 +44,7 @@
               "fn?"
               ^boolean (goog/isFunction first-child))
            (react/createElement el
+                                nil
                                 ;; fn-as-child
                                 ;; wrap in a function to parse hiccup from render-fn
                                 (fn [& args]
