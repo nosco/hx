@@ -25,7 +25,7 @@
 (defn parse [config hiccup]
   (util/measure-perf
    "parse"
-   (parse-element config (nth hiccup 0) (rest hiccup))))
+   (parse-element config (-nth hiccup 0) (rest hiccup))))
 
 (defn make-element [config el args]
   (util/measure-perf

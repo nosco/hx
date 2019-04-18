@@ -6,10 +6,10 @@
             [hx.utils :as utils :include-macros true])
   (:require-macros [hx.react]))
 
-;; (extend-type react/Component
-;;   hiccup/IElement
-;;   (-parse-element [el config args]
-;;     (hiccup/make-element config el args)))
+(extend-type react/Component
+  hiccup/IElement
+  (-parse-element [el config args]
+    (hiccup/make-element config el args)))
 
 (defn create-element [config el args]
   (utils/measure-perf
@@ -32,7 +32,7 @@
                   true nil))
          children (utils/measure-perf
                    "children"
-                   (if props? (rest args) args))
+                   (if props? (-rest args) args))
          first-child (utils/measure-perf
                       "first-child"
                       (-first children))]
@@ -42,7 +42,7 @@
           (react/createElement el props))
        1 (if (utils/measure-perf
               "fn?"
-              (fn? first-child))
+              ^boolean (goog/isFunction first-child))
            (react/createElement el
                                 ;; fn-as-child
                                 ;; wrap in a function to parse hiccup from render-fn
@@ -104,8 +104,8 @@
   (hiccup/-parse-element
    (.-Provider context)
    react-hiccup-config
-   (into
-    [{:value value}]
+   (cons
+    {:value value}
     (rest args)))))
 
 
