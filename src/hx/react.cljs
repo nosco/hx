@@ -1,41 +1,45 @@
 (ns hx.react
   (:require [goog.object :as gobj]
             ["react" :as react]
-            ["react-is" :as react-is]
             [hx.hiccup :as hiccup]
             [hx.utils :as utils :include-macros true])
   (:require-macros [hx.react]))
 
-(extend-type react/Component
-  hiccup/IElement
-  (-parse-element [el config args]
-    (hiccup/make-element config el args)))
+(defn- props [el first-arg props?]
+  (cond
+    (and (string? el) props?) (utils/clj->props first-arg)
+
+    props? (-> first-arg
+               (utils/also-as :class :className)
+               (utils/also-as :for :htmlFor)
+               (utils/styles->js)
+               (utils/shallow-clj->js))
+
+    true nil))
+
+(defn- fn-as-child [config first-child args]
+  (fn [& args]
+    (let [ret (apply first-child args)]
+      (if (vector? ret)
+        (hiccup/-as-element ^non-native ret config)
+        ret))))
 
 (defn create-element [config el args]
   (utils/measure-perf
    "create_element"
    (let [first-arg (utils/measure-perf
                     "first-arg"
-                    (first args))
+                    (nth args 0 nil))
          props? (map? first-arg)
          props (utils/measure-perf
                 "props"
-                (cond
-                  (and (string? el) props?) (utils/clj->props first-arg)
-
-                  props? (-> first-arg
-                             (utils/also-as :class :className)
-                             (utils/also-as :for :htmlFor)
-                             (utils/styles->js)
-                             (utils/shallow-clj->js))
-
-                  true nil))
+                (props el first-arg props?))
          children (utils/measure-perf
                    "children"
                    (if props? (-rest args) args))
          first-child (utils/measure-perf
                       "first-child"
-                      (first children))]
+                      (nth children 0 nil))]
      (case (count children)
        0 (utils/measure-perf
           "no_children"
@@ -47,16 +51,13 @@
                                 nil
                                 ;; fn-as-child
                                 ;; wrap in a function to parse hiccup from render-fn
-                                (fn [& args]
-                                  (let [ret (apply first-child args)]
-                                    (if (vector? ret)
-                                      (hiccup/-parse-element ret config nil)
-                                      ret))))
+                                (fn-as-child config first-child args))
            (utils/measure-perf
             "one_child"
             (react/createElement el props (utils/measure-perf
                                            "one_child_parse"
-                                           (hiccup/-parse-element first-child config nil)))))
+                                           (hiccup/-as-element
+                                            first-child config)))))
        ;; use .apply here for performance
        (utils/measure-perf
         "has_children"
@@ -68,7 +69,8 @@
                  c children]
             (if-not (nil? c)
               (do
-                (.push a (hiccup/-parse-element (-first c) config nil))
+                (.push a (hiccup/-as-element
+                          (-first c) config))
                 (recur
                  a
                  (-next c)))
@@ -77,7 +79,6 @@
 (def react-hiccup-config
   {:create-element create-element
    :is-element? react/isValidElement
-   :is-element-type? react-is/isValidElementType
    :fragment react/Fragment})
 
 (defn f [form]
@@ -88,27 +89,18 @@
     (f body)
     body))
 
+(declare props->clj)
+
 (def fragment react/Fragment)
 
-(defmethod hiccup/parse-element
-  :<>
-  [config el args]
-  (hiccup/-parse-element
-   hx.react/fragment
-   react-hiccup-config
-   args))
+(hiccup/extend-tag :<> hx.react/fragment)
 
-(defmethod hiccup/parse-element
-  :provider
-  [config el args]
-  (let [{:keys [context value]} (first args)]
-  (hiccup/-parse-element
-   (.-Provider context)
-   react-hiccup-config
-   (cons
-    {:value value}
-    (rest args)))))
+(hx.react/defnc Provider [{:keys [context value children]}]
+  [(.-Provider ^js context)
+   {:value value}
+   children])
 
+(hiccup/extend-tag :provider Provider)
 
 
 (comment
