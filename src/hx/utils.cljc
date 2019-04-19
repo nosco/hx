@@ -243,7 +243,7 @@
                    (reactify-props)
                    (styles->js)
                    (shallow-clj->js)))
-             (def clj->props (memoize1 clj->props*))))
+             (def clj->props clj->props*)))
 
 (comment
   (reactify-props {:class ["foo" nil]})

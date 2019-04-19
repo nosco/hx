@@ -3,34 +3,47 @@
             [hx.utils :as util :include-macros true]))
 
 (defprotocol IElement
-  (-parse-element [el config args] "Parses an element"))
+  (-as-element [el config] "Converts to an element"))
 
-;; (declare -parse-element)
+;; (declare -as-element)
 
-;; we use a multimethod to dispatch on identity so that consumers
-;; can override this for custom values e.g. :<> for React fragments
-(defmulti parse-element
-  (fn [config el args]
-    el)
-  :default ::default)
+(defonce tag-registry (atom {}))
 
-;; if no multimethod for specific el, then apply general parsing rules
-(defmethod parse-element
-  ::default
-  ([config el args]
-   (util/measure-perf
-    "parse_element_default"
-    (-parse-element el config args))))
+(defn extend-tag [tag impl]
+  (swap! tag-registry assoc tag impl))
 
-(defn parse [config hiccup]
-  (util/measure-perf
-   "parse"
-   (parse-element config (-nth hiccup 0) (rest hiccup))))
+(defn tag->impl [tag]
+  (if-let [t (get @tag-registry tag nil)]
+    t
+    (name tag)))
+
+;; ;; we use a multimethod to dispatch on identity so that consumers
+;; ;; can override this for custom values e.g. :<> for React fragments
+;; (defmulti extend-tag
+;;   identity
+;;   :default ::default)
+
+;; ;; if no multimethod for specific el, then apply general parsing rules
+;; (defmethod extend-tag
+;;   ::default
+;;   ([el]
+;;    (name el)))
+
+(defn parse-tag [el]
+  (cond
+    ^boolean (keyword? el) (-name el)
+    ^boolean (var? el) (fn VarEl [& args] (apply el args))
+    true el))
 
 (defn make-element [config el args]
   (util/measure-perf
    "make_element"
    ((:create-element config) config el args)))
+
+(defn parse [config hiccup]
+  (util/measure-perf
+   "parse"
+   (make-element config (parse-tag (nth hiccup 0)) (rest hiccup))))
 
 #?(:clj (defn array? [x]
           (coll? x)))
@@ -39,119 +52,61 @@
   #?(:clj (Exception. s)
      :cljs (js/Error. s)))
 
-;; (defn -parse-element [form config args]
-;;   (cond
-;;     (nil? form) form
-
-;;     (number? form) form
-
-;;     (string? form) form
-
-;;     (vector? form) (parse-element config (-nth form 0) (rest form))
-
-;;     (seq? form) (make-element config (:fragment config)
-;;                               (cons nil (map #(parse-element config (first %) (rest %)) form)))
-
-;;     (keyword? form) (make-element config (name form) args)
-
-;;     (ifn? form) (make-element config form args)
-
-;;     ((:is-element? config) form) form
-
-;;     ((:is-element-type? config) form)
-;;     (make-element config form args)
-
-;;     ;; handle array of children already parsed
-;;     (and (array? form) (every? (:is-element? config) form))
-;;     form
-
-;;     (var? form)
-;;     (make-element config
-;;                   (fn VarEl [& args] (apply form args))
-;;                   args)
-
-;;     :default
-;;     (throw
-;;      (ex (str "Unknown element type " (prn-str (type form))
-;;               " found while parsing hiccup form: "
-;;                                 (.toString form))))
-
-;;     ))
-
 (extend-protocol IElement
   nil
-  (-parse-element [_ _ _]
+  (-as-element [_ _]
     (util/measure-perf
-     "-parse_element_nil"
+     "-as_element_nil"
      nil))
 
   #?(:clj Number
      :cljs number)
-  (-parse-element [n _ _]
+  (-as-element [n _]
     (util/measure-perf
-     "-parse_element_number"
+     "-as_element_number"
      n))
 
   #?(:clj String
      :cljs string)
-  (-parse-element [s _ _]
+  (-as-element [s _]
     (util/measure-perf
-     "-parse_element_string"
+     "-as_element_string"
      s))
 
   #?(:clj clojure.lang.PersistentVector
      :cljs PersistentVector)
-  (-parse-element [form config _]
+  (-as-element [form config]
     (util/measure-perf
-     "-parse_element_vector"
-     (parse-element config (-nth form 0) (rest form))))
+     "-as_element_vector"
+     (make-element config (parse-tag (nth form 0)) (rest form))))
 
   #?(:clj clojure.lang.LazySeq
      :cljs LazySeq)
-  (-parse-element [a config b]
+  (-as-element [a config]
     (util/measure-perf
-     "-parse_element_lazyseq"
-    (make-element
-     config
-     (:fragment config)
-     (cons nil (map #(parse-element config (first %) (rest %)) a)))))
+     "-as_element_lazyseq"
+     (make-element
+      config
+      (:fragment config)
+      (cons nil (map #(-as-element % config) a)))))
 
-  #?(:clj clojure.lang.Keyword
-     :cljs Keyword)
-  (-parse-element [el config args]
-    (util/measure-perf
-     "-parse_element_keyword"
-     (make-element config (name el) args)))
-
-  #?(:clj clojure.lang.AFn
-     :cljs function)
-  (-parse-element [el config args]
-    (util/measure-perf
-     "-parse_element_afn"
-     (make-element config el args)))
+  #?(:cljs array)
+  #?(:cljs (-as-element [a config]
+                        (util/measure-perf
+                         "-as_element_array"
+                         (make-element
+                          config
+                          (:fragment config)
+                          (cons nil (map #(-as-element % config) a))))))
 
   #?(:clj Object
      :cljs default)
-  (-parse-element [el config args]
-    (util/measure-perf
-     "-parse_element_object"
-     (cond
-       ((:is-element? config) el) el
+  (-as-element [el config]
+    (cond
+      ((:is-element? config) el) el
 
-       ((:is-element-type? config) el)
-       (make-element config el args)
-
-       ;; handle array of children already parsed
-       (and (array? el) (every? (:is-element? config) el))
-       el
-
-       (var? el)
-       (make-element config
-                     (fn VarEl [& args] (apply el args))
-                     args)
-
-       :default
-       (throw
-        (ex (str "Unknown element type " (prn-str (type el))
-                 " found while parsing hiccup form: "
-                 (.toString el))))))))
+      :default
+      (throw
+       (ex (str "Unknown element type " (prn-str (type el))
+                " found while parsing hiccup form: "
+                (.toString el)))))))
