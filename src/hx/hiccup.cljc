@@ -31,7 +31,7 @@
 
 (defn parse-tag [el]
   (cond
-    ^boolean (keyword? el) (-name el)
+    ^boolean (keyword? el) (tag->impl el)
     ^boolean (var? el) (fn VarEl [& args] (apply el args))
     true el))
 
