@@ -235,7 +235,7 @@
                      props)
 
                  :default props))
-             (def styles->js (memoize1 styles->js*))))
+             (def styles->js styles->js*)))
 
 #?(:clj (defn clj->props [props] props)
    :cljs (do (defn clj->props* [props]
