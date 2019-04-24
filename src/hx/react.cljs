@@ -19,7 +19,7 @@
   (fn [& args]
     (let [ret (apply first-child args)]
       (if (vector? ret)
-        (hiccup/-as-element ^non-native ret config)
+        (hiccup/-as-element ret config)
         ret))))
 
 (defn create-element [config el args]
