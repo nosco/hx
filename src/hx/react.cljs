@@ -5,6 +5,8 @@
             [hx.utils :as utils :include-macros true])
   (:require-macros [hx.react]))
 
+(def props->clj utils/props->clj)
+
 (defn- props [el first-arg props?]
   (cond
     (and (string? el) props?) (utils/clj->props first-arg)
@@ -85,8 +87,6 @@
     (f body)
     body))
 
-(declare props->clj)
-
 (def fragment react/Fragment)
 
 (hiccup/extend-tag :<> hx.react/fragment)
@@ -99,36 +99,6 @@
 (hiccup/extend-tag :provider Provider)
 
 
-(comment
-  (also-as {:a 1} :a :b)
-
-  (also-as {:a 1} :b :c)
-
-  )
-
-(defn props->clj [props]
-  (let [props (utils/shallow-js->clj props :keywordize-keys true)]
-    ;; provide `:class-name` property also as `:class` for backwards compat
-    (-> props
-        (utils/also-as :className :class)
-        (utils/also-as :class :class-name)
-        (utils/also-as :htmlFor :for)
-        ;; (also-as :for :htmlFor)
-        )))
-
-(comment
-  (props->clj #js {"x0" 1})
-
-  (props->clj #js {"test0" 1})
-
-  (props->clj #js {"testAsdf?" 1})
-
-  (props->clj #js {"test_asdf?" 1})
-
-  (props->clj #js {"testTest.asdf?" 1})
-
-  (props->clj #js {"class" ["asdf"]})
-  )
 
 (defn $ [el & args] (hiccup/make-element react-hiccup-config el args))
 

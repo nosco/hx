@@ -108,15 +108,41 @@
 
 
 
-
 ;;
 ;; New impl.
 ;;
 
+#?(:cljs
+   (defn props->clj [props]
+     (loop [ks (js/Object.keys props)
+            m {}]
+       (if (nil? ks)
+         m
+         (let [k (first ks)
+               v (gobj/get props k)]
+           (recur (next ks)
+                  (case k
+                    ;; backwards compat
+                    "class" (assoc m
+                                   :className v
+                                   :class v)
+                    "className" (assoc m
+                                       :className v
+                                       :class v)
+                    "htmlFor" (assoc m
+                                     :htmlFor v
+                                     :for v)
+                    (assoc m (keyword k) v))))))))
+
+(comment
+  (props->clj #js {:class "foo"})
+  )
+
+
 (defn- set-obj [o k v]
   #?(:cljs (do (gobj/set o k v)
                o)
-     :clj o))
+     :clj (assoc o k v)))
 
 (defn- join-classes
   "Join the `classes` with a whitespace."
@@ -199,13 +225,15 @@
          ;; side-effecting
          (case k
            :style (set-obj js-props "style" (map->camel+js v))
-           :class (set-obj js-props "className" (class-name v))
-           :for (set-obj js-props "htmlFor" v)
+           :class (do (set-obj js-props "class" (class-name v))
+                      (set-obj js-props "className" (class-name v)))
+           :for (do (set-obj js-props "for" v)
+                    (set-obj js-props "htmlFor" v))
 
            (set-obj js-props
                     (if camelize?
-                      (camel-case* (name k))
-                      (name k))
+                      (camel-case* (keyword->str k))
+                      (keyword->str k))
                     v))
          (recur (next pxs)
                 js-props))))))
