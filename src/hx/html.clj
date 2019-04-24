@@ -5,38 +5,37 @@
   ;; TODO
   "")
 
-(defn create-element [el props & children]
+(defn create-element [config el args]
+  (let [first-arg (nth args 0 nil)
+        props? (map? first-arg)
+        children (if props? (rest args) args)
+        ;; first-child (nth children 0 nil)
+        ]
   (cond
-    (string? el) (str "<" el (props->attrs props) ">"
-                      (apply str children)
+    (= el "<>") (apply str (map #(h/-as-element % config) children))
+    (string? el) (str "<" el (when props? (props->attrs first-arg)) ">"
+                      (->> children
+                           (map #(h/-as-element % config))
+                           (apply str))
                       "</" el ">")
-    (ifn? el) (el (assoc props :children children))))
+    (ifn? el) (el (assoc (if props? first-arg {})
+                         :children children)))))
 
 (defn fragment [{:keys [children]}]
-  (apply str children))
+  )
 
 (def html-hiccup-config
   {:create-element create-element
    :is-element? string?
-   :is-element-type? (fn [x]
-                       (ifn? x))
    :fragment fragment})
 
 (defn f [form]
   (h/parse html-hiccup-config
            form))
 
-(defmethod h/parse-element
-  :<>
-  [config el & args]
-  (h/-parse-element
-   fragment
-   html-hiccup-config
-   args))
-
 (comment
   (f [:div [:span "asdf"]])
   (f [:div {:style {:color "red"}} "asdf" "jkl"])
-  (f [fragment [:div "asdf"] [:div "jkl"]])
   (f [:<> [:div "asdf"] [:div "jkl"]])
+  (f [:aside [:<> [:div "asdf"] [:div "jkl"]]])
   )
