@@ -17,51 +17,6 @@
              ret#)))
     form))
 
-(defn also-as
-  "If key `k1` is contained in `m`, assocs the value of it into `m` at key `k2`"
-  [m k1 k2]
-  (if-let [entry (find m k1)]
-    (let [[_ v] entry]
-      (assoc m k2 v))
-    m))
-
-(defn- camel->kebab
-  "Converts from camel case (e.g. Foo or FooBar) to kebab case
-   (e.g. foo or foo-bar)."
-  [s]
-  (if (> (count s) 1)
-    (str/join "-" (map str/lower-case (re-seq #"\w[a-z0-9\?_\./]*" s)))
-    s))
-
-(comment
-  (camel->kebab "x")
-
-  (camel->kebab "x1")
-
-  (camel->kebab "xx1")
-
-  (camel->kebab "xX")
-
-  (camel->kebab "xX1")
-
-  (camel->kebab "x1X")
-
-  (camel->kebab "xxX")
-
-  (camel->kebab "xXx")
-
-  (camel->kebab "xxXx")
-
-  (camel->kebab "x1xXx1")
-
-  (camel->kebab "x?")
-
-  (camel->kebab "x_x")
-
-  (camel->kebab "xX.x")
-
- )
-
 (defn keyword->str [k]
   (let [kw-ns (namespace k)
         kw-name (name k)]
@@ -69,43 +24,6 @@
       kw-name
 
       (str kw-ns "/" kw-name))))
-
-#?(:cljs
-   (defn shallow-js->clj
-     ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
-     ([x & opts]
-      (let [{:keys [keywordize-keys camel-kebab]
-             :or {keywordize-keys false
-                  camel-kebab false}} opts
-            keyfn (if keywordize-keys
-                    (if camel-kebab
-                      (comp keyword camel->kebab)
-                      keyword)
-                    str)
-            f (fn thisfn [x]
-                (cond
-                  (satisfies? IEncodeClojure x)
-                  (-js->clj x (apply array-map opts))
-
-                  (seq? x)
-                  x
-
-                  (map-entry? x)
-                  (MapEntry. (key x) (val x) nil)
-
-                  (coll? x)
-                  x
-
-                  (array? x)
-                  (vec x)
-
-                  (identical? (type x) js/Object)
-                  (into {} (for [k (js-keys x)]
-                             [(keyfn k) (unchecked-get x k)]))
-
-                  :else x))]
-        (f x)))))
-
 
 
 ;;
@@ -214,7 +132,7 @@
   By default, converts kebab-case keys to camelCase strings. pass in `false`
   as a second arg to disable this."
   ([props] (clj->props props true))
-  ([props camelize?]
+  ([props native?]
    (loop [pxs (seq props)
           js-props #js {}]
      (if (nil? pxs)
@@ -225,13 +143,17 @@
          ;; side-effecting
          (case k
            :style (set-obj js-props "style" (map->camel+js v))
-           :class (do (set-obj js-props "class" (class-name v))
-                      (set-obj js-props "className" (class-name v)))
-           :for (do (set-obj js-props "for" v)
-                    (set-obj js-props "htmlFor" v))
+           :class (if native?
+                    (set-obj js-props "className" (class-name v))
+                    (do (set-obj js-props "class" (class-name v))
+                        (set-obj js-props "className" (class-name v))))
+           :for (if native?
+                  (set-obj js-props "htmlFor" v)
+                  (do (set-obj js-props "for" v)
+                      (set-obj js-props "htmlFor" v)))
 
            (set-obj js-props
-                    (if camelize?
+                    (if native?
                       (camel-case* (keyword->str k))
                       (keyword->str k))
                     v))

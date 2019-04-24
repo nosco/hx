@@ -139,4 +139,3 @@
   a new React element"
   [component]
   (partial $ component))
-
