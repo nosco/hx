@@ -4,16 +4,6 @@
 
 (def ^:dynamic *perf-debug?* false)
 
-#?(:cljs (defn memoize1 [f]
-           (let [mem (atom {})]
-             (fn [arg]
-               (let [v (get @mem arg lookup-sentinel)]
-                 (if (identical? v lookup-sentinel)
-                   (let [ret (f arg)]
-                     (swap! mem assoc arg ret)
-                     ret)
-                   v))))))
-
 (defmacro measure-perf [tag form]
   (if *perf-debug?*
     (let [begin (str tag "_begin")
@@ -35,7 +25,7 @@
       (assoc m k2 v))
     m))
 
-(defn camel->kebab
+(defn- camel->kebab
   "Converts from camel case (e.g. Foo or FooBar) to kebab case
    (e.g. foo or foo-bar)."
   [s]
@@ -80,38 +70,6 @@
 
       (str kw-ns "/" kw-name))))
 
-#?(:cljs (defn shallow-clj->js
-           "Shallowly transforms ClojureScript values to JavaScript.
-  sets/vectors/lists become Arrays, Keywords and Symbol become Strings,
-  Maps become Objects. Arbitrary keys are encoded to by `key->js`.
-  Options is a key-value pair, where the only valid key is
-  :keyword-fn, which should point to a single-argument function to be
-  called on keyword keys. Default to `name` but with namespace added."
-           [x & {:keys [keyword-fn]
-                 :or   {keyword-fn keyword->str}
-                 :as options}]
-           (letfn [(keyfn [k] (key->js k thisfn))
-                   (thisfn [x] (cond
-                                 (nil? x) nil
-                                 (satisfies? IEncodeJS x) (-clj->js x)
-                                 (keyword? x) (keyword-fn x)
-                                 (symbol? x) (str x)
-                                 (map? x) (let [m (js-obj)]
-                                            (doseq [[k v] x]
-                                              (gobj/set m (keyfn k) v))
-                                            m)
-                                 (coll? x) (let [arr (array)]
-                                             (doseq [x x]
-                                               (.push arr x))
-                                             arr)
-                                 :else x))]
-             (thisfn x))))
-
-#_(shallow-clj->js [1 2 3])
-#_(shallow-clj->js {:a "asdf" :b :y :c 2})
-
-#_(shallow-clj->js {:a/b "asdf" :b/c :y :c/d 2})
-
 #?(:cljs
    (defn shallow-js->clj
      ([x] (shallow-js->clj x :keywordize-keys false :camel-kebab false))
@@ -148,135 +106,131 @@
                   :else x))]
         (f x)))))
 
-;; I stole most of this from https://github.com/rauhs/hicada/blob/master/src/hicada/util.clj
 
-(defn join-classes
+
+
+;;
+;; New impl.
+;;
+
+(defn- set-obj [o k v]
+  #?(:cljs (do (gobj/set o k v)
+               o)
+     :clj o))
+
+(defn- join-classes
   "Join the `classes` with a whitespace."
   [classes]
   (->> classes
        (remove nil?)
        (str/join " ")))
 
-(defn camel-case
-  "Returns camel case version of the key, e.g. :http-equiv becomes :httpEquiv."
-  [k]
-  (if (or (keyword? k)
-          (string? k)
-          (symbol? k))
-    (let [[first-word & words] (str/split (name k) #"-")]
+(defn- class-name [x]
+  (cond (or (nil? x)
+            (keyword? x)
+            (string? x))
+        x
+
+        (or (sequential? x)
+            (set? x))
+        (join-classes x)
+
+        :else x))
+
+(defn- camel-case*
+  "Returns camel case version of the string, e.g. \"http-equiv\" becomes \"httpEquiv\"."
+  [s]
+  (if (or (keyword? s)
+          (string? s)
+          (symbol? s))
+    (let [[first-word & words] (str/split (name s) #"-")]
       (if (or (empty? words)
               (= "aria" first-word)
               (= "data" first-word))
-        k
+        s
         (-> (map str/capitalize words)
             (conj first-word)
-            str/join
-            keyword)))
-    k))
+            str/join)))
+    s))
 
-(defn camel-case-keys
-  "Recursively transforms all map keys into camel case."
-  [m]
+(defn- map->camel+js [x]
   (cond
-    (map? m)
-    (reduce-kv
-     (fn [m k v]
-       (assoc m (camel-case k) v))
-     {} m)
-    ;; React native accepts :style [{:foo-bar ..} other-styles] so camcase those keys:
-    (vector? m)
-    (mapv camel-case-keys m)
-    :else
-    m))
-
-(defmulti reactify-props-kv (fn [name value] name))
-
-(defmethod reactify-props-kv :class [name value]
-  (cond (or (nil? value)
-            (keyword? value)
-            (string? value))
-        value
-
-        (or (sequential? value)
-            (set? value))
-        (join-classes value)
-
-        :else value))
-
-(defmethod reactify-props-kv :style [name value]
-  (camel-case-keys value))
-
-(defmethod reactify-props-kv :default [name value]
-  value)
-
-(defn reactify-props
-  "Converts a HTML attribute map to react (class -> className), camelCases :style."
-  [attrs]
-  (if (map? attrs)
-    (reduce-kv (fn [m k v]
-                 (assoc m
-                        (case k
-                          :class :className
-                          :for :htmlFor
-                          (if ((some-fn keyword? symbol?) k)
-                            (camel-case k)))
-                        (reactify-props-kv k v))) {} attrs)
-    attrs))
-
-#?(:cljs (do (defn styles->js* [props]
-               (cond
-                 (and (map? props) (:style props))
-                 (assoc props :style (clj->js (:style props)))
-
-                 (gobj/containsKey props "style")
-                 (do (->> (gobj/get props "style")
-                          (clj->js)
-                          (gobj/set props "style"))
-                     props)
-
-                 :default props))
-             (def styles->js styles->js*)))
-
-#?(:clj (defn clj->props [props] props)
-   :cljs (do (defn clj->props* [props]
-               (-> props
-                   (reactify-props)
-                   (styles->js)
-                   (shallow-clj->js)))
-             (def clj->props clj->props*)))
+    (map? x) (loop [ps (seq x)
+                    o #js {}]
+               (if (nil? ps)
+                 o
+                 (let [p (first ps)
+                       k (key p)
+                       v (val p)]
+                   ;; side-effecting
+                   (set-obj o (camel-case* (name k)) (map->camel+js v))
+                   (recur (next ps)
+                          o))))
+    true x))
 
 (comment
-  (reactify-props {:class ["foo" nil]})
+  (map->camel+js {})
 
+  (map->camel+js {:color "red"})
+
+  (map->camel+js {:color "red" :background "green"})
+
+  (next [1 2])
+  )
+
+(defn clj->props
+  "Shallowly converts props map to a JS obj. Handles certain special cases:
+
+  1. `:class` -> \"className\", and joins collections together as a string
+  2. `:for` -> \"htmlFor\"
+  3. `:style` -> deeply converts this prop to a JS obj
+
+  By default, converts kebab-case keys to camelCase strings. pass in `false`
+  as a second arg to disable this."
+  ([props] (clj->props props true))
+  ([props camelize?]
+   (loop [pxs (seq props)
+          js-props #js {}]
+     (if (nil? pxs)
+       js-props
+       (let [p (first pxs)
+             k (key p)
+             v (val p)]
+         ;; side-effecting
+         (case k
+           :style (set-obj js-props "style" (map->camel+js v))
+           :class (set-obj js-props "className" (class-name v))
+           :for (set-obj js-props "htmlFor" v)
+
+           (set-obj js-props
+                    (if camelize?
+                      (camel-case* (name k))
+                      (name k))
+                    v))
+         (recur (next pxs)
+                js-props))))))
+
+(comment
   (clj->props {:class "foo"
                :style {:color "red"}})
 
   (clj->props {:class [nil "foo"]})
 
+  (clj->props {:asdf "jkl"})
+
   (let [case {:x-x? "asdf"}]
-    (-> (clj->props case)
-        (shallow-js->clj :keywordize-keys true)
-        (= case)))
+    (-> (clj->props case)))
 
   (let [case {:x-x.x? "asdf"}]
-    (-> (clj->props case)
-        (shallow-js->clj :keywordize-keys true)
-        (= case)))
+    (-> (clj->props case)))
 
   (let [case {:xa1-xb2.x? "asdf"}]
-    (-> (clj->props case)
-        (shallow-js->clj :keywordize-keys true)
-        (= case)))
+    (-> (clj->props case)))
 
 
   (let [case {:ns/xb2.x? "asdf"}]
-    (-> (clj->props case)
-        (shallow-js->clj :keywordize-keys true)
-        (= case)))
+    (-> (clj->props case)))
 
   (let [case {:ns/-xb2.x? "asdf"}]
-    (-> (clj->props case)
-        #_(shallow-js->clj :keywordize-keys true)
-        #_(= case)))
-
+    (-> (clj->props case)))
   )
