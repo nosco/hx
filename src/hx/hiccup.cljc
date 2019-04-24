@@ -107,6 +107,6 @@
 
       :default
       (throw
-       (ex (str "Unknown element type " (prn-str (type el))
+       (ex (str "Unknown element type " (pr-str (type el))
                 " found while parsing hiccup form: "
                 (.toString el)))))))

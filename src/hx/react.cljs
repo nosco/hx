@@ -9,11 +9,7 @@
   (cond
     (and (string? el) props?) (utils/clj->props first-arg)
 
-    props? (-> first-arg
-               (utils/also-as :class :className)
-               (utils/also-as :for :htmlFor)
-               (utils/styles->js)
-               (utils/shallow-clj->js))
+    props? (utils/clj->props first-arg false)
 
     true nil))
 
