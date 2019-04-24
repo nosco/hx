@@ -166,7 +166,7 @@
    [:ul
     [:li "class: \"" class "\""]
     [:li "class-name: \"" class-name "\""]]
-   (str (= class class-name))])
+   (str (= class class-name "foo"))])
 
 (dc/defcard class-name-prop
   (hx/f [ClassNameProp {:class "foo"}]))
@@ -265,8 +265,8 @@
   [:<>
    [:div "Cloned:"
     (react/cloneElement children #js {:className "foo"})]
-   ;; [:div "Not cloned:"
-   ;;  children]
+   [:div "Not cloned:"
+    children]
    ])
 
 (hx/defnc Cloned [{:keys [className class] :as props}]
