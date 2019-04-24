@@ -26,10 +26,6 @@
       (str kw-ns "/" kw-name))))
 
 
-;;
-;; New impl.
-;;
-
 #?(:cljs
    (defn props->clj [props]
      (loop [ks (js/Object.keys props)

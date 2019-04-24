@@ -7,10 +7,12 @@
 - `<-value` hook mutated ref in render, making it not safe for use in Concurrent React
 - Converting prop `className` to `class` was only done when hiccup parsing; now also happens in `defnc`
 so it works with `cloneElement`.
+- Improved hiccup interpretation by 10x
 
 ### Changed
 
 - Deprecated Hooks names prepended with `<-`; adopted `useXyzAbc` convention
+- Changed API for extending components; now you can call `(extend-tag :new-tag ReactComponentToUse)`
 
 ### Added
 
