@@ -93,20 +93,21 @@
             str/join)))
     s))
 
-(defn- map->camel+js [x]
-  (cond
-    (map? x) (loop [ps (seq x)
-                    o #js {}]
-               (if (nil? ps)
-                 o
-                 (let [p (first ps)
-                       k (key p)
-                       v (val p)]
-                   ;; side-effecting
-                   (set-obj o (camel-case* (name k)) (map->camel+js v))
-                   (recur (next ps)
-                          o))))
-    true x))
+#?(:cljs
+   (defn- map->camel+js [x]
+     (cond
+       (map? x) (loop [ps (seq x)
+                       o #js {}]
+                  (if (nil? ps)
+                    o
+                    (let [p (first ps)
+                          k (key p)
+                          v (val p)]
+                      ;; side-effecting
+                      (set-obj o (camel-case* (name k)) (map->camel+js v))
+                      (recur (next ps)
+                             o))))
+       true x)))
 
 (comment
   (map->camel+js {})
@@ -118,8 +119,9 @@
   (next [1 2])
   )
 
-(defn clj->props
-  "Shallowly converts props map to a JS obj. Handles certain special cases:
+#?(:cljs
+   (defn clj->props
+     "Shallowly converts props map to a JS obj. Handles certain special cases:
 
   1. `:class` -> \"className\", and joins collections together as a string
   2. `:for` -> \"htmlFor\"
@@ -127,34 +129,34 @@
 
   By default, converts kebab-case keys to camelCase strings. pass in `false`
   as a second arg to disable this."
-  ([props] (clj->props props true))
-  ([props native?]
-   (loop [pxs (seq props)
-          js-props #js {}]
-     (if (nil? pxs)
-       js-props
-       (let [p (first pxs)
-             k (key p)
-             v (val p)]
-         ;; side-effecting
-         (case k
-           :style (set-obj js-props "style" (map->camel+js v))
-           :class (if native?
-                    (set-obj js-props "className" (class-name v))
-                    (do (set-obj js-props "class" (class-name v))
-                        (set-obj js-props "className" (class-name v))))
-           :for (if native?
-                  (set-obj js-props "htmlFor" v)
-                  (do (set-obj js-props "for" v)
-                      (set-obj js-props "htmlFor" v)))
+     ([props] (clj->props props true))
+     ([props native?]
+      (loop [pxs (seq props)
+             js-props #js {}]
+        (if (nil? pxs)
+          js-props
+          (let [p (first pxs)
+                k (key p)
+                v (val p)]
+            ;; side-effecting
+            (case k
+              :style (set-obj js-props "style" (map->camel+js v))
+              :class (if native?
+                       (set-obj js-props "className" (class-name v))
+                       (do (set-obj js-props "class" (class-name v))
+                           (set-obj js-props "className" (class-name v))))
+              :for (if native?
+                     (set-obj js-props "htmlFor" v)
+                     (do (set-obj js-props "for" v)
+                         (set-obj js-props "htmlFor" v)))
 
-           (set-obj js-props
-                    (if native?
-                      (camel-case* (keyword->str k))
-                      (keyword->str k))
-                    v))
-         (recur (next pxs)
-                js-props))))))
+              (set-obj js-props
+                       (if native?
+                         (camel-case* (keyword->str k))
+                         (keyword->str k))
+                       v))
+            (recur (next pxs)
+                   js-props)))))))
 
 (comment
   (clj->props {:class "foo"
