@@ -29,11 +29,11 @@ A simple, easy to use library for React development in ClojureScript.
 
 ## Dependencies
 
-You'll want to make sure you have the latest version of `react`, `react-is`, and
-whatever renderer you are targeting (e.g. `react-dom`).
+You'll want to make sure you have the latest version of `react`, and whatever
+renderer you are targeting (e.g. `react-dom`).
 
 ```
-npm i react react-is react-dom
+npm i react react-dom
 ```
 
 If you want to use the React Hooks API (`hx.hooks`), you'll need to ensure
