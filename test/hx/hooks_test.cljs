@@ -2,6 +2,7 @@
   (:require [cljs.test :as t :include-macros true]
             [hx.react :as hx]
             [hx.hooks :as hooks]
+            [hx.hooks.alpha :as alpha]
             ["react" :as r]
             [react-utils :as u]
             [react-testing-library :as rtl]))
@@ -243,7 +244,7 @@
   (t/testing "fires only on first render"
     (let [counter (atom 0)
           FxTest (fn [props]
-                   (hooks/useSmartEffect
+                   (alpha/useSmartEffect
                      (swap! counter inc))
                    (hx/f [:div @counter]))
           test (-> (hx/f [FxTest])
@@ -262,7 +263,7 @@
           diff (atom 0)
           FxTest (fn [props]
                    (let [d @diff]
-                     (hooks/useSmartEffect
+                     (alpha/useSmartEffect
                       ;; use d
                       d
                       (swap! counter inc)))

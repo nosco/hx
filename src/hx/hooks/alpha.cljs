@@ -1,5 +1,6 @@
 (ns hx.hooks.alpha
-  (:require [hx.hooks :refer [useEffect useState useIRef]]))
+  (:require [hx.hooks :refer [useEffect useState useIRef]])
+  (:require-macros [hx.hooks.alpha]))
 
 (defonce states (atom {}))
 
