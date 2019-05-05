@@ -1,4 +1,4 @@
-(ns hx.hooks
+(ns hx.hooks.alpha
   (:require [cljs.analyzer.api]))
 
 (defn- resolve-vars [env body]
@@ -18,18 +18,18 @@
 
 (defmacro useSmartEffect [& body]
   (let [deps (resolve-vars &env body)]
-    `(useEffect (fn []
+    `(hx.hooks/useEffect (fn []
                   ~@body)
                 ~deps)))
 
 (defmacro useSmartLayoutEffect [& body]
   (let [deps (resolve-vars &env body)]
-    `(useLayoutEffect (fn []
+    `(hx.hooks/useLayoutEffect (fn []
                         ~@body)
                       ~deps)))
 
 (defmacro useSmartMemo [& body]
   (let [deps (resolve-vars &env body)]
-    `(useMemo (fn []
+    `(hx.hooks/useMemo (fn []
                 ~@body)
               ~deps)))
