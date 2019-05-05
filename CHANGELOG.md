@@ -1,6 +1,12 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.1] - May 05, 2019
+
+### Fixed
+
+- Function-as-children were not passing props correctly
+
+## [0.5.0]
 
 ### Fixed
 
