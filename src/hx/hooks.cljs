@@ -1,6 +1,7 @@
 (ns hx.hooks
   (:require ["react" :as react]
-            [goog.object :as gobj]))
+            [goog.object :as gobj])
+  (:require-macros [hx.hooks]))
 
 (deftype Atomified [react-ref deref-lens]
   IDeref

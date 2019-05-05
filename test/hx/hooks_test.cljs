@@ -233,3 +233,49 @@
                        (u/click))]
     (t/is (u/node= (u/html "<div>3</div>")
                    state-test))))
+
+
+;;
+;; Smart effect
+
+
+(t/deftest useSmartEffect
+  (t/testing "fires only on first render"
+    (let [counter (atom 0)
+          FxTest (fn [props]
+                   (hooks/useSmartEffect
+                     (swap! counter inc))
+                   (hx/f [:div @counter]))
+          test (-> (hx/f [FxTest])
+                   (u/render))
+          re-render (.-rerender test)]
+      ;; re-render twice
+      (-> (hx/f [FxTest])
+          (re-render))
+      (-> (hx/f [FxTest])
+          (re-render))
+      (t/is (= @counter 1)))))
+
+ (t/deftest useSmartEffect-detect-change
+  (t/testing "fires anytime `diff` changes before"
+    (let [counter (atom 0)
+          diff (atom 0)
+          FxTest (fn [props]
+                   (let [d @diff]
+                     (hooks/useSmartEffect
+                      ;; use d
+                      d
+                      (swap! counter inc)))
+                   (hx/f [:div @counter]))
+          test (-> (hx/f [FxTest])
+                   (u/render))
+          re-render (.-rerender test)]
+      ;; re-render twice
+      (swap! diff inc)
+      (-> (hx/f [FxTest])
+          (re-render))
+      (swap! diff inc)
+      (-> (hx/f [FxTest])
+          (re-render))
+      (t/is (= @counter 3)))))
+
