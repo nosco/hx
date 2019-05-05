@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+## Added
+
+- `useSmartEffect`, `useSmartLayoutEffect`, `useSmartMemo` that auto-detect 
+dependencies based on the body.
+
 ## [0.5.1] - May 05, 2019
 
 ### Fixed
