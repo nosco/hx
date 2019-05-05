@@ -38,7 +38,6 @@
          first-child (utils/measure-perf
                       "first-child"
                       (nth children 0 nil))]
-     (js/console.log props? props)
      (case (count children)
        0 (utils/measure-perf
           "no_children"
