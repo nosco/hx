@@ -43,9 +43,9 @@
 
 (def styles #js {:root #js {:backgroundColor "red" } })
 
-(defnc PaperWithStyles [{:keys [classes]}] 
+(defnc ComponentWithStyles [{:keys [classes]}] 
   {:wrap [((withStyles styles))]}
-  [:div "testing"])
+  [:div {:class (.-root classes)} "testing"])
 
 (dc/defcard with-styles
-  (hx/f [PaperWithStyles]))
+  (hx/f [ComponentWithStyles]))
