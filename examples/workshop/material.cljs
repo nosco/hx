@@ -2,7 +2,8 @@
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :refer [defnc]]
             ["@material-ui/core/Button" :default Button]
-            ["@material-ui/core/CircularProgress" :default CircularProgress]))
+            ["@material-ui/core/CircularProgress" :default CircularProgress]
+            ["@material-ui/core/styles" :refer [withStyles]]))
 
 (dc/defcard adding-styles*
   ;; add the Robot font globally on the page
@@ -39,3 +40,12 @@
 
 (dc/defcard circular-progress
   (hx/f [CircularProgressExample]))
+
+(def styles #js {:root #js {:backgroundColor "red" } })
+
+(defnc PaperWithStyles [{:keys [classes]}] 
+  {:wrap [((withStyles styles))]}
+  [:div "testing"])
+
+(dc/defcard with-styles
+  (hx/f [PaperWithStyles]))
