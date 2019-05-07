@@ -6,7 +6,7 @@ Generally, we prefer to use Hooks for reusing logic or resources across our app.
 However, many React libraries still use HoC to provide things like context
 values and sharing logic.
 
-Using HoC is easy in hx. Below is an example:
+Using HoC is straight forward in hx. Below is an example:
 
 ```clojure
 (ns my-app.feature
@@ -49,6 +49,34 @@ Using HoC is easy in hx. Below is an example:
           (react/memo =)]}
   ;; Return hiccup
   [:div "I was rendered with " someValue])
+```
+
+One note: some HoC libraries in React use *higher-order component factories*
+(or higher-higher-order components? :dizzy:). For instance, the equivalent JS
+might be something like:
+
+```javascript
+const WrappedComponent = withSomeValue(options)(MyComponent);
+```
+
+This can be easily used with the above, it's just a bit unintuitive:
+we have to wrap it in parens twice.
+
+```clojure
+(defnc MyComponent ...)
+
+(def WrappedComponent (-> MyComponent
+                          ;; evaluates `(withSomeValue options)`, then
+                          ;; passes MyComponent into the resulting function
+                          ;; and evaluates it
+                          ((withSomeValue options))
+                          (react/memo =)))
+
+;; or, with :wrap
+(defnc WrappedComponent ...
+  {:wrap [((withSomeValue options))
+          (react/memo =)]}
+  ...)
 ```
 
 ## Use children-as-function / render props
