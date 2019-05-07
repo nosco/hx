@@ -70,6 +70,9 @@ a Clojure-y interface to creating plain, unadulterated React components.
  - [Authoring Components](./docs/authoring-components.md)
  - [State management](./docs/state-management.md)
    - [hx.hooks API](./docs/state-management.md#hxhooks)
+ - [How-To](./docs/how-to.md)
+   - [Use higher-order components](./docs/how-to.md#Use-higher-order-components)
+   - [Use children-as-function / render-props](./docs/how-to.md#Use-children-as-function--render-props)
  - [API documentation](./docs/api.md)
  - [Why not Reagent?](./docs/why-not-reagent.md)
  
