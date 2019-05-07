@@ -81,7 +81,7 @@ we have to wrap it in parens twice.
 
 A few examples:
 - using Material UI's `withStyles` HOC can be found in the [material ui examples](../examples/workshop/material.cljs).
-- Using the DragSource and DropTarget HOC in the [react-dnd example](../examples/workshop/material.cljs)
+- Using the DragSource and DropTarget HOC in the [react-dnd example](../examples/workshop/react_dnd.cljs)
 
 ## Use children-as-function / render props
 
