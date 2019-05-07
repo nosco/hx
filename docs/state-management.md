@@ -34,7 +34,7 @@ apply.
 
 ### useState: ([initial])
 
-Takes an initial value. Returns a tuple `[value set-value]`, where `set-value`
+Same as [react/useState](https://reactjs.org/docs/hooks-reference.html#usereducer). Takes an initial value. Returns a tuple `[value set-value]`, where `set-value`
 is a function that can be used like `swap!`:
 
 ```clojure

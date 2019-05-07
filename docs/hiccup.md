@@ -24,20 +24,16 @@ hiccup form and transforms it into calls to React's `createElement` function:
    [:div {:class "greeting"} "Hello, ReactJS!"]])
 ;; executes:
 ;;    (react/createElement ReactComponent #js {:someProp #js {:foo "bar"}}
-;;      (react/createElement #js {:className "greeting"}
+;;      (react/createElement "div" #js {:className "greeting"}
 ;;        "Hello, ReactJS!"))
 ```
 
-The hiccup parser can be extended with custom tags by defining a new 
-`hx.hiccup/parse-element` method. For example, here's how we handle `:<>` for
+The hiccup parser can be extended with custom tags by using the function
+`hx.hiccup/extend-tag`. For example, here's how we handle `:<>` for
 fragments:
 
 ```clojure
-(defmethod hiccup/parse-element :<>
-  [el & args]
-  (hiccup/-parse-element
-   hx.react/fragment
-   args))
+(hiccup/extend-tag :<> react/Fragment)
 ```
 
 ## Hiccup forms & interpreter behavior
@@ -94,14 +90,14 @@ it does is coerce props to a map and wrap the body in a call to `hiccup/parse`:
 
 ;; passing in multiple children, and calling components that we defined ourselves
 ;; (instead of native elements like `:div`).
-(hx/defnc AllGreets []
+(hx/defnc AllGreets [_]
   [:div
    [Greet]
    [MediumGreet]
    [BigGreet]])
 
 ;; sequences are wrapped in react Fragments for ease of use
-(hx/defnc Sequence []
+(hx/defnc Sequence [_]
   [:div
    (for [color ["red" "green" "blue"]]
      ;; add a key prop to help React
