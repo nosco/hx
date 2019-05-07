@@ -79,6 +79,10 @@ we have to wrap it in parens twice.
   ...)
 ```
 
+A few examples:
+- using Material UI's `withStyles` HOC can be found in the [material ui examples](../examples/workshop/material.cljs).
+- Using the DragSource and DropTarget HOC in the [react-dnd example](../examples/workshop/material.cljs)
+
 ## Use children-as-function / render props
 
 Like above, we'd prefer to use hooks, but many 3rd party libraries expose
