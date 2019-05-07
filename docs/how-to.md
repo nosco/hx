@@ -3,10 +3,10 @@
 ## Use higher-order components
 
 Generally, we prefer to use Hooks for reusing logic or resources across our app.
-However, many React libraries still use HoC to provide things like context
+However, many React libraries still use HOC to provide things like context
 values and sharing logic.
 
-Using HoC is straight forward in hx. Below is an example:
+Using HOC is straight forward in hx. Below is an example:
 
 ```clojure
 (ns my-app.feature
@@ -17,7 +17,7 @@ Using HoC is straight forward in hx. Below is an example:
 ;;
 ;; First: the simple way
 ;; We create our component, and then def another var that wraps our component
-;; with the HoC, `withSomeValue`.
+;; with the HOC, `withSomeValue`.
 ;;
 
 (defnc MyComponent [{:keys [someValue]}]
@@ -27,7 +27,7 @@ Using HoC is straight forward in hx. Below is an example:
 
 
 ;;
-;; If we want to wrap the component in multiple HoC, we can use the thread-
+;; If we want to wrap the component in multiple HOC, we can use the thread-
 ;; first operator to make it easier to read.
 ;;
 
@@ -51,7 +51,7 @@ Using HoC is straight forward in hx. Below is an example:
   [:div "I was rendered with " someValue])
 ```
 
-One note: some HoC libraries in React use *higher-order component factories*
+One note: some HOC libraries in React use *higher-order component factories*
 (or higher-higher-order components? :dizzy:). For instance, the equivalent JS
 might be something like:
 
