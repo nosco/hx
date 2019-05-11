@@ -7,6 +7,11 @@
 - `useSmartEffect`, `useSmartLayoutEffect`, `useSmartMemo` that auto-detect 
 dependencies based on the body.
 
+## Fixed
+
+- `useState` and `useIRef` now properly memoize their return values to prevent
+unnecessary renders.
+
 ## [0.5.1] - May 05, 2019
 
 ### Fixed
