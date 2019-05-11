@@ -43,51 +43,60 @@
   the React state. If it returns `true`, it will keep the old state, `false` it
   will render with new state."
   ([initial]
-   (let [[v u] (react/useState initial)]
-     [v (fn updater
-          ([x] (u x))
-          ([f & xs]
-           (updater (fn spread-updater [x]
-                      (apply f x xs)))))]))
+   (let [[v u] (react/useState initial)
+         updater (react/useCallback (fn updater
+                                      ([x] (u x))
+                                      ([f & xs]
+                                       (updater (fn spread-updater [x]
+                                                  (apply f x xs)))))
+                                    #js [u])]
+     [v updater]))
   ([initial eq?]
-   (let [[v u] (react/useState initial)]
-     [v (fn updater
-          ([x]
-           ;; if x is not a fn, then it's likely not derived from previous state
-           ;; so we don't bother checking equality
-           (if-not (ifn? x)
-             (u x)
+   (let [[v u] (react/useState initial)
+         updater (react/useCallback (fn updater
+                             ([x]
+                              ;; if x is not a fn, then it's likely not derived from previous state
+                              ;; so we don't bother checking equality
+                              (if-not (ifn? x)
+                                (u x)
 
-             ;; When it is a function, new state will probably be derived from
-             ;; previous. We can take advantage of structural sharing to do fast
-             ;; equality here and avoid unnecessary re-renders
-             (u (fn update [current-state]
-                  (let [new-state (x current-state)]
-                    (if (eq? current-state new-state)
-                      ;; if equal, return the old one to preserve ref equality
-                      ;; for React
-                      current-state
-                      new-state))))))
-          ;; Support `(updater f a b c)`
-          ([f & xs]
-           (updater (fn spread-updater [x]
-                      (apply f x xs)))))])))
+                                ;; When it is a function, new state will probably be derived from
+                                ;; previous. We can take advantage of structural sharing to do fast
+                                ;; equality here and avoid unnecessary re-renders
+                                (u (fn update [current-state]
+                                     (let [new-state (x current-state)]
+                                       (if (eq? current-state new-state)
+                                         ;; if equal, return the old one to preserve ref equality
+                                         ;; for React
+                                         current-state
+                                         new-state))))))
+                             ;; Support `(updater f a b c)`
+                             ([f & xs]
+                              (updater (fn spread-updater [x]
+                                         (apply f x xs)))))
+                           #js [u])]
+     [v updater])))
 
 (defn useIRef
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
   on change."
   [initial]
   (let [react-ref (react/useRef initial)
-        update-ref (fn updater
-                     ([x]
-                      (if-not (ifn? x)
-                        (gobj/set react-ref "current" x)
-                        (gobj/set react-ref "current"
-                                  (x (gobj/get react-ref "current")))))
-                     ([f & xs]
-                      (updater (fn spread-updater [x]
-                                 (apply f x xs)))))]
-    (Atomified. [react-ref update-ref] #(.-current ^js %))))
+        update-ref (react/useCallback
+                    (fn updater
+                      ([x]
+                       (if-not (ifn? x)
+                         (gobj/set react-ref "current" x)
+                         (gobj/set react-ref "current"
+                                   (x (gobj/get react-ref "current")))))
+                      ([f & xs]
+                       (updater (fn spread-updater [x]
+                                  (apply f x xs)))))
+                    #js [react-ref])
+        atomified (react/useMemo (fn create-atom []
+                                   (Atomified. [react-ref update-ref] #(.-current ^js %)))
+                                 #js [react-ref update-ref])]
+    atomified))
 
 
 (def useReducer
