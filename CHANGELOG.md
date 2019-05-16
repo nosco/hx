@@ -1,10 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.2] - May 16, 2019
 
 ## Added
 
-- `useSmartEffect`, `useSmartLayoutEffect`, `useSmartMemo` that auto-detect 
+- Alpha hooks `useSmartEffect`, `useSmartLayoutEffect`, `useSmartMemo` that auto-detect 
 dependencies based on the body.
 
 ## Fixed
