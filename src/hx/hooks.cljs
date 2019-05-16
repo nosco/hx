@@ -105,10 +105,12 @@
   ([reducer init-state init]
    (react/useReducer
     ;; handle ifn, e.g. multi-methods
-    (if (and (not (fn? reducer)) (ifn? reducer))
-      (fn wrap-ifn [state action]
-        (reducer state action))
-      reducer)
+    (react/useMemo
+     #(if (and (not (fn? reducer)) (ifn? reducer))
+        (fn wrap-ifn [state action]
+          (reducer state action))
+        reducer)
+     #js [reducer])
     init-state
     init)))
 
