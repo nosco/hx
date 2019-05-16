@@ -237,6 +237,33 @@
 
 
 ;;
+;; useReducer
+;;
+
+(defmulti reducer-dispatch (fn [_ opts] (:action opts)))
+
+(defmethod reducer-dispatch :foo
+  [_]
+  "foo")
+
+(defmethod reducer-dispatch :bar
+  [_]
+  "bar")
+
+(hx/defnc MultiMethodReducer [_]
+  (let [[state dispatch] (hooks/useReducer reducer-dispatch "foo")]
+    [:div {:on-click #(dispatch {:action :bar})} state]))
+
+(t/deftest reducer-multimethod
+  (let [reducer-test (-> (hx/f [MultiMethodReducer])
+                         (u/render)
+                         (u/root)
+                         (u/click))]
+    (t/is (u/node= (u/html "<div>bar</div>")
+                   reducer-test))))
+
+
+;;
 ;; Smart effect
 
 

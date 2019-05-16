@@ -99,9 +99,18 @@
     atomified))
 
 
-(def useReducer
-  "Just react/useReducer."
-  react/useReducer)
+(defn useReducer "Just react/useReducer."
+  ([reducer init-state]
+   (useReducer reducer init-state js/undefined))
+  ([reducer init-state init]
+   (react/useReducer
+    ;; handle ifn, e.g. multi-methods
+    (if (and (not (fn? reducer)) (ifn? reducer))
+      (fn wrap-ifn [state action]
+        (reducer state action))
+      reducer)
+    init-state
+    init)))
 
 ;; React uses JS equality to check of the current deps are different than
 ;; previous deps values. This means that Clojure data (e.g. maps, sets, vecs)
@@ -220,7 +229,7 @@
 
 (def ^{:deprecated "Use useReducer"} <-reducer
   "Just react/useReducer."
-  react/useReducer)
+  useReducer)
 
 (def ^{:deprecated "Use useValue"} <-value useValue)
 

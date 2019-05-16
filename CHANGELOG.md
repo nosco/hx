@@ -9,8 +9,9 @@ dependencies based on the body.
 
 ## Fixed
 
-- `useState` and `useIRef` now properly memoize their return values to prevent
+- `useState` and `useIRef` now properly memoize their dispatch functions to prevent
 unnecessary renders.
+- `useReducer` can now be passed IFn's like multimethods
 
 ## [0.5.1] - May 05, 2019
 
