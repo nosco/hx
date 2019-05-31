@@ -139,3 +139,15 @@
   a new React element"
   [component]
   (partial $ component))
+
+(defn props=
+  "Takes two props objects, and returns true or false whether they are
+  structurally equal. Use with react/memo."
+  [& {:keys [only except]}]
+  (if (some? only)
+    (fn only-eq [p1 p2]
+      (every? #(let [k (utils/keyword->str %)]
+                 (= (gobj/get p1 k)
+                    (gobj/get p2 k)))
+              only))
+    (fn except-eq [p1 p2])))
