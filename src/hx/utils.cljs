@@ -2,6 +2,9 @@
   (:require [clojure.string :as str]
             [goog.object :as gobj]))
 
+
+
+
 (defn keyword->str [k]
   (let [kw-ns (namespace k)
         kw-name (name k)]
@@ -35,6 +38,66 @@
 (comment
   (props->clj #js {:class "foo"})
   )
+
+
+(defn caching-props->clj [o cache]
+  (if (gobj/contains cache "val")
+    (gobj/get cache "val")
+    (let [clj (props->clj o)]
+      (gobj/set cache "val" clj)
+      clj)))
+
+(deftype Props [o ^:mutable __clj]
+  Object
+  (toString [this]
+    (.toString ^js o))
+
+  (equiv [this other]
+    (-equiv o other))
+
+  ICloneable
+  (-clone [this] (Props. (gobj/clone o) __clj))
+
+  ICollection
+  (-conj [this entry]
+    (if (vector? entry)
+      (-assoc this (-nth entry 0) (-nth entry 1))
+      (loop [ret this es (seq entry)]
+        (if (nil? es)
+          ret
+          (let [e (first es)]
+            (if (vector? e)
+              (recur (-assoc ret (-nth e 0) (-nth e 1))
+                     (next es))
+              (throw (js/Error. "conj on a Props object takes map entries or seqables of map entries"))))))))
+
+  IEmptyableCollection
+  (-empty [this] (Props. #js {} #js {}))
+
+  IEquiv
+  (-equiv [this other]
+    (gobj/equals o other))
+
+  ISeqable
+  (-seq [this]
+    (-seq (caching-props->clj o __clj)))
+
+  ICounted
+  (-count [this]
+    (gobj/getCount o))
+
+  ILookup
+  (-lookup [this k]
+    (-lookup this k nil))
+
+  (-lookup [this k not-found]
+    (gobj/get o (keyword->str k) not-found))
+
+  IAssociative
+  (-assoc [this k v]
+    ))
+
+(seq (->Props #js {:foo "bar"} #js {}))
 
 
 (defn- set-obj [o k v]
