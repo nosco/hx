@@ -21,6 +21,13 @@ An alias of `hx.hiccup/parse`, so that if you need to do some ad-hoc
 transformation of hiccup one doesn't have to import `hx.hiccup` as well as
 `hx.react`.
 
+#### hx.react/props=: ([& ks])
+
+Takes a variable number of keywords, and returns a function that will return
+true or false based on whether two JS objects have the same value at those keys.
+
+Useful when used with `react/memo`.
+
 #### hx.react/defnc: ([name props-bindings & body])
 
 This macro is just like `defn`, but shallowly converts the props object passed
