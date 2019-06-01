@@ -144,8 +144,8 @@
   "Takes two props objects, and returns true or false whether specific keys
   contain the same value. Use with react/memo."
   [& ks]
-  (fn only-eq [p1 p2]
-    (every? #(let [k (utils/keyword->str %)]
-               (= (gobj/get p1 k)
-                  (gobj/get p2 k)))
-            ks)))
+  (let [ks' (map utils/keyword->str ks)]
+    (fn only-eq [p1 p2]
+      (every? #(= (gobj/get p1 %)
+                  (gobj/get p2 %))
+              ks'))))

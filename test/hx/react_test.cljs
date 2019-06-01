@@ -160,3 +160,15 @@
                  (root))]
     (change node #js {:target #js {:value "a"}})
     (t/is (= 1 (call-count on-change)))))
+
+(t/deftest props=
+  (let [p1 #js {:foo [] :bar {[] 1}}
+        p2 #js {:foo [] :bar {[] 1} :baz 34}
+        check-foo (hx/props= :foo)
+        check-fb (hx/props= :foo :bar)
+        check-baz (hx/props= :baz)
+        check-fbb (hx/props= :foo :bar :baz)]
+    (t/is (check-foo p1 p2))
+    (t/is (check-fb p1 p2))
+    (t/is (not (check-baz p1 p2)))
+    (t/is (not (check-fbb p1 p2)))))
