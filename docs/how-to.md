@@ -33,7 +33,7 @@ Using HOC is straight forward in hx. Below is an example:
 
 (def WrappedComponent (-> MyComponent
                           (some-lib/withSomeValue)
-                          (react/memo =)))
+                          (react/memo (hx/props= :someValue))))
 
 ;;
 ;; Second: the easy way
@@ -46,7 +46,7 @@ Using HOC is straight forward in hx. Below is an example:
   ;; It's the same way you can pass in `:pre` and `:post` checks for
   ;; `defn` (and likewise, `defnc`).
   {:wrap [(some-lib/withSomeValue)
-          (react/memo =)]}
+          (react/memo (hx/props= :someValue))]}
   ;; Return hiccup
   [:div "I was rendered with " someValue])
 ```
@@ -70,12 +70,12 @@ we have to wrap it in parens twice.
                           ;; passes MyComponent into the resulting function
                           ;; and evaluates it
                           ((withSomeValue options))
-                          (react/memo =)))
+                          (react/memo (hx/props= :someValue))))
 
 ;; or, with :wrap
 (defnc WrappedComponent ...
   {:wrap [((withSomeValue options))
-          (react/memo =)]}
+          (react/memo (hx/props= :someValue))]}
   ...)
 ```
 
