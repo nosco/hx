@@ -33,7 +33,7 @@
         ret (gensym "return_value")]
     ;; maybe-ref for react/forwardRef support
     `(fn ~display-name [props# maybe-ref#]
-       (let [~props-bindings [(hx.react/props->clj props#) maybe-ref#]]
+       (let [~props-bindings [(hx.utils/->Props props# #js {}) maybe-ref#]]
          ;; pre-conditions
          ~@(when (and opts-map? (:pre (first body)))
              (map (fn [x] `(assert ~x)) (:pre (first body))))

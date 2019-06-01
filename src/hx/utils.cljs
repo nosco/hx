@@ -2,8 +2,8 @@
   (:require [clojure.string :as str]
             [goog.object :as gobj]))
 
-
-
+(defprotocol IProps
+  (-unwrap-props [p]))
 
 (defn keyword->str [k]
   (let [kw-ns (namespace k)
@@ -13,27 +13,30 @@
 
       (str kw-ns "/" kw-name))))
 
+(declare props?)
 
 (defn props->clj [props]
-  (loop [ks (js/Object.keys props)
-         m {}]
-    (if (nil? ks)
-      m
-      (let [k (first ks)
-            v (gobj/get props k)]
-        (recur (next ks)
-               (case k
-                 ;; backwards compat
-                 "class" (assoc m
-                                :className v
-                                :class v)
-                 "className" (assoc m
-                                    :className v
-                                    :class v)
-                 "htmlFor" (assoc m
-                                  :htmlFor v
-                                  :for v)
-                 (assoc m (keyword k) v)))))))
+  (if (props? props)
+    (props->clj (-unwrap-props props))
+    (loop [ks (js/Object.keys props)
+           m {}]
+      (if (nil? ks)
+        m
+        (let [k (first ks)
+              v (gobj/get props k)]
+          (recur (next ks)
+                 (case k
+                   ;; backwards compat
+                   "class" (assoc m
+                                  :className v
+                                  :class v)
+                   "className" (assoc m
+                                      :className v
+                                      :class v)
+                   "htmlFor" (assoc m
+                                    :htmlFor v
+                                    :for v)
+                   (assoc m (keyword k) v))))))))
 
 (comment
   (props->clj #js {:class "foo"})
@@ -50,10 +53,18 @@
 (deftype Props [o ^:mutable __clj]
   Object
   (toString [this]
-    (.toString ^js o))
+    (pr-str* this))
 
   (equiv [this other]
     (-equiv o other))
+
+  IProps
+  (-unwrap-props [this]
+    o)
+
+  IPrintWithWriter
+  (-pr-writer [this writer opts]
+    (print-prefix-map "#props " this pr-writer writer opts))
 
   ICloneable
   (-clone [this] (Props. (gobj/clone o) __clj))
@@ -95,10 +106,38 @@
 
   IAssociative
   (-assoc [this k v]
-    ))
+    (let [o' (gobj/clone o)]
+      (gobj/set o' (keyword->str k) v)
+      (Props. o' #js {})))
 
-(seq (->Props #js {:foo "bar"} #js {}))
+  (-contains-key? [this k]
+    (gobj/containsKey o (keyword->str k)))
 
+  IFind
+  (-find [this k]
+    (when-let [v (-lookup this k)]
+      (MapEntry. k v nil)))
+
+  IMap
+  (-dissoc [this k]
+    (let [o' (gobj/clone o)]
+      (gobj/remove o' (keyword->str k))
+      (Props. o' #js {})))
+
+  ;; IKVReduce
+  ;; (-kv-reduce [coll f init]
+  ;;   )
+
+  IFn
+  (-invoke [coll k]
+    (-lookup coll k))
+
+  (-invoke [coll k not-found]
+    (-lookup coll k not-found)))
+
+
+(defn props? [x]
+  (= (type x) Props))
 
 (defn- set-obj [o k v]
   (do (gobj/set o k v)
@@ -175,32 +214,34 @@
   as a second arg to disable this."
   ([props] (clj->props props true))
   ([props native?]
-   (loop [pxs (seq props)
-          js-props #js {}]
-     (if (nil? pxs)
-       js-props
-       (let [p (first pxs)
-             k (key p)
-             v (val p)]
-         ;; side-effecting
-         (case k
-           :style (set-obj js-props "style" (map->camel+js v))
-           :class (if native?
-                    (set-obj js-props "className" (class-name v))
-                    (do (set-obj js-props "class" (class-name v))
-                        (set-obj js-props "className" (class-name v))))
-           :for (if native?
-                  (set-obj js-props "htmlFor" v)
-                  (do (set-obj js-props "for" v)
-                      (set-obj js-props "htmlFor" v)))
+   (if (props? props)
+     (-unwrap-props props)
+     (loop [pxs (seq props)
+            js-props #js {}]
+       (if (nil? pxs)
+         js-props
+         (let [p (first pxs)
+               k (key p)
+               v (val p)]
+           ;; side-effecting
+           (case k
+             :style (set-obj js-props "style" (map->camel+js v))
+             :class (if native?
+                      (set-obj js-props "className" (class-name v))
+                      (do (set-obj js-props "class" (class-name v))
+                          (set-obj js-props "className" (class-name v))))
+             :for (if native?
+                    (set-obj js-props "htmlFor" v)
+                    (do (set-obj js-props "for" v)
+                        (set-obj js-props "htmlFor" v)))
 
-           (set-obj js-props
-                    (if native?
-                      (camel-case* (keyword->str k))
-                      (keyword->str k))
-                    v))
-         (recur (next pxs)
-                js-props))))))
+             (set-obj js-props
+                      (if native?
+                        (camel-case* (keyword->str k))
+                        (keyword->str k))
+                      v))
+           (recur (next pxs)
+                  js-props)))))))
 
 (comment
   (clj->props {:class "foo"
