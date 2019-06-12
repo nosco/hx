@@ -81,22 +81,29 @@
   "Takes an initial value. Returns an atom that will _NOT_ re-render component
   on change."
   [initial]
-  (let [react-ref (react/useRef initial)
-        update-ref (react/useCallback
-                    (fn updater
-                      ([x]
-                       (if-not (ifn? x)
-                         (gobj/set react-ref "current" x)
-                         (gobj/set react-ref "current"
-                                   (x (gobj/get react-ref "current")))))
-                      ([f & xs]
-                       (updater (fn spread-updater [x]
-                                  (apply f x xs)))))
-                    #js [react-ref])
-        atomified (react/useMemo (fn create-atom []
-                                   (Atomified. [react-ref update-ref] #(.-current ^js %)))
-                                 #js [react-ref update-ref])]
-    atomified))
+  (let [sentinel (react/useRef #js {})]
+    (react/useMemo
+     (fn []
+       (specify! #js {:current initial}
+         IDeref
+         (-deref [this]
+           (.-current ^js this))
+
+         IReset
+         (-reset! [this v]
+           (gobj/set this "current" v))
+
+         ISwap
+         (-swap!
+           ([this f]
+            (gobj/set this "current" (f (.-current ^js this))))
+           ([this f a]
+            (gobj/set this "current" (f (.-current ^js this) a)))
+           ([this f a b]
+            (gobj/set this "current" (f (.-current ^js this) a b)))
+           ([this f a b xs]
+            (gobj/set this "current" (apply f (.-current ^js this) a b xs))))))
+     #js [sentinel])))
 
 
 (defn useReducer "Just react/useReducer."
