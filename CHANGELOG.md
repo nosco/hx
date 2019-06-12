@@ -1,13 +1,21 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- `useIRef` now uses `specify` instead of a wrapper, and refers to the `current`
+property on _itself_. This allows you to pass in the ref object directly to DOM
+ref prop.
+
 ## [0.5.2] - May 16, 2019
 
-## Added
+### Added
 
 - Alpha hooks `useSmartEffect`, `useSmartLayoutEffect`, `useSmartMemo` that auto-detect 
 dependencies based on the body.
 
-## Fixed
+### Fixed
 
 - `useState` and `useIRef` now properly memoize their dispatch functions to prevent
 unnecessary renders.

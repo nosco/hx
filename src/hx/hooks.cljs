@@ -2,32 +2,6 @@
   (:require ["react" :as react]
             [goog.object :as gobj]))
 
-(deftype Atomified [react-ref deref-lens]
-  IDeref
-  (-deref [_]
-    (deref-lens (first react-ref)))
-
-  IReset
-  (-reset! [_ v']
-    ((second react-ref) v')
-    v')
-
-  ISwap
-  (-swap! [o f]
-    ((second react-ref) f))
-  (-swap! [o f a]
-    ((second react-ref) #(f % a)))
-  (-swap! [o f a b]
-    ((second react-ref) #(f % a b)))
-  (-swap! [o f a b xs]
-    ((second react-ref) #(apply f % a b xs))))
-
-;; (defn updater
-;;   ([x]
-;;    )
-;;   ([f & xs]
-;;    ))
-
 (defn useState
   "Like `React.useState`, but the update function returned can be used similar
   to `swap!`.
