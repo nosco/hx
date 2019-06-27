@@ -59,13 +59,13 @@
     (if (and opts-map? (-> body first :wrap))
       (let [wrapped-name (symbol (str display-name "-hx-wrapped"))]
         `(do (def ~wrapped-name ~(fnc* wrapped-name props-bindings body))
-             (when js/goog.DEBUG
+             (when goog/DEBUG
                (goog.object/set ^js/React.Component ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
              (def ~display-name (-> ~wrapped-name
                                     ~@(-> body first :wrap)))))
 
       `(do (def ~display-name ~(fnc* display-name props-bindings body))
-           (when js/goog.DEBUG
+           (when goog/DEBUG
              (goog.object/set ^js/React.Component ~display-name "displayName" ~(str *ns* "/" display-name)))))))
 
 (defmacro shallow-render [& body]
