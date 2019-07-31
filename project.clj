@@ -1,4 +1,4 @@
-(defproject lilactown/hx "0.5.2"
+(defproject lilactown/hx "0.5.3"
   :description "An easy to use, decomplected hiccup compiler for ClojureScript & React."
   :url "https://github.com/Lokeh/hx"
   :license {:name "Eclipse Public License"
