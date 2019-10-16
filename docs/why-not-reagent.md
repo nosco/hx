@@ -6,8 +6,8 @@ I love Reagent, it is an amazing library. I use it at work every day and it has 
 
 Reagent does a lot; it implements:
 
-- it's own custom async render queue with batching and other performance enhancements
-- it's own ergonomic state management solution through RAtoms that integrate with it's async render solution
+- its own custom async render queue with batching and other performance enhancements
+- its own ergonomic state management solution through RAtoms that integrate with its async render solution
 - it turns your hiccup-returning components into full-fledge React components
 
 These features were a truly amazing value-add when Reagent was released, and has continued to be over the years.
@@ -21,7 +21,7 @@ However, in 2019, React is releasing a number of things in the core library:
 
 So far, only React Hooks has fully landed; Suspense is not stable yet except for lazy loading components, and async rendering is currently opt-in and considered unstable.
 
-However, in my experience, most of the value-add of Reagent comes from it's ability to access and update state in a very ergonomic way, and convert hiccup to React elements. This is why I think that `hx` is a better decision now: you can get the same ergonomics of Reagent with `hx` and React Hooks, today, with less code and better interop.
+However, in my experience, most of the value-add of Reagent comes from its ability to access and update state in a very ergonomic way, and convert hiccup to React elements. This is why I think that `hx` is a better decision now: you can get the same ergonomics of Reagent with `hx` and React Hooks, today, with less code and better interop.
 
 This is insanely long, but I want to leave you with a couple examples. A short snippet of component-local state:
 
