@@ -4,7 +4,8 @@
             [workshop.material]
             [workshop.react-dnd]
             [workshop.sortable]
-            [workshop.state]))
+            [workshop.state]
+            [workshop.alpha2]))
 
 
 (defn ^:dev/after-load start! []
