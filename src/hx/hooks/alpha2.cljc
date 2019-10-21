@@ -117,7 +117,7 @@
        prn)))
 
 
-(defmacro use-fx
+(defmacro use-effect
   [& body]
   (deps-macro-body
    &env body
@@ -140,7 +140,7 @@
       (react/useEffect (wrap-fx f) (to-array deps)))))
 
 
-(defmacro use-layout-fx [& body]
+(defmacro use-layout-effect [& body]
   (deps-macro-body
    &env body
    (fn
@@ -179,7 +179,7 @@
       (react/useMemo f (to-array deps)))))
 
 
-(defmacro use-cb
+(defmacro use-callback
   [& body]
   (deps-macro-body
    &env body
