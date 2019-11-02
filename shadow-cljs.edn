@@ -7,7 +7,8 @@
  :dependencies
  [[binaryage/devtools "0.9.7"]
   [devcards "0.2.5"]
-  [reagent "0.8.1"]]
+  [reagent "0.8.1"]
+  [cljs-bean "1.5.0"]]
 
  :builds
  {:workshop {:target :browser

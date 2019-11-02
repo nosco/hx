@@ -1,1 +1,2 @@
-{:paths ["src"]}
+{:paths ["src"]
+ :deps {cljs-bean {:mvn/version "1.5.0"}}}

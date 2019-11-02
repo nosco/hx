@@ -1,7 +1,8 @@
 (ns hx.hooks.alpha
   #?(:clj (:require [cljs.analyzer.api])
      :cljs (:require
-             ["react" :as react])))
+            ["react" :as react]))
+  #?(:cljs (:require-macros [hx.hooks.alpha])))
 
 #?(:cljs
    (do (def ^:private raw-use-effect react/useEffect)
@@ -101,20 +102,18 @@
 
 #?(:clj
    (defn deps-macro-body [env body deps->hook-body]
-     (doto
-         (cond
-           ;; deps are passed in as a vector
-           (vector? (first body)) (deps->hook-body `(cljs.core/array ~@(first body))
-                                                   (rest body))
+     (cond
+       ;; deps are passed in as a vector
+       (vector? (first body)) (deps->hook-body `(cljs.core/array ~@(first body))
+                                               (rest body))
 
-           ;; auto deps is passed in
-           (= (first body) :auto-deps) (deps->hook-body
-                                        `(cljs.core/array ~@(resolve-vars env (rest body)))
-                                        (rest body))
+       ;; auto deps is passed in
+       (= (first body) :auto-deps) (deps->hook-body
+                                    `(cljs.core/array ~@(resolve-vars env (rest body)))
+                                    (rest body))
 
-           ;; no deps passed in
-           true (deps->hook-body body))
-       prn)))
+       ;; no deps passed in
+       true (deps->hook-body body))))
 
 
 (defmacro use-effect

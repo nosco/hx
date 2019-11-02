@@ -1,5 +1,6 @@
 (ns workshop.alpha
-  (:require [hx.react :as hx :refer [defnc]]
+  (:require [hx.react.alpha :as hx.alpha :refer [$ defnc]]
+            [hx.react.dom.alpha :as d]
             [hx.hooks.alpha :as hooks]
             [devcards.core :as dc :include-macros true]))
 
@@ -7,11 +8,14 @@
 (defnc state-test
   []
   (let [[{:keys [count]} set-count] (hooks/use-state {:count 0})]
-    [:div count [:button {:on-click #(set-count update :count inc)} "+"]]))
-
+    ;; [:div count [:button {:on-click #(set-count update :count inc)} "+"]]
+    ;; ($ :div count
+    ;;    ($ :button {:on-click #(set-count update :count inc)} "+"))
+    (d/div count
+           (d/button {:on-click #(set-count update :count inc)} "+"))))
 
 (dc/defcard use-state
-  (hx/f [state-test]))
+  (state-test))
 
 
 (defnc effect-test
@@ -29,8 +33,8 @@
      (prn "3rd render" threes))
     (hooks/use-effect :auto-deps (prn "every render auto-deps" count))
     (hooks/use-effect :auto-deps (prn "3rd render auto-deps" threes))
-    [:div count [:button {:on-click #(set-count inc)} "+"]]))
+    (d/div count (d/button {:on-click #(set-count inc)} "+"))))
 
 
 (dc/defcard use-effect
-  (hx/f [effect-test]))
+  (effect-test))
