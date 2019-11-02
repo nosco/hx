@@ -5,8 +5,7 @@
             [workshop.react-dnd]
             [workshop.sortable]
             [workshop.state]
-            [workshop.alpha2]))
-
+            [workshop.alpha]))
 
 (defn ^:dev/after-load start! []
   (dc/start-devcard-ui!))

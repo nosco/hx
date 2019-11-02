@@ -1,13 +1,13 @@
-(ns workshop.alpha2
+(ns workshop.alpha
   (:require [hx.react :as hx :refer [defnc]]
-            [hx.hooks.alpha2 :as hooks]
+            [hx.hooks.alpha :as hooks]
             [devcards.core :as dc :include-macros true]))
 
 
 (defnc state-test
   []
-  (let [[count set-count] (hooks/use-state 0)]
-    [:div count [:button {:on-click #(set-count inc)} "+"]]))
+  (let [[{:keys [count]} set-count] (hooks/use-state {:count 0})]
+    [:div count [:button {:on-click #(set-count update :count inc)} "+"]]))
 
 
 (dc/defcard use-state

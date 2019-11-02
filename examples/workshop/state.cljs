@@ -2,7 +2,6 @@
   (:require [devcards.core :as dc :include-macros true]
             [hx.react :as hx :refer [defnc]]
             [hx.hooks :as hooks]
-            [hx.hooks.alpha :as alpha]
             ["react" :as react]))
 
 ;;
@@ -10,7 +9,7 @@
 ;;
 
 (defnc Simple [_]
-  (let [[state set-state] (alpha/useStateOnce 0 ::simple)]
+  (let [[state set-state] (hooks/useState 0)]
     [:<>
      [:div "Counter: " state]
      [:div [:button {:on-click #(set-state inc)} "inc"]]]))

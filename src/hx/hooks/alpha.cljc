@@ -1,14 +1,14 @@
-(ns hx.hooks.alpha2
+(ns hx.hooks.alpha
   #?(:clj (:require [cljs.analyzer.api])
      :cljs (:require
              ["react" :as react])))
 
 #?(:cljs
-   (do (def raw-use-effect react/useEffect)
-       (def raw-use-layout-effect react/useLayoutEffect)
-       (def raw-use-memo react/useMemo)
-       (def raw-use-callback react/useCallback)
-       (def raw-use-imperative-handle react/useImperativeHandle)))
+   (do (def ^:private raw-use-effect react/useEffect)
+       (def ^:private raw-use-layout-effect react/useLayoutEffect)
+       (def ^:private raw-use-memo react/useMemo)
+       (def ^:private raw-use-callback react/useCallback)
+       (def ^:private raw-use-imperative-handle react/useImperativeHandle)))
 
 
 
