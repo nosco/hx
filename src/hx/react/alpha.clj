@@ -53,8 +53,11 @@
                                      body)))
          (when goog/DEBUG
            (goog.object/set ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
-         (def ~display-name (-> ~wrapped-name
-                                (wrap-cljs-component)
-                                ~@(-> opts :wrap)
-                                (factory))))))
+         (def ~display-name
+           ~@(when-not (nil? docstring)
+               (list docstring))
+           (-> ~wrapped-name
+               (wrap-cljs-component)
+               ~@(-> opts :wrap)
+               (factory))))))
 

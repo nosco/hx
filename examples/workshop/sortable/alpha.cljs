@@ -32,6 +32,7 @@
 
 
 (defnc SortableComponent
+  "A sortable list"
   [_]
   ;; use the useState Hook to keep track of and update the state
   (let [[items update-items] (hooks/use-state #js ["Item 1"
