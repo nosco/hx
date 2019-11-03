@@ -149,6 +149,3 @@
                  (gen-tag tag)))))
 
 #?(:clj (gen-tags))
-
-#?(:clj (defmacro <> [& children]
-           `(react/$ react/Fragment ~@children)))
