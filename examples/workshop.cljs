@@ -4,6 +4,7 @@
             [workshop.material]
             [workshop.react-dnd]
             [workshop.sortable]
+            [workshop.sortable.alpha]
             [workshop.state]
             [workshop.alpha]))
 
