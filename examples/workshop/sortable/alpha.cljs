@@ -8,9 +8,9 @@
 (defnc Item [{:keys [value]}]
   (d/li value))
 
-(def SortableItem (-> (hx/type Item)
-                      (sort/SortableElement)
-                      (hx/factory)))
+(def SortableItem (-> (hx/type Item) ;; get the underlying constructor of the component
+                      (sort/SortableElement) ;; pass into SortableElement per docs
+                      (hx/factory))) ;; create a factory function from the returned constructor
 
 (defnc ItemList [{:keys [items]}]
   (d/ul (map-indexed
