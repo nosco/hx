@@ -2,17 +2,26 @@
   (:require [hx.react.alpha :as hx.alpha :refer [$ defnc]]
             [hx.react.dom.alpha :as d]
             [hx.hooks.alpha :as hooks]
+            [cljs-bean.core :as b]
             [devcards.core :as dc :include-macros true]))
+
+
+(defnc subcomponent [{:keys [name]}]
+  (d/div name))
+
+
+(dc/defcard $
+  (hx.alpha/$ (hx.alpha/type subcomponent) {:name "$ works"}))
 
 
 (defnc state-test
   []
-  (let [[{:keys [count]} set-count] (hooks/use-state {:count 0})]
-    ;; [:div count [:button {:on-click #(set-count update :count inc)} "+"]]
-    ;; ($ :div count
-    ;;    ($ :button {:on-click #(set-count update :count inc)} "+"))
-    (d/div count
-           (d/button {:on-click #(set-count update :count inc)} "+"))))
+  (let [[{:keys [name]} set-state] (hooks/use-state {:name "asdf"})]
+    (d/div
+     (d/input {:value name
+               :on-change #(set-state assoc :name (.. % -target -value))})
+     (subcomponent {:name name}))))
+
 
 (dc/defcard use-state
   (state-test))
@@ -38,3 +47,17 @@
 
 (dc/defcard use-effect
   (effect-test))
+
+
+(defnc lazy-test
+  [{:keys [begin end]}]
+  (d/<>
+   (d/div (str "numbers " (or begin 0) "-" (dec end) ":"))
+   (d/ul
+    (for [n (range begin end)]
+      (d/li n)))
+   (d/div "ur welcome")))
+
+
+(dc/defcard lazy
+  (lazy-test {:end 6}))

@@ -3,8 +3,11 @@
   (:require [hx.react.alpha :as react])
   #?(:cljs (:require-macros [hx.react.dom.alpha])))
 
+
 (def tags
-  '[a
+  '[input textarea option select
+
+    a
     abbr
     address
     area
@@ -134,13 +137,18 @@
     tspan])
 
 
-#?(:clj (defn gen-tag [tag]
+#?(:clj (defn gen-tag
+          [tag]
           `(defmacro ~tag [& args#]
-             `(react/$ ~'~tag ~@args#))))
+             `(react/$ ~(keyword '~tag) ~@args#))))
 
-#?(:clj (defmacro gen-tags []
+#?(:clj (defmacro gen-tags
+          []
           `(do
              ~@(for [tag tags]
                  (gen-tag tag)))))
 
 #?(:clj (gen-tags))
+
+#?(:clj (defmacro <> [& children]
+           `(react/$ react/Fragment ~@children)))
