@@ -62,7 +62,7 @@
       (d/div "renders:")
       (display-range {:end (.-current renders) :color "red"}))
      (for [[k v] fx-state]
-       (d/div
+       (d/div {:key (str k)}
         (d/div (str k))
         (display-range {:end v}))))))
 
@@ -77,9 +77,20 @@
    (d/div (str "numbers " (or begin 0) "-" (dec end) ":"))
    (d/ul
     (for [n (range begin end)]
-      (d/li n)))
+      (d/li {:key n} n)))
    (d/div "ur welcome")))
 
 
 (dc/defcard lazy
   (lazy-test {:end 6}))
+
+
+(defnc dynamic-test
+  []
+  (let [div "div"
+        props {:style {:color "blue"}}
+        children '("foo" "bar")]
+    ($ div props children "baz")))
+
+(dc/defcard dynamic
+  (dynamic-test))

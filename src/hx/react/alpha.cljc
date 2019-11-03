@@ -1,7 +1,6 @@
 (ns hx.react.alpha
   (:refer-clojure :exclude [type])
-  #?@(:cljs ((:require [cljs-bean.core :as b]
-                       [goog.object :as gobj]
+  #?@(:cljs ((:require [goog.object :as gobj]
                        [hx.utils :as utils]
                        ["react" :as react])
              (:require-macros [hx.react.alpha]))))
@@ -21,28 +20,35 @@
 #?(:cljs (def create-element react/createElement))
 
 
+#?(:cljs (defn $$ [type & args]
+           (let [?p (first args)
+                 ?c (rest args)]
+             (if (map? ?p)
+               (apply create-element
+                      type
+                      (clj->props ?p (string? type))
+                      ?c)
+               (apply create-element
+                      type
+                      nil
+                      args)))))
+
+
 (defmacro $
   [type & args]
   (if (map? (first args))
-    (if (keyword? type)
-      `(create-element
-        ~(name type)
-        (clj->props ~(first args) true)
-        ~@(rest args))
-      `(create-element
-        ~type
-        (clj->props ~(first args) false)
-        ~@(rest args)))
+    `(create-element
+      ~(if (keyword? type)
+         (name type)
+         type)
+      (clj->props ~(first args) ~(keyword? type))
+      ~@(rest args))
 
-    (if (keyword? type)
-      `(create-element
-        ~(name type)
-        nil
-        ~@args)
-      `(create-element
-        ~type
-        nil
-        ~@args))))
+    ;; bail to runtime detection of props
+    `($$ ~(if (keyword? type)
+            (name type)
+            type)
+         ~@args)))
 
 
 #?(:clj (defmacro <> [& children]
@@ -67,17 +73,14 @@
                (specify! IExtractType
                  (-type [_] type)))))
 
-#?(:cljs (defn- cljs-factory
+#?(:cljs (defn- wrap-cljs-component
            [type]
-           (-> (fn hx-factory [& args]
-                 (if (map? (first args))
-                   (apply create-element type #js {:cljs-props (first args)} (rest args))
-                   (apply create-element type nil args)))
-               (specify! IExtractType
-                 (-type [_]
-                   ;; convert js props to clj props
-                   (fn wrap-type-props [p r]
-                     (type #js {:cljs-props (utils/props->clj p)} r)))))))
+           ;; convert js props to clj props
+           (let [wrapper (fn wrap-type-props [p r]
+                           (type #js {:cljs-props (utils/props->clj p)} r))]
+             (when js/goog.DEBUG
+               (set! (.-displayName wrapper) (str "cljsProps(" (.-displayName type) ")")))
+             wrapper)))
 
 #?(:cljs (defn- extract-cljs-props
            [o]
@@ -86,8 +89,7 @@
 
 (defn- fnc*
   [display-name props-bindings body]
-  (let [opts-map? (map? (first body))
-        ret (gensym "return_value")]
+  (let [ret (gensym "return_value")]
     ;; maybe-ref for react/forwardRef support
     `(fn ~display-name
        [props# maybe-ref#]
@@ -97,9 +99,15 @@
 
 (defmacro defnc
   [display-name props-bindings & body]
-  (let [wrapped-name (symbol (str display-name "-hx-render"))]
+  (let [wrapped-name (symbol (str display-name "-hx-render"))
+        opts-map? (map? (first body))
+        opts (if opts-map?
+               (first body)
+               {})]
     `(do (def ~wrapped-name ~(fnc* wrapped-name props-bindings body))
          (when goog/DEBUG
            (goog.object/set ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
          (def ~display-name (-> ~wrapped-name
-                                (cljs-factory))))))
+                                (wrap-cljs-component)
+                                ~@(-> opts :wrap)
+                                (factory))))))
