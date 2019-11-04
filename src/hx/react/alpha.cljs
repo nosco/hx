@@ -1,9 +1,17 @@
 (ns hx.react.alpha
   (:refer-clojure :exclude [type])
   (:require [goog.object :as gobj]
-             [hx.utils :as utils]
-             ["react" :as react])
+            [hx.utils :as utils]
+            ["react" :as react]
+            ["react-refresh/runtime" :as react-refresh])
   (:require-macros [hx.react.alpha]))
+
+
+(when (exists? js/Symbol)
+  (extend-protocol IPrintWithWriter
+    js/Symbol
+    (-pr-writer [sym writer _]
+      (-write writer (str "\"" (.toString sym) "\"")))))
 
 
 (def Fragment react/Fragment)
@@ -20,7 +28,21 @@
 (def create-element react/createElement)
 
 
-(defn $$ [type & args]
+(defn $$
+  "Dynamically create a new React element from a valid React type.
+
+  `$` can typically be faster, because it will statically process the arguments
+  at macro-time if possible.
+
+  Example:
+  ```
+  ($$ MyComponent
+   \"child1\"
+   ($$ \"span\"
+     {:style {:color \"green\"}}
+     \"child2\" ))
+  ```"
+  [type & args]
   (let [?p (first args)
         ?c (rest args)]
     (if (map? ?p)
@@ -67,3 +89,20 @@
 (defn- extract-cljs-props
   [o]
   (gobj/get o "cljs-props"))
+
+
+;;
+;; React Fast Refresh
+;;
+
+
+(defn register!
+  "Registers a component with the React Fresh runtime.
+  `type` is the component function, and `id` is the unique ID assigned to it
+  (e.g. component name) for cache invalidation."
+  [type id]
+  (react-refresh/register type id))
+
+
+(def signature!
+  react-refresh/createSignatureFunctionForTransform)

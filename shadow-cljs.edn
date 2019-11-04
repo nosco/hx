@@ -14,7 +14,11 @@
  {:workshop {:target :browser
              :output-dir "public/workshop/js"
              :asset-path "/js"
-             :modules {:main {:entries [workshop]}}
+             :modules {:shared {}
+                       :main {:entries [workshop]
+                              :depends-on #{:shared}}
+                       :refresh {:entries [refresh-example]
+                                 :depends-on #{:shared}}}
              :compiler-options {:devcards true}
              :devtools {:http-root    "public/workshop"
                         :http-port    8700
