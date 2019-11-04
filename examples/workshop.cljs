@@ -6,9 +6,10 @@
             [workshop.sortable]
             [workshop.sortable.alpha]
             [workshop.state]
-            [workshop.alpha]))
+            [workshop.alpha]
+            [hx.react.refresh.alpha]))
 
-(defn ^:dev/after-load start! []
+(defn start! []
   (dc/start-devcard-ui!))
 
 (defn init! [] (start!))

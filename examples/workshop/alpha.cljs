@@ -57,6 +57,7 @@
      (set-fx-state assoc :every-third/auto threes))
 
     (d/div
+     (d/div "Count: " count)
      (d/button {:on-click #(set-count inc)} "inc")
      (d/div
       (d/div "renders:")
@@ -94,3 +95,13 @@
 
 (dc/defcard dynamic
   (dynamic-test))
+
+
+(defnc children-test
+  [{:keys [children]}]
+  (d/div {:style {:display "flex"
+                  :justify-content "space-between"}}
+   children))
+
+(dc/defcard children
+  (children-test (d/div "foo") (d/div "bar")))
