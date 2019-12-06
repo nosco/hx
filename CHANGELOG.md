@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `hx.hooks/useMemo`: deps are optional and can be CLJS collection.
+
 ## [0.5.3] - July 31, 2019
 
 ### Changed
