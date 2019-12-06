@@ -144,9 +144,12 @@
   "Just react/useContext"
   react/useContext)
 
-(def useMemo
-  "Just react/useMemo"
-  react/useMemo)
+(defn useMemo
+  "Like react/useMemo, but deps can be a CLJS collection and is optional."
+  ([f]
+   (react/useMemo f #js []))
+  ([f deps]
+   (react/useMemo f (to-array deps))))
 
 (defn useCallback
   "Just react/useCallback"
