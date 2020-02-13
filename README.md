@@ -4,6 +4,16 @@
 
 A simple, easy to use library for React development in ClojureScript.
 
+
+## Update
+
+Development on hx has moved to [helix](https://github.com/Lokeh/helix). Helix is the latest version of hx, with some breaking changes (no hiccup parser, slightly different hooks API, and a focus on compile-time semantics).
+
+Bug fixes will still occur for some time in hx, but new features, major fixes, etc. will occur on helix.
+
+## Example
+
+
 ```clojure
 (ns my-app.core
   (:require [hx.react :as hx :refer [defnc]]
