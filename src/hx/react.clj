@@ -28,45 +28,60 @@
            ~@methods)
          class#))))
 
-(defn- fnc* [display-name props-bindings body]
-  (let [opts-map? (map? (first body))
-        ret (gensym "return_value")]
+(defn- fnc* [display-name props-bindings opts-map body]
+  (let [ret (gensym "return_value")]
     ;; maybe-ref for react/forwardRef support
     `(fn ~display-name [props# maybe-ref#]
        (let [~props-bindings [(hx.react/props->clj props#) maybe-ref#]]
          ;; pre-conditions
-         ~@(when (and opts-map? (:pre (first body)))
-             (map (fn [x] `(assert ~x)) (:pre (first body))))
+         ~@(when (:pre opts-map)
+             (map (fn [x] `(assert ~x)) (:pre opts-map)))
          (hx.react/parse-body
           ;; post-conditions
-          ~(if opts-map?
-             (if (:post (first body))
-               ;; save hiccup value of body
-               `(let [~ret (do ~@(rest body))]
-                  ;; apply post-conditions
-                  ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
-                         (:post (first body)))
-                  ~ret)
-               `(do ~@(rest body)))
+          ~(if (:post opts-map)
+             ;; save hiccup value of body
+             `(let [~ret (do ~@body)]
+                ;; apply post-conditions
+                ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
+                       (:post opts-map))
+                ~ret)
              ;; if no post-conditions, do nothing
              `(do ~@body)))))))
 
 (defmacro fnc [display-name props-bindings & body]
-  (fnc* display-name props-bindings body))
+  (let [opts-map (when (map? (first body)) (first body))
+        body (when (map? (first body)) (next body))]
+    (fnc* display-name props-bindings opts-map body)))
 
-(defmacro defnc [display-name props-bindings & body]
-  (let [opts-map? (map? (first body))]
-    (if (and opts-map? (-> body first :wrap))
+(alter-meta! #'fnc assoc
+             :arglists '([display-name props-bindings opts-map? & body]))
+
+(defmacro defnc [display-name & fdecl]
+  (let [m (if (string? (first fdecl)) {:doc (first fdecl)} {})
+        fdecl (if (string? (first fdecl)) (next fdecl) fdecl)
+        props-bindings (first fdecl)
+        fdecl (next fdecl)
+        opts-map (when (map? (first fdecl)) (first fdecl))
+        body (if (map? (first fdecl)) (next fdecl) fdecl)
+        m (assoc m :arglists (list props-bindings))
+        m (conj m (meta display-name))
+        f (fnc* display-name props-bindings opts-map body)]
+    (if (:wrap opts-map)
       (let [wrapped-name (symbol (str display-name "-hx-wrapped"))]
-        `(do (def ~wrapped-name ~(fnc* wrapped-name props-bindings body))
-             (when goog/DEBUG
-               (goog.object/set ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
-             (def ~display-name (-> ~wrapped-name
-                                    ~@(-> body first :wrap)))))
-
-      `(do (def ~display-name ~(fnc* display-name props-bindings body))
+        `(do
+           (def ~wrapped-name ~f)
            (when goog/DEBUG
-             (goog.object/set ~display-name "displayName" ~(str *ns* "/" display-name)))))))
+             (goog.object/set ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
+           ~(list 'def (with-meta display-name m) `(-> ~wrapped-name ~@(:wrap opts-map)))
+           ~display-name))
+      `(do
+         ~(list 'def (with-meta display-name m) f)
+         (when goog/DEBUG
+           (goog.object/set ~display-name "displayName" ~(str *ns* "/" display-name)))
+         ~display-name))))
+
+(alter-meta! #'defnc assoc
+             :arglists '([display-name doc-string? props-bindings opts-map? & body]))
 
 (defmacro shallow-render [& body]
   `(with-redefs [hx.react/parse-body identity]
