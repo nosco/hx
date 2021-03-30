@@ -33,7 +33,7 @@
     "react-sortable-hoc": "^0.8.3",
     "react-testing-library": "^6.0.0",
     "shadow-cljs": "^2.8.18",
-    "showdown": "^1.8.6"
+    "showdown": "^1.9.1"
   },
   "dependencies": {
     "create-react-class": "^15.6.3",
