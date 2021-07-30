@@ -1,5 +1,6 @@
 (ns hx.react
   (:require [goog.object :as gobj]
+            [goog.functions :as gfunc]
             ["react" :as react]
             [hx.hiccup :as hiccup]
             [hx.utils :as utils :include-macros true])
@@ -44,7 +45,7 @@
           (react/createElement el props))
        1 (if (utils/measure-perf
               "fn?"
-              ^boolean (goog/isFunction first-child))
+              ^boolean (gfunc/isFunction first-child))
            (react/createElement el
                                 props
                                 ;; fn-as-child
