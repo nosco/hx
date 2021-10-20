@@ -66,8 +66,10 @@
   (if (or (keyword? s)
           (string? s)
           (symbol? s))
-    (let [[first-word & words] (str/split (name s) #"-")]
+    (let [as-string (name s)
+          [first-word & words] (str/split as-string #"-")]
       (if (or (empty? words)
+              (str/starts-with? as-string "--")
               (= "aria" first-word)
               (= "data" first-word))
         s
