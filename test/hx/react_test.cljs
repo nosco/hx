@@ -105,6 +105,9 @@
   (t/is (node= (html "<div style=\"color: red;\">hi</div>")
                (root (render (hx/f [:div {:style {:color "red"}} "hi"])))))
 
+  (t/is (node= (html "<div style=\"--some-var:foo;\">hi</div>")
+               (root (render (hx/f [:div {:style {:--some-var "foo"}} "hi"])))))
+
   (t/is (node= (html "<div style=\"color: red; background: green;\">hi</div>")
                (root (render (hx/f [:div {:style {:color "red"
                                                   :background "green"}} "hi"])))))
