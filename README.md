@@ -4,12 +4,12 @@
 
 A simple, easy to use library for React development in ClojureScript.
 
+## Update - Transfer of ownership
 
-## Update
+The [original author](https://github.com/lilactown) has kindly agreed to transfer ownership of this project to Nosco. We're using hx in production and don't expect any breaking changes, but we are fixing small issues and minor quality of life improvements as we find them. 
 
-Development on hx has moved to [helix](https://github.com/Lokeh/helix). Helix is the latest version of hx, with some breaking changes (no hiccup parser, slightly different hooks API, and a focus on compile-time semantics).
+Development from the [original author](https://github.com/lilactown) has moved to [helix](https://github.com/lilactown/helix). Helix is the latest version of hx, with some breaking changes (no hiccup parser, slightly different hooks API, and a focus on compile-time semantics).
 
-Bug fixes will still occur for some time in hx, but new features, major fixes, etc. will occur on helix.
 
 ## Example
 
