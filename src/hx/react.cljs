@@ -6,6 +6,9 @@
             [hx.utils :as utils :include-macros true])
   (:require-macros [hx.react]))
 
+(defn obj-set [o k v]
+  (gobj/set o k v))
+
 (def props->clj utils/props->clj)
 
 (defn- props [el first-arg props?]

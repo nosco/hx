@@ -71,13 +71,13 @@
         `(do
            (def ~wrapped-name ~f)
            (when goog/DEBUG
-             (goog.object/set ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
+             (hx.react/obj-set ~wrapped-name "displayName" ~(str *ns* "/" display-name)))
            ~(list 'def (with-meta display-name m) `(-> ~wrapped-name ~@(:wrap opts-map)))
            ~display-name))
       `(do
          ~(list 'def (with-meta display-name m) f)
          (when goog/DEBUG
-           (goog.object/set ~display-name "displayName" ~(str *ns* "/" display-name)))
+           (hx.react/obj-set ~display-name "displayName" ~(str *ns* "/" display-name)))
          ~display-name))))
 
 (alter-meta! #'defnc assoc
