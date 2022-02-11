@@ -25,7 +25,7 @@
   "devDependencies": {
     "@material-ui/core": "^3.3.2",
     "benchmark": "^2.1.4",
-    "karma": "^4.0.1",
+    "karma": "^6.3.14",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cljs-test": "^0.1.0",
     "react-dnd": "^5.0.0",
