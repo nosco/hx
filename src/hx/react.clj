@@ -56,7 +56,9 @@
 (alter-meta! #'fnc assoc
              :arglists '([display-name props-bindings opts-map? & body]))
 
-(defmacro defnc [display-name & fdecl]
+(defmacro defnc
+  {:style/indent :defn}
+  [display-name & fdecl]
   (let [m (if (string? (first fdecl)) {:doc (first fdecl)} {})
         fdecl (if (string? (first fdecl)) (next fdecl) fdecl)
         props-bindings (first fdecl)
