@@ -32,12 +32,8 @@ clj-kondo --lint src test examples
 
 ### Expected Test Results
 
-- **52 passing** — existing hx tests + UIx smoke tests + realworld patterns
-- **4 failing** (expected) — migration tests for UIx interop not yet implemented:
-  - `uix-inside-hx` — UIx components inside hx not wired up
-  - `mixed-nesting` — Props flow through UIx→hx→UIx
-  - `ref-forwarding-new-pattern` — `:ref` prop pattern
-  - `hooks-work-side-by-side` — UIx hook state rendering
+- **55 passing** — existing hx tests + UIx smoke tests + realworld patterns + most migration tests
+- **1 failing** (expected) — `ref-forwarding-new-pattern`: requires defnc → defui rewrite
 
 ### Dependencies
 
@@ -56,21 +52,34 @@ Custom `defnc` hook validates:
 
 ## Goal
 
-Reimplement `hx.react/defnc` to use UIx under the hood while maintaining 100% backward compatibility with existing downstream code. The public API of `hx.react` remains unchanged.
+Reimplement `hx.react/defnc` to emit UIx components (`defui`) under the hood while maintaining 100% backward compatibility with existing downstream code. The public API of `hx.react` remains unchanged.
+
+## Architecture Decision
+
+**`defnc` emits UIx components with runtime hiccup parsing.**
+
+Key points:
+
+1. **`defnc` → `defui`**: The `defnc` macro emits `uix.core/defui` under the hood
+2. **Runtime hiccup preserved**: Body is still parsed at runtime via `parse-body`, but element creation uses UIx's `$` instead of `react/createElement`
+3. **UIx props handling**: No separate hx props layer — use UIx's props handling directly
+4. **`hx/f` kept**: For runtime/dynamic hiccup, using `$` underneath
+5. **Macro-level features**: `:wrap`, `:pre`, `:post` handled at `defnc` macro level (wrapping the emitted `defui`)
+
+This means:
+
+- All `defnc` components ARE UIx components
+- Props flow through UIx's system (`:children` in map, `.-argv` storage)
+- Interop "just works" because there's only one component type
+- Runtime hiccup parsing preserved for backward compatibility with dynamic hiccup
 
 ## Key Constraints
 
 1. **No downstream import changes** — `hx.react` namespace exports the same API
-2. **Runtime hiccup parsing preserved** — use UIx's `from-hiccup` (dev tool) or keep hx's `parse-body` for compatibility
+2. **Runtime hiccup parsing preserved** — keep `parse-body` but use `$` for element creation
 3. **Both ref patterns work** — old `[props ref]` two-argument AND new `:ref` key pattern
 4. **Context, defcomponent, hooks unchanged** — these continue working as-is
-5. **Mix-and-match with native UIx** — components written with hx/defnc and uix/defui should interoperate seamlessly
-
-## Architecture Decision
-
-Since UIx's `from-hiccup` is **compile-time only** (not runtime), we cannot use it for full backward compatibility. UIx explicitly throws errors for hiccup vectors at runtime.
-
-**Decision**: Keep hx's runtime hiccup parsing (`parse-body`) as the default. Add an optional `defnc-static` macro for opt-in compile-time transformation using UIx's approach.
+5. **`hx/f` preserved** — runtime hiccup helper kept working
 
 ## Test Strategy
 
@@ -235,42 +244,64 @@ Updated:
 - Validates first arg is map destructuring or `props`
 - Validates second arg (if present) is named `ref`
 
-### Step 5: Implement compatibility layer (TODO)
+### Step 5: Make UIx components work in hx hiccup ✅
 
-Create `src/hx/react/impl.cljs` (internal, not public):
+**Problem:** When hx's `create-element` encounters a UIx component, it passes props as a plain JS object. But UIx expects props under `.-argv`.
+
+**Solution:** Added UIx component detection in `src/hx/react.cljs`:
 
 ```clojure
-(ns hx.react.impl
-  "Internal implementation bridging hx and UIx.
-   NOT part of public API."
-  (:require [uix.core :as uix]))
+(defn- uix-component? [el]
+  (and (fn? el) (true? (.-uix-component? ^js el))))
 
-;; Bridge functions for the new defnc macro
+(defn- create-uix-element [el props-map children config]
+  ;; Parse children through hiccup, merge as :children in argv
+  (let [parsed-children (mapv #(hiccup/-as-element % config) children)
+        argv (if (seq parsed-children)
+               (assoc props-map :children ...)
+               props-map)]
+    (react/createElement el #js {:argv argv})))
 ```
 
-### Step 6: Rewrite defnc macro (TODO)
+**Tests now passing:**
 
-Modify `src/hx/react.clj`:
+- `uix-inside-hx` ✅
+- `mixed-nesting` ✅
+- `hooks-work-side-by-side` ✅
+- `children-hx-to-uix` ✅
+- All context sharing tests ✅
+
+### Step 6: Rewrite defnc to emit defui (TODO)
+
+Modify `src/hx/react.clj` to emit `defui`:
 
 ```clojure
-;; Option A: Wrap UIx's defui
-;; - Use UIx's optimizations where possible
-;; - Fall back to runtime hiccup parsing for body
-
-;; Option B: Keep current implementation
-;; - Just ensure interop works via shared React primitives
-;; - Add UIx as peer dependency for mixing components
+(defmacro defnc [name & args]
+  ;; Parse args to extract: docstring?, props-binding, opts-map?, body
+  ;; Handle :wrap, :pre, :post at macro level
+  ;; Emit:
+  `(uix.core/defui ~name [{:keys [...] :as ~'props}]
+     ;; Handle old [props ref] pattern: extract :ref from props
+     ;; Wrap body with parse-body for runtime hiccup
+     (hx.react/parse-body (do ~@body))))
 ```
 
-### Step 7: Add defnc-static (opt-in performance) (TODO)
+Key transformations:
+
+- Old `[{:keys [x]} ref]` → `[{:keys [x ref]}]` (ref comes from UIx props)
+- `:wrap [memo]` → wrap the defui with `(react/memo ...)`
+- `:pre/:post` → wrap body with assertions
+
+### Step 7: Update hx/f to use $ (TODO)
+
+Keep `hx/f` working for runtime hiccup:
 
 ```clojure
-(defmacro defnc-static
-  "Like defnc but transforms hiccup to $ calls at compile time.
-   Faster but doesn't support extend-tag or dynamic hiccup."
-  [name & body]
-  ;; Use uix.dev/from-hiccup to transform body
-  )
+(defn f [hiccup]
+  ;; Same runtime parsing, but make-element uses $ underneath
+  (parse hiccup))
+```
+
 ```
 
 ## Success Criteria
@@ -283,15 +314,30 @@ Modify `src/hx/react.clj`:
 
 ### Iteration 2 (IN PROGRESS)
 
-- [ ] UIx component inside hx component renders correctly
-- [ ] Mixed nesting works (UIx → hx → UIx)
-- [ ] Both ref patterns work (old `[props ref]` and new `:ref` key)
-- [ ] Hooks work in sibling UIx/hx components
+**Goal: Simplest defnc working with UIx**
+
+- [x] UIx components work inside hx hiccup (via `create-uix-element`)
+- [x] Props passed correctly
+- [x] Children work (passed as `:children` in props)
+- [ ] Basic `defnc` emits `defui` and renders
+- [ ] Simple hiccup body renders via runtime parsing with `$`
 
 ### Iteration 3
 
-- [ ] Feature parity tests pass
-- [ ] Real-world pattern tests pass
+**Goal: Full defnc feature parity**
+
+- [ ] `:wrap [memo]` option works
+- [ ] `:pre` / `:post` conditions work
+- [ ] Old `[props ref]` two-arg pattern works (ref extracted from UIx props)
+- [ ] `hx/f` works for runtime hiccup
+
+### Iteration 4
+
+**Goal: All tests pass**
+
+- [ ] All migration tests pass (currently 4 expected failures)
+- [ ] All existing hx tests still pass
+- [ ] `extend-tag` custom tags work (if keeping this feature)
 
 ### Iteration 4
 
@@ -300,6 +346,55 @@ Modify `src/hx/react.clj`:
 - [ ] Manual QA of key UI flows
 
 ## Findings & Notes
+
+### Architecture: How It Works
+
+```
+
+┌─────────────────────────────────────────────────────────┐
+│ User code │
+│ (defnc MyComp [{:keys [name]}] │
+│ [:div {:class "foo"} name]) │
+└─────────────────────────────────────────────────────────┘
+│
+▼ defnc macro
+┌─────────────────────────────────────────────────────────┐
+│ Emitted code │
+│ (uix.core/defui MyComp [{:keys [name]}] │
+│ (hx.react/parse-body │
+│ [:div {:class "foo"} name])) │
+└─────────────────────────────────────────────────────────┘
+│
+▼ runtime (parse-body)
+┌─────────────────────────────────────────────────────────┐
+│ Element creation │
+│ ($ :div {:class "foo"} name) │
+└─────────────────────────────────────────────────────────┘
+
+````
+
+- `defnc` is a macro that emits `defui`
+- `parse-body` walks the hiccup at runtime
+- Element creation uses UIx's `$` (not `react/createElement`)
+- Props are UIx props (`:children` in map, no separate conversion)
+
+### Props Flow
+
+**UIx props structure:**
+```clojure
+;; React props object for UIx component:
+#js {:argv {:prop1 val1 :children [child1 child2]}}
+
+;; What component receives after UIx's glue-args:
+{:prop1 val1 :children [child1 child2]}
+````
+
+**hx code using props:**
+
+```clojure
+(defnc MyComp [{:keys [label children]}]
+  [:div label children])  ;; children is now in the map
+```
 
 ### React 18 Changes
 
@@ -327,24 +422,18 @@ Modify `src/hx/react.clj`:
 
 ## Risk Areas
 
-1. **Children semantics** — hx passes children as args, UIx uses `:children` key. The `defnc` wrapper must handle both.
+1. **Children semantics change** — Old hx passed children as positional args. New approach uses `:children` in props map. Downstream code using `(defnc Comp [{:keys [x]}] ...)` with implicit children may need `{:keys [x children]}`.
 
-2. **Props conversion timing** — hx converts props at component boundary, UIx does it at compile time. May cause subtle differences.
+2. **extend-tag registry** — This hx-specific runtime dispatch may need rework to call `$` correctly.
 
-3. **Context API differences** — hx uses `[:provider {:context ctx :value v}]`, UIx uses `($ ctx {:value v})`. Need adapter.
+3. **Props object differences** — UIx stores props in `.-argv`. Code that directly accesses JS props objects may break.
 
-4. **extend-tag registry** — This is hx-specific runtime dispatch. Won't work with `defnc-static`. Document limitation.
+4. **`hx/f` return type** — Must return React elements compatible with both hx and UIx component trees.
 
-5. **Hook naming** — hx uses `useState` (camelCase), UIx uses `use-state` (kebab). Both should work since they wrap same React hooks.
+## Open Questions (RESOLVED)
 
-## Open Questions
+1. ~~Should we try to make `defnc` emit UIx's `defui` under the hood?~~ **YES** — defnc emits defui.
 
-1. Should we try to make `defnc` emit UIx's `defui` under the hood, or keep the implementations separate and just ensure interop?
+2. ~~For the children semantic difference?~~ **Use UIx's pattern** — children in props map via `:children` key.
 
-2. For the children semantic difference, should we:
-
-   - Transform at macro level (extract children from UIx's `:children` into args)?
-   - Document the difference and require explicit handling?
-   - Support both patterns in the new defnc?
-
-3. How do we handle `hx/f` (runtime hiccup parser) when UIx is the underlying renderer? Keep it as-is since it returns React elements?
+3. ~~How do we handle `hx/f`?~~ **Keep it** — runtime hiccup using `$` underneath.

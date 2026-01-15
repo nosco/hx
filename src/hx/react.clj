@@ -8,8 +8,8 @@
                                   (:static (meta %)))) body)
         render (first (filter #(= (first %) 'render) body))
         render' `(~(first render) ~(second render)
-                  (hx.react/parse-body
-                   (do ~@(nthrest render 2))))
+                                  (hx.react/parse-body
+                                   (do ~@(nthrest render 2))))
         statics (->> (filter #(:static (meta %)) body)
                      (map #(apply vector (str (munge (first %))) (rest %)))
                      (into {"displayName" (str *ns* "/" display-name)}))
@@ -23,30 +23,69 @@
                      ~statics
                      ~method-names)]
          (cljs.core/specify! (.-prototype class#)
-           ~'Object
-           ~render'
-           ~@methods)
+                             ~'Object
+                             ~render'
+                             ~@methods)
          class#))))
 
-(defn- fnc* [display-name props-bindings opts-map body]
-  (let [ret (gensym "return_value")]
-    ;; maybe-ref for react/forwardRef support
-    `(fn ~display-name [props# maybe-ref#]
-       (let [~props-bindings [(hx.react/props->clj props#) maybe-ref#]]
-         ;; pre-conditions
-         ~@(when (:pre opts-map)
-             (map (fn [x] `(assert ~x)) (:pre opts-map)))
-         (hx.react/parse-body
-          ;; post-conditions
-          ~(if (:post opts-map)
-             ;; save hiccup value of body
-             `(let [~ret (do ~@body)]
-                ;; apply post-conditions
-                ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
-                       (:post opts-map))
-                ~ret)
-             ;; if no post-conditions, do nothing
-             `(do ~@body)))))))
+(defn- fnc*
+  "Generate an hx component function that works with both UIx-style and React-style props.
+
+   Old hx pattern: (defnc Comp [{:keys [x]} ref] body)
+   - props-bindings is [{:keys [x]} ref]
+   - ref comes as second element (for use with React.forwardRef)
+
+   New pattern: (defnc Comp [{:keys [x ref]}] body)
+   - ref is just a regular prop key
+
+   The generated function:
+   - Can be called UIx-style (props under .-argv as CLJS map)
+   - Can be called React-style (props as JS object, for memo/forwardRef wrappers)
+   - For old [props ref] pattern: generates 2-arg function for forwardRef compatibility"
+  [display-name props-bindings opts-map body]
+  (let [ret (gensym "return_value")
+        ;; Check if old two-arg pattern: [{:keys [...]} ref]
+        has-ref-arg? (and (vector? props-bindings)
+                          (= 2 (count props-bindings))
+                          (symbol? (second props-bindings)))
+        ;; Extract the actual props destructuring
+        props-destructure (if has-ref-arg?
+                            (first props-bindings)
+                            (if (vector? props-bindings)
+                              (first props-bindings)
+                              props-bindings))
+        ;; Get the ref symbol if old pattern
+        ref-sym (when has-ref-arg? (second props-bindings))
+        ;; Generate the component body with pre/post conditions
+        component-body `(hx.react/parse-body
+                         ~(if (:post opts-map)
+                            `(let [~ret (do ~@body)]
+                               ~@(map (fn [x] `(assert ~(replace {'% ret} x)))
+                                      (:post opts-map))
+                               ~ret)
+                            `(do ~@body)))
+        ;; Generate unique symbols for the raw props/ref args
+        raw-props-sym (gensym "react-props")
+        raw-ref-sym (gensym "react-ref")]
+    (if has-ref-arg?
+      ;; Old pattern with ref arg: generate 2-arg function for forwardRef compatibility
+      ;; The function takes (props, ref) like forwardRef expects
+      `(let [f# (fn ~display-name [~raw-props-sym ~raw-ref-sym]
+                  (let [~props-destructure (hx.react/extract-cljs-props-with-ref ~raw-props-sym ~raw-ref-sym)
+                        ~ref-sym (or ~raw-ref-sym (:ref ~props-destructure))]
+                    ~@(when (:pre opts-map)
+                        (map (fn [x] `(assert ~x)) (:pre opts-map)))
+                    ~component-body))]
+         (set! (.-uix-component? f#) true)
+         f#)
+      ;; New pattern: single-arg function (compatible with both UIx and React props)
+      `(let [f# (fn ~display-name [~raw-props-sym]
+                  (let [~props-destructure (hx.react/extract-cljs-props ~raw-props-sym)]
+                    ~@(when (:pre opts-map)
+                        (map (fn [x] `(assert ~x)) (:pre opts-map)))
+                    ~component-body))]
+         (set! (.-uix-component? f#) true)
+         f#))))
 
 (defmacro fnc [display-name props-bindings & body]
   (let [opts-map (when (map? (first body)) (first body))

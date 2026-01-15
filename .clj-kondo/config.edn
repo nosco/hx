@@ -1,3 +1,5 @@
-{;; Import hx's own exported configs (dogfooding)
- :config-paths ["../resources/clj-kondo.exports/nosco/hx"
-                "imports/com.pitch/uix.core"]}
+{:hooks {:analyze-call {hx.react/defnc hooks.hx/defnc
+                        hx.react/defnc- hooks.hx/defnc}}
+ :config-paths ["imports/com.pitch/uix.core"]
+ :linters {:hx/defnc-first-arg {:level :warning}
+           :hx/defnc-second-arg {:level :warning}}}
