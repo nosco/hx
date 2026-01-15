@@ -9,7 +9,15 @@ process.env.WEBKIT_HEADLESS_BIN =
 
 module.exports = function (config) {
   config.set({
-    browsers: ["ChromiumHeadless", "FirefoxHeadless", "WebkitHeadless"],
+    browsers: ["ChromiumHeadlessNoSandbox", "FirefoxHeadless", "WebkitHeadless"],
+    // Custom launcher for Chromium with --no-sandbox flag
+    // Required for GitHub Actions and other CI environments with restricted sandboxing
+    customLaunchers: {
+      ChromiumHeadlessNoSandbox: {
+        base: "ChromiumHeadless",
+        flags: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+      },
+    },
     // The directory where the output file lives
     basePath: "target",
     // The file itself

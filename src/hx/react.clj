@@ -110,6 +110,11 @@
         body (if (map? (first fdecl)) (next fdecl) fdecl)
         m (assoc m :arglists (list props-bindings))
         m (conj m (meta display-name))
+        _ (when (and (contains? opts-map :wrap)
+                     (not (vector? (:wrap opts-map))))
+            (throw (ex-info (str "defnc `:wrap` option must be a vector, e.g. {:wrap [(react/memo)]}, got: " (pr-str (:wrap opts-map)))
+                            {:component display-name
+                             :wrap (:wrap opts-map)})))
         f (fnc* display-name props-bindings opts-map body)]
     (if (:wrap opts-map)
       (let [wrapped-name (symbol (str display-name "-hx-wrapped"))]

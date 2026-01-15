@@ -332,6 +332,7 @@
 ;; SECTION 8: REF FORWARDING
 ;; =============================================================================
 
+;; Old style: manually wrapping with forwardRef
 (hx/defnc FocusableInput* [{:keys [placeholder]} ref]
   [:input {:ref ref
            :style (merge (:input styles) {:width "200px"})
@@ -339,19 +340,37 @@
 
 (def FocusableInput (react/forwardRef FocusableInput*))
 
+;; New style: using :wrap option (preferred)
+(hx/defnc FocusableInputWithWrap [{:keys [placeholder]} ref]
+  {:wrap [(react/forwardRef)]}
+  [:input {:ref ref
+           :style (merge (:input styles) {:width "200px" :border-color "#4CAF50"})
+           :placeholder placeholder}])
+
 (hx/defnc RefSection [_]
-  (let [input-ref (react/useRef nil)]
+  (let [input-ref (react/useRef nil)
+        input-ref-wrap (react/useRef nil)]
     [:div {:style (:section styles)}
      [:h3 {:style (:section-title styles)} "8. Ref Forwarding"]
-     [:p "Click the button to focus the input (ref forwarding with forwardRef):"]
-     [:div {:style {:display "flex" :align-items "center"}}
-      [FocusableInput {:ref input-ref :placeholder "Click button to focus me"}]
-      [:button {:style (:button styles)
-                :on-click #(when-let [el (.-current input-ref)]
-                             (.focus el))}
-       "Focus Input"]]]))
+     [:p "Click the buttons to focus the inputs (ref forwarding with forwardRef):"]
 
-;; =============================================================================
+     [:div {:style {:margin-bottom "16px"}}
+      [:strong "Manual wrap (old style):"]
+      [:div {:style {:display "flex" :align-items "center" :margin-top "8px"}}
+       [FocusableInput {:ref input-ref :placeholder "Manual forwardRef"}]
+       [:button {:style (:button styles)
+                 :on-click #(when-let [el (.-current input-ref)]
+                              (.focus el))}
+        "Focus"]]]
+
+     [:div
+      [:strong "Using :wrap option (new style):"]
+      [:div {:style {:display "flex" :align-items "center" :margin-top "8px"}}
+       [FocusableInputWithWrap {:ref input-ref-wrap :placeholder ":wrap [(react/forwardRef)]"}]
+       [:button {:style (:button styles)
+                 :on-click #(when-let [el (.-current input-ref-wrap)]
+                              (.focus el))}
+        "Focus"]]]]))
 ;; SECTION 9: FUNCTION AS CHILD
 ;; =============================================================================
 

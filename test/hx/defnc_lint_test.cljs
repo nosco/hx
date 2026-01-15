@@ -45,3 +45,16 @@
 ;; Should warn about first arg AND second arg
 (defnc InvalidComponent3 [p the-ref]
   [:div {:ref the-ref} (:name p)])
+
+;; VALID: :wrap with a vector
+(defnc ValidWrapComponent [{:keys [x]}]
+  {:wrap [(js/Function.prototype)]}
+  [:div x])
+
+;; INVALID: :wrap without vector (common mistake)
+;; Should error: "defnc :wrap option must be a vector, e.g. {:wrap [(react/memo)]}"
+;; Note: This is commented out because it would cause a compile-time error
+;; Uncomment to verify linting works:
+;; (defnc InvalidWrapComponent [{:keys [x]}]
+;;   {:wrap (identity)}
+;;   [:div x])
