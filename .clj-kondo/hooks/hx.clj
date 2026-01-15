@@ -12,7 +12,9 @@
   (= 'ref sym))
 
 (defn- valid-props-name? [sym]
-  (= 'props sym))
+  (or (= 'props sym)
+      (= '_ sym)
+      (= '_props sym)))
 
 (defn defnc
   "Rewrite defnc to defn for linting purposes.
@@ -53,10 +55,10 @@
                              (and (api/token-node? first-arg)
                                   (valid-props-name? (api/sexpr first-arg))))]
 
-    ;; Check first arg is map destructuring or `props`
+    ;; Check first arg is map destructuring or `props`/`_`/`_props`
     (when (and first-arg (not first-arg-valid?))
       (api/reg-finding! (assoc (meta first-arg)
-                               :message "defnc first argument should be a map destructuring like {:keys [...]} or named `props`"
+                               :message "defnc first argument should be a map destructuring like {:keys [...]} or named `props`, `_`, or `_props`"
                                :type :hx/defnc-first-arg)))
 
     ;; Check second arg is named `ref` if present

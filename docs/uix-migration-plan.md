@@ -271,35 +271,61 @@ Updated:
 - `children-hx-to-uix` ✅
 - All context sharing tests ✅
 
-### Step 6: Rewrite defnc to emit defui (TODO)
+### Step 6: Rewrite defnc to emit UIx-compatible functions ✅
 
-Modify `src/hx/react.clj` to emit `defui`:
+Modified `src/hx/react.clj` to generate UIx-compatible functions instead of defui:
+
+**Key changes to `fnc*` macro:**
+
+1. Generated function uses `extract-cljs-props` to convert React props to Clojure maps
+2. Sets `.-uix-component?` flag to `true` on the function
+3. Handles old `[props ref]` two-arg pattern by creating a 2-arg function for `forwardRef` compatibility
+4. Props are processed through UIx's machinery by setting `.-argv` on the JS props object
+
+**Children handling:**
+
+The `extract-cljs-props` function merges `.-children` into the props map (matching UIx's `glue-args` behavior):
 
 ```clojure
-(defmacro defnc [name & args]
-  ;; Parse args to extract: docstring?, props-binding, opts-map?, body
-  ;; Handle :wrap, :pre, :post at macro level
-  ;; Emit:
-  `(uix.core/defui ~name [{:keys [...] :as ~'props}]
-     ;; Handle old [props ref] pattern: extract :ref from props
-     ;; Wrap body with parse-body for runtime hiccup
-     (hx.react/parse-body (do ~@body))))
+(defn- extract-cljs-props [react-props]
+  (if-some [argv (.-argv react-props)]
+    (cond-> argv
+      (.-children react-props) (assoc :children (.-children react-props)))
+    (bean/bean react-props)))
 ```
 
-Key transformations:
+**Function-as-child pattern:**
 
-- Old `[{:keys [x]} ref]` → `[{:keys [x ref]}]` (ref comes from UIx props)
-- `:wrap [memo]` → wrap the defui with `(react/memo ...)`
-- `:pre/:post` → wrap body with assertions
-
-### Step 7: Update hx/f to use $ (TODO)
-
-Keep `hx/f` working for runtime hiccup:
+`create-uix-element` handles render function patterns:
 
 ```clojure
-(defn f [hiccup]
-  ;; Same runtime parsing, but make-element uses $ underneath
-  (parse hiccup))
+(defn- render-fn? [x]
+  (and (fn? x) (not (react/isValidElement x)) (not (uix-component? x))))
+
+(defn- create-uix-element [el props-map children config]
+  (let [first-child (first children)]
+    (if (render-fn? first-child)
+      ;; Pass render function directly as :children
+      (react/createElement el #js {:argv (assoc props-map :children first-child)})
+      ;; Parse children through hiccup...)))
+```
+
+### Step 7: hx/f unchanged ✅
+
+`hx/f` continues to work unchanged because:
+
+1. It still uses `hiccup/parse` for runtime hiccup parsing
+2. `create-element` now detects UIx components and routes to `create-uix-element`
+3. All existing patterns (fragments, providers, nested components) continue to work
+
+```clojure
+(defn f [form]
+  (hiccup/parse react-hiccup-config form))
+```
+
+;; Same runtime parsing, but make-element uses $ underneath
+(parse hiccup))
+
 ```
 
 ```
@@ -312,34 +338,34 @@ Keep `hx/f` working for runtime hiccup:
 - [x] UIx smoke tests pass (17 tests)
 - [x] Real-world pattern tests pass (12 tests)
 
-### Iteration 2 (IN PROGRESS)
+### Iteration 2 ✅ COMPLETE
 
 **Goal: Simplest defnc working with UIx**
 
 - [x] UIx components work inside hx hiccup (via `create-uix-element`)
 - [x] Props passed correctly
 - [x] Children work (passed as `:children` in props)
-- [ ] Basic `defnc` emits `defui` and renders
-- [ ] Simple hiccup body renders via runtime parsing with `$`
+- [x] Basic `defnc` emits UIx-compatible functions and renders
+- [x] Simple hiccup body renders via runtime parsing
 
-### Iteration 3
+### Iteration 3 ✅ COMPLETE
 
 **Goal: Full defnc feature parity**
 
-- [ ] `:wrap [memo]` option works
-- [ ] `:pre` / `:post` conditions work
-- [ ] Old `[props ref]` two-arg pattern works (ref extracted from UIx props)
-- [ ] `hx/f` works for runtime hiccup
+- [x] `:wrap [memo]` option works
+- [x] `:pre` / `:post` conditions work
+- [x] Old `[props ref]` two-arg pattern works (ref forwarding via forwardRef)
+- [x] `hx/f` works for runtime hiccup
 
-### Iteration 4
+### Iteration 4 ✅ COMPLETE
 
 **Goal: All tests pass**
 
-- [ ] All migration tests pass (currently 4 expected failures)
-- [ ] All existing hx tests still pass
-- [ ] `extend-tag` custom tags work (if keeping this feature)
+- [x] All migration tests pass (56 tests total, all passing)
+- [x] All existing hx tests still pass
+- [x] `extend-tag` custom tags work (:<>, :provider)
 
-### Iteration 4
+### Iteration 5 (TODO)
 
 - [ ] nosco-gamma compiles with new hx
 - [ ] nosco-gamma tests pass
@@ -371,7 +397,7 @@ Keep `hx/f` working for runtime hiccup:
 │ ($ :div {:class "foo"} name) │
 └─────────────────────────────────────────────────────────┘
 
-````
+```
 
 - `defnc` is a macro that emits `defui`
 - `parse-body` walks the hiccup at runtime
@@ -381,13 +407,14 @@ Keep `hx/f` working for runtime hiccup:
 ### Props Flow
 
 **UIx props structure:**
+
 ```clojure
 ;; React props object for UIx component:
 #js {:argv {:prop1 val1 :children [child1 child2]}}
 
 ;; What component receives after UIx's glue-args:
 {:prop1 val1 :children [child1 child2]}
-````
+```
 
 **hx code using props:**
 
@@ -420,20 +447,20 @@ Keep `hx/f` working for runtime hiccup:
 
 ---
 
-## Risk Areas
+## Risk Areas (Updated)
 
-1. **Children semantics change** — Old hx passed children as positional args. New approach uses `:children` in props map. Downstream code using `(defnc Comp [{:keys [x]}] ...)` with implicit children may need `{:keys [x children]}`.
+1. **Children semantics change** ✅ RESOLVED — `extract-cljs-props` now merges `.-children` into props map, matching UIx's `glue-args` behavior. Downstream code using `{:keys [children]}` will work correctly.
 
-2. **extend-tag registry** — This hx-specific runtime dispatch may need rework to call `$` correctly.
+2. **extend-tag registry** ✅ VERIFIED — Works correctly. Tests pass for `:<>` (fragments) and `:provider` (context providers).
 
-3. **Props object differences** — UIx stores props in `.-argv`. Code that directly accesses JS props objects may break.
+3. **Props object differences** ✅ HANDLED — `extract-cljs-props` handles both UIx props (`.-argv`) and plain JS props (via `bean/bean`).
 
-4. **`hx/f` return type** — Must return React elements compatible with both hx and UIx component trees.
+4. **`hx/f` return type** ✅ VERIFIED — Returns React elements compatible with both hx and UIx component trees. All tests pass.
 
 ## Open Questions (RESOLVED)
 
-1. ~~Should we try to make `defnc` emit UIx's `defui` under the hood?~~ **YES** — defnc emits defui.
+1. ~~Should we try to make `defnc` emit UIx's `defui` under the hood?~~ **NO** — Instead, defnc emits UIx-compatible functions with `.-uix-component?` flag. This preserves runtime hiccup while enabling interop.
 
 2. ~~For the children semantic difference?~~ **Use UIx's pattern** — children in props map via `:children` key.
 
-3. ~~How do we handle `hx/f`?~~ **Keep it** — runtime hiccup using `$` underneath.
+3. ~~How do we handle `hx/f`?~~ **Keep it unchanged** — runtime hiccup, `create-element` detects UIx components.

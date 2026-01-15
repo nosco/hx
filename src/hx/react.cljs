@@ -18,13 +18,15 @@
    Handles both UIx-style (props under .-argv) and standard React props.
    This allows hx components to work with React.memo, React.forwardRef, etc."
   [^js react-props]
-  (if-some [argv (.-argv react-props)]
-    ;; UIx-style: props stored under .argv as CLJS map
-    ;; Also merge React's children if present (UIx passes children separately)
-    (cond-> argv
-      (.-children react-props) (assoc :children (.-children react-props)))
-    ;; Standard React props: convert JS object to CLJS map
-    (bean/bean react-props)))
+  (if (nil? react-props)
+    {}
+    (if-some [argv (.-argv react-props)]
+      ;; UIx-style: props stored under .argv as CLJS map
+      ;; Also merge React's children if present (UIx passes children separately)
+      (cond-> argv
+        (.-children react-props) (assoc :children (.-children react-props)))
+      ;; Standard React props: convert JS object to CLJS map
+      (bean/bean react-props))))
 
 (defn extract-cljs-props-with-ref
   "Like extract-cljs-props but also handles the ref argument from forwardRef.
