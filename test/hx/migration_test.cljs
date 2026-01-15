@@ -268,6 +268,63 @@
 
 ;;
 ;; =============================================================================
+;; WRAP OPTION: forwardRef for JS interop
+;; This test is EXPECTED TO FAIL until :wrap is implemented.
+;; =============================================================================
+;;
+
+;; A plain JS React component that injects a ref into its child via cloneElement
+;; This simulates libraries like react-beautiful-dnd, @floating-ui/react, etc.
+(def JsRefInjector
+  (let [component (fn [props]
+                    (let [child-ref (React/useRef nil)
+                          children (.-children props)
+                          on-focus (.-onFocus props)]
+                      (React/createElement
+                       "div"
+                       #js {:data-testid "js-injector"}
+                       ;; Clone the child element and inject our ref
+                       (React/cloneElement children #js {:ref child-ref})
+                       (React/createElement
+                        "button"
+                        #js {:data-testid "js-focus-btn"
+                             :onClick (fn []
+                                        (when-let [el (.-current child-ref)]
+                                          (.focus el)
+                                          (when on-focus (on-focus))))}
+                        "Focus from JS"))))]
+    (set! (.-displayName component) "JsRefInjector")
+    component))
+
+;; THIS IS THE TEST CASE: defnc with :wrap [(react/forwardRef)]
+;; When :wrap is implemented, this should work without manual wrapping
+(defnc FocusableInputWithWrap [{:keys [placeholder ref]}]
+  {:wrap [(React/forwardRef)]}  ;; <-- This should auto-wrap the component
+  [:input {:ref ref
+           :data-testid "wrapped-input"
+           :placeholder placeholder}])
+
+(t/deftest wrap-option-forward-ref
+  (t/testing ":wrap [(react/forwardRef)] enables JS components to inject refs"
+    (let [focused (atom false)
+          ;; Render: JS component -> hx component with :wrap
+          result (render
+                  (React/createElement
+                   JsRefInjector
+                   #js {:onFocus #(reset! focused true)}
+                   (hx/f [FocusableInputWithWrap {:placeholder "wrap test"}])))
+          button (get-by-testid (.-container result) "js-focus-btn")]
+      ;; Verify the input rendered
+      (t/is (some? (get-by-testid (.-container result) "wrapped-input"))
+            "Input should be rendered")
+      ;; Click the JS button which tries to focus via the injected ref
+      (click button)
+      ;; If :wrap works, the ref was forwarded and focus happened
+      (t/is (= true @focused)
+            ":wrap [(react/forwardRef)] should allow JS to inject refs"))))
+
+;;
+;; =============================================================================
 ;; PRE/POST CONDITIONS
 ;; =============================================================================
 ;;

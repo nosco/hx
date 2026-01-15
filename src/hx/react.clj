@@ -60,17 +60,42 @@
       :else
       `(do ~@body))))
 
+(defn- process-opts-map
+  "Process the opts-map from a component body.
+
+   Given a body (which may start with an opts-map), returns a map containing:
+   - :wrap - vector of wrap expressions (or nil if none)
+   - :body - the body wrapped with :pre/:post conditions
+
+   Validates that :wrap is a vector if present.
+
+   Example opts-map:
+   {:pre [(some? x)]
+    :post [(string? %)]
+    :wrap [(react/memo) (react/forwardRef)]}"
+  [body]
+  (let [opts-map (when (map? (first body)) (first body))
+        body-without-opts (if opts-map (next body) body)]
+    (when-let [wrap (:wrap opts-map)]
+      (when-not (vector? wrap)
+        (throw (ex-info ":wrap must be a vector of wrapper functions"
+                        {:wrap wrap}))))
+    {:wrap (:wrap opts-map)
+     :body (wrap-body-with-conditions body-without-opts
+                                      (dissoc opts-map :wrap))}))
+
 (defmacro fnc
   "Create an anonymous hx component (like uix.core/fn but with hiccup support).
 
    Delegates to uix.core/fn for props handling, adds hiccup parsing."
   [display-name props-bindings & body]
-  (let [opts-map (when (map? (first body)) (first body))
-        body (if (map? (first body)) (next body) body)
-        wrapped-body (wrap-body-with-conditions body opts-map)]
+  (let [{:keys [wrap body]} (process-opts-map body)]
+    ;; TODO: handle wrap expressions in future iteration
+    (when wrap
+      (println "Warning: :wrap is not yet supported in fnc, ignoring:" wrap))
     ;; Delegate to uix.core/fn, wrapping body with parse-body for hiccup
     `(uix.core/fn ~display-name ~props-bindings
-       (hx.react/parse-body ~wrapped-body))))
+       (hx.react/parse-body ~body))))
 
 (alter-meta! #'fnc assoc
              :arglists '([display-name props-bindings opts-map? & body]))
@@ -152,19 +177,20 @@
         raw-props-bindings (first fdecl)
         {:keys [props-binding ref-sym]} (move-ref-to-props raw-props-bindings)
         fdecl (next fdecl)
-        ;; Parse opts-map if present (for :pre/:post conditions)
-        opts-map (when (map? (first fdecl)) (first fdecl))
-        body (if (map? (first fdecl)) (next fdecl) fdecl)
+
+        ;; Process opts-map (extracts :wrap, wraps body with :pre/:post)
+        {:keys [wrap body]} (process-opts-map fdecl)
+
+        ;; TODO: handle wrap expressions in future iteration
+        _ (when wrap
+            (println "Warning: :wrap is not yet supported in defnc, ignoring:" wrap))
 
         ;; If ref-sym is set, we need to let-bind it from props
         ;; (this happens when props was a plain symbol like `props`)
         body (if ref-sym
-               `((let [~ref-sym (:ref ~props-binding)]
-                   ~@body))
+               `(let [~ref-sym (:ref ~props-binding)]
+                  ~body)
                body)
-
-        ;; Wrap body with pre/post conditions
-        wrapped-body (wrap-body-with-conditions body opts-map)
 
         ;; Preserve metadata from display-name (including ^:memo)
         m (merge m (meta display-name))]
@@ -172,7 +198,7 @@
     ;; Simple delegation to defui with hiccup parsing
     `(do
        (uix.core/defui ~(with-meta display-name m) ~props-binding
-         (hx.react/parse-body ~wrapped-body)))))
+         (hx.react/parse-body ~body)))))
 
 (alter-meta! #'defnc assoc
              :arglists '([display-name doc-string? props-bindings opts-map? & body]))

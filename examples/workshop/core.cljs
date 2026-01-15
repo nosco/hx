@@ -332,45 +332,118 @@
 ;; SECTION 8: REF FORWARDING
 ;; =============================================================================
 
-;; Old style: manually wrapping with forwardRef
-(hx/defnc FocusableInput* [{:keys [placeholder]} ref]
+;; -----------------------------------------------------------------------------
+;; Case 1: hx/UIx components can pass refs as regular props (no forwardRef needed)
+;; -----------------------------------------------------------------------------
+(hx/defnc FocusableInputHx [{:keys [placeholder ref]}]
   [:input {:ref ref
            :style (merge (:input styles) {:width "200px"})
            :placeholder placeholder}])
 
-(def FocusableInput (uix.core/forward-ref FocusableInput*))
+;; -----------------------------------------------------------------------------
+;; Case 2: Plain JS React component that injects a ref into its child
+;; This simulates a third-party JS library component
+;; -----------------------------------------------------------------------------
+(def JsRefInjector
+  "A plain JS React component that clones its child and injects a ref.
+   This simulates libraries like react-beautiful-dnd, @floating-ui/react, etc."
+  (let [component (fn [^js props]
+                    (let [child-ref (react/useRef nil)
+                          children (.-children props)
+                          on-focus (.-onFocus props)]
+                      (react/createElement
+                       "div"
+                       #js {:style #js {:display "flex" :alignItems "center" :gap "8px"}}
+                       ;; Clone the child element and inject our ref
+                       (react/cloneElement children #js {:ref child-ref})
+                       (react/createElement
+                        "button"
+                        #js {:style #js {:backgroundColor "#9C27B0"
+                                         :color "white"
+                                         :border "none"
+                                         :padding "8px 16px"
+                                         :borderRadius "4px"
+                                         :cursor "pointer"}
+                             :onClick (fn []
+                                        (if-let [el (.-current child-ref)]
+                                          (do
+                                            (.focus el)
+                                            (when on-focus (on-focus)))
+                                          (js/alert "JS Ref is nil - forwardRef needed!")))}
+                        "Focus (from JS)"))))]
+    (set! (.-displayName component) "JsRefInjector")
+    component))
 
-;; New style: using :wrap option (preferred)
-#_(hx/defnc FocusableInputWithWrap [{:keys [placeholder]} ref]
-    {:wrap [(react/forwardRef)]}
-    [:input {:ref ref
-             :style (merge (:input styles) {:width "200px" :border-color "#4CAF50"})
-             :placeholder placeholder}])
+;; This component needs to be wrapped with forward-ref to work with JsRefInjector
+(hx/defnc FocusableInputForJs [{:keys [placeholder ref]}]
+  [:input {:ref ref
+           :style (merge (:input styles) {:width "200px" :border-color "#9C27B0"})
+           :placeholder placeholder}])
+
+;; Wrap with forward-ref for JS interop
+(def FocusableInputForJsWrapped (uix.core/forward-ref FocusableInputForJs))
+
+;; -----------------------------------------------------------------------------
+;; Case 3: Using :wrap option (TODO - not yet implemented)
+;; This is the preferred syntax we want to support
+;; -----------------------------------------------------------------------------
+(hx/defnc FocusableInputWithWrap [{:keys [placeholder]} ref]
+  {:wrap [(react/forwardRef)]}
+  [:input {:ref ref
+           :style (merge (:input styles) {:width "200px" :border-color "#4CAF50"})
+           :placeholder placeholder}])
 
 (hx/defnc RefSection [_]
-  (let [input-ref (react/useRef nil)
-        input-ref-wrap (react/useRef nil)]
+  (let [hx-ref (react/useRef nil)
+        js-focus-count (react/useRef 0)]
     [:div {:style (:section styles)}
      [:h3 {:style (:section-title styles)} "8. Ref Forwarding"]
-     [:p "Click the buttons to focus the inputs (ref forwarding with forwardRef):"]
 
      [:div {:style {:margin-bottom "16px"}}
-      [:strong "Manual wrap (old style):"]
-      [:div {:style {:display "flex" :align-items "center" :margin-top "8px"}}
-       [FocusableInput {:ref input-ref :placeholder "Manual forwardRef"}]
+      [:h4 {:style {:margin "0 0 8px 0" :color "#1565c0"}}
+       "Case 1: hx → hx (refs as props, no forwardRef needed)"]
+      [:p {:style {:margin "0 0 8px 0" :font-size "14px" :color "#666"}}
+       "UIx/hx components pass refs as regular props. This just works:"]
+      [:div {:style {:display "flex" :align-items "center" :gap "8px"}}
+       [FocusableInputHx {:ref hx-ref :placeholder "hx component with :ref prop"}]
        [:button {:style (:button styles)
-                 :on-click #(when-let [el (.-current input-ref)]
-                              (.focus el))}
-        "Focus"]]]
+                 :on-click (fn []
+                             (if-let [el (.-current hx-ref)]
+                               (.focus el)
+                               (js/alert "Ref is nil")))}
+        "Focus (from hx)"]]]
 
-     #_[:div
-        [:strong "Using :wrap option (new style):"]
-        [:div {:style {:display "flex" :align-items "center" :margin-top "8px"}}
-         [FocusableInputWithWrap {:ref input-ref-wrap :placeholder ":wrap [(react/forwardRef)]"}]
-         [:button {:style (:button styles)
-                   :on-click #(when-let [el (.-current input-ref-wrap)]
-                                (.focus el))}
-          "Focus"]]]]))
+     [:div {:style {:margin-bottom "16px"}}
+      [:h4 {:style {:margin "0 0 8px 0" :color "#7B1FA2"}}
+       "Case 2: JS component injects ref (needs forward-ref wrapper)"]
+      [:p {:style {:margin "0 0 8px 0" :font-size "14px" :color "#666"}}
+       "When a JS React component (like drag-n-drop libraries) needs to inject a ref, "
+       "use " [:code "uix.core/forward-ref"] " to wrap the hx component:"]
+      ;; JsRefInjector is a plain JS component that clones its child and injects a ref
+      ($ JsRefInjector
+         {:onFocus (fn []
+                     (set! (.-current js-focus-count) (inc (.-current js-focus-count)))
+                     (js/console.log "Focused from JS!" (.-current js-focus-count)))}
+         ($ FocusableInputForJsWrapped {:placeholder "Wrapped with forward-ref for JS interop"}))]
+
+     [:div {:style {:margin-bottom "16px"}}
+      [:h4 {:style {:margin "0 0 8px 0" :color "#4CAF50"}}
+       "Case 3: Using :wrap option (TODO)"]
+      [:p {:style {:margin "0 0 8px 0" :font-size "14px" :color "#666"}}
+       "The " [:code ":wrap"] " option will allow declarative wrapping with forwardRef and other HOCs:"]
+      [:pre {:style {:background "#f5f5f5" :padding "8px" :border-radius "4px" :margin "8px 0" :font-size "12px"}}
+       "(hx/defnc MyInput [{:keys [placeholder ref]}]\n  {:wrap [(react/forwardRef)]}\n  [:input {:ref ref :placeholder placeholder}])"]
+      ($ JsRefInjector
+         {:onFocus #(js/console.log "Focused via :wrap component!")}
+         ($ FocusableInputWithWrap {:placeholder ":wrap [(react/forwardRef)] - coming soon!"}))]
+
+     [:div {:style {:background "#fff3e0"
+                    :padding "12px"
+                    :border-radius "4px"
+                    :font-size "14px"}}
+      [:strong "Note: "]
+      "In React 19+, " [:code "forwardRef"] " is deprecated - refs are just props. "
+      "But for React 18 and JS library interop, " [:code "uix.core/forward-ref"] " is still needed."]]))
 ;; SECTION 9: FUNCTION AS CHILD
 ;; =============================================================================
 
@@ -454,6 +527,11 @@
                  :margin "0 auto"
                  :padding "20px"
                  :font-family "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"}}
+   [:h1 {:style {:color "#4CAF50"
+                 :font-size "3rem"
+                 :text-align "center"
+                 :margin-bottom "8px"}}
+    "React " react/version]
    [:h1 {:style {:color "#333" :border-bottom "3px solid #4CAF50" :padding-bottom "12px"}}
     "hx + UIx Integration Workshop"]
    [:p {:style {:color "#666"}}

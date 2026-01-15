@@ -10,9 +10,10 @@
     (.render root (hx/f [core/App]))))
 
 (defn init! []
-  (let [container (js/document.getElementById "app")
-        root (react-dom/createRoot container)]
-    (reset! root-atom root)
-    (render!)))
+  (when-not @root-atom
+    (let [container (js/document.getElementById "app")
+          root (react-dom/createRoot container)]
+      (reset! root-atom root)))
+  (render!))
 
 (init!)
