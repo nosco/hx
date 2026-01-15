@@ -1,0 +1,4 @@
+{:hooks {:analyze-call {hx.react/defnc hooks.hx/defnc
+                        hx.react/defnc- hooks.hx/defnc}}
+ :linters {:hx/defnc-first-arg {:level :warning}
+           :hx/defnc-second-arg {:level :warning}}}

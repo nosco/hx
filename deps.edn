@@ -1,4 +1,4 @@
-{:paths ["src"]
+{:paths ["src" "resources"]
  :deps {com.pitch/uix.core {:mvn/version "1.4.8"}}
  :aliases
  {:dev {:extra-paths ["test" "examples" "benchmark"]
