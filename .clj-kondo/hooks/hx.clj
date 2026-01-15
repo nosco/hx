@@ -50,15 +50,18 @@
         first-arg (first args-children)
         second-arg (second args-children)
 
-        ;; First arg is valid if it's a map OR a symbol named `props`
-        first-arg-valid? (or (api/map-node? first-arg)
+        ;; First arg is valid if it's a map, a symbol named `props`/`_`/`_props`, or empty vector
+        empty-args? (and (api/vector-node? args-node)
+                         (empty? args-children))
+        first-arg-valid? (or empty-args?
+                             (api/map-node? first-arg)
                              (and (api/token-node? first-arg)
                                   (valid-props-name? (api/sexpr first-arg))))]
 
-    ;; Check first arg is map destructuring or `props`/`_`/`_props`
-    (when (and first-arg (not first-arg-valid?))
+    ;; Check first arg is map destructuring or `props`/`_`/`_props` or empty vector
+    (when (and (not empty-args?) first-arg (not first-arg-valid?))
       (api/reg-finding! (assoc (meta first-arg)
-                               :message "defnc first argument should be a map destructuring like {:keys [...]} or named `props`, `_`, or `_props`"
+                               :message "defnc first argument should be a map destructuring like {:keys [...]}, named `props`/`_`/`_props`, or empty vector []"
                                :type :hx/defnc-first-arg)))
 
     ;; Check second arg is named `ref` if present

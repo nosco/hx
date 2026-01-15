@@ -44,16 +44,20 @@
    - For old [props ref] pattern: generates 2-arg function for forwardRef compatibility"
   [display-name props-bindings opts-map body]
   (let [ret (gensym "return_value")
+        ;; Check if zero-arg pattern: []
+        zero-args? (and (vector? props-bindings)
+                        (empty? props-bindings))
         ;; Check if old two-arg pattern: [{:keys [...]} ref]
-        has-ref-arg? (and (vector? props-bindings)
+        has-ref-arg? (and (not zero-args?)
+                          (vector? props-bindings)
                           (= 2 (count props-bindings))
                           (symbol? (second props-bindings)))
         ;; Extract the actual props destructuring
-        props-destructure (if has-ref-arg?
-                            (first props-bindings)
-                            (if (vector? props-bindings)
-                              (first props-bindings)
-                              props-bindings))
+        props-destructure (cond
+                            zero-args? '_
+                            has-ref-arg? (first props-bindings)
+                            (vector? props-bindings) (first props-bindings)
+                            :else props-bindings)
         ;; Get the ref symbol if old pattern
         ref-sym (when has-ref-arg? (second props-bindings))
         ;; Generate the component body with pre/post conditions
