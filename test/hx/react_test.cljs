@@ -4,7 +4,7 @@
             [goog.dom :as dom]
             [goog.object :as gobj]
             [clojure.string :as str]
-            ["react-testing-library" :as rtl]))
+            ["@testing-library/react" :as rtl]))
 
 (t/use-fixtures :each
   {:after rtl/cleanup})
@@ -36,7 +36,7 @@
     f))
 
 (defn call-count [f]
-  @(.-callCount f))
+  (deref (.-callCount ^js f)))
 
 (defn click [node]
   (.click rtl/fireEvent node))
@@ -58,7 +58,7 @@
                (root (render (hx/f [:div "hi"])))))
   (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
                (root (render (hx/f [:div
-                                           [:span "hi"]
+                                    [:span "hi"]
                                     [:span "bye"]])))))
   (t/testing "LazySeq"
     (t/is (node= (html "<div><span>hi</span><span>bye</span></div>")
@@ -105,8 +105,10 @@
   (t/is (node= (html "<div style=\"color: red;\">hi</div>")
                (root (render (hx/f [:div {:style {:color "red"}} "hi"])))))
 
-  (t/is (node= (html "<div style=\"--some-var:foo;\">hi</div>")
-               (root (render (hx/f [:div {:style {:--some-var "foo"}} "hi"])))))
+  ;; CSS custom properties - React 18 may format with space after colon
+  (let [result (root (render (hx/f [:div {:style {:--some-var "foo"}} "hi"])))]
+    (t/is (= "foo" (.getPropertyValue (.-style result) "--some-var"))
+          "CSS custom property value is set correctly"))
 
   (t/is (node= (html "<div style=\"color: red; background: green;\">hi</div>")
                (root (render (hx/f [:div {:style {:color "red"

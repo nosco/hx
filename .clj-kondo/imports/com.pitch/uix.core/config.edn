@@ -1,0 +1,102 @@
+{:lint-as {uix.core/defhook clojure.core/defn}
+ :hooks   {:analyze-call {uix.core/defui hooks.uix/defui
+                          uix.core/fn hooks.uix/anon-fn
+                          uix.core/$ hooks.uix/$
+
+                          uix.core/use-callback hooks.uix/hook-deps
+                          uix.core/use-memo hooks.uix/hook-deps
+                          uix.core/use-effect hooks.uix/hook-deps
+                          uix.core/use-layout-effect hooks.uix/hook-deps
+                          uix.core/use-insertion-effect hooks.uix/hook-deps
+
+                          uix.core/use-state hooks.uix/hook
+                          uix.core/use-reducer hooks.uix/hook
+                          uix.core/use-ref hooks.uix/hook
+                          uix.core/use-context hooks.uix/hook
+                          uix.core/use-imperative-handle hooks.uix/hook
+                          uix.core/use-debug hooks.uix/hook
+                          uix.core/use-deferred-value hooks.uix/hook
+                          uix.core/use-transition hooks.uix/hook
+                          uix.core/use-id hooks.uix/hook
+                          uix.core/use-sync-external-store hooks.uix/hook
+                          uix.core/use-optimistic hooks.uix/hook
+                          uix.core/use-action-state hooks.uix/hook}}
+ :linters {:uix.core/$-arg-validation {:level :warning}
+           :uix.dom/$-invalid-attribute {:level :warning}
+           :uix.core/$-non-ref-spread {:level :warning}
+           :uix.core/$-unnecessary-spread {:level :warning}
+           :uix.core/hook-inline-function {:level :warning}
+           :uix.core/hook-deps-array-literal {:level :warning}
+           :uix.core/hook-deps-coll-literal {:level :warning}
+           :uix.core/hook-in-branch {:level :warning}
+           :uix.core/hook-in-loop {:level :warning}
+           :uix.core/hook-top-level {:level :warning}
+           :uix.core/literal-value-in-deps {:level :warning}
+           :uix.core/$-missing-key {:level :warning}
+
+           :type-mismatch
+           {:level      :warning
+            :namespaces {uix.core {memo                    {:arities {1 {:args [:ifn]
+                                                                         :ret  [:ifn]}
+                                                                      2 {:args [:ifn :ifn]
+                                                                         :ret  [:any]}}}
+                                   use-state               {:arities {1 {:args [:any]
+                                                                         :ret  [:any :ifn]}}}
+                                   use-memo                {:arities {2 {:args [:ifn :seqable]
+                                                                         :ret  [:any]}}}
+                                   use-effect              {:arities {1 {:args [:ifn]
+                                                                         :ret  [:any]}
+                                                                      2 {:args [:ifn :seqable]
+                                                                         :ret  [:any]}}}
+                                   use-layout-effect       {:arities {1 {:args [:ifn]
+                                                                         :ret  [:any]}
+                                                                      2 {:args [:ifn :seqable]
+                                                                         :ret  [:any]}}}
+                                   use-insertion-effect    {:arities {1 {:args [:ifn]
+                                                                         :ret  [:any]}
+                                                                      2 {:args [:ifn :seqable]
+                                                                         :ret  [:any]}}}
+                                   use-sync-external-store {:arities {2 {:args [:ifn :ifn]
+                                                                         :ret  [:any]}
+                                                                      3 {:args [:ifn :ifn :ifn]
+                                                                         :ret  [:any]}}}
+                                   use-callback            {:arities {2 {:args [:ifn :seqable]
+                                                                         :ret  [:ifn]}}}
+                                   use-ref                 {:aritites {1 {:args [:any]
+                                                                          :ret  [:atom]}}}
+                                   use-context             {:aritites {1 {:args [:any]
+                                                                          :ret  [:any]}}}
+                                   use-reducer             {:arities {2 {:args [:ifn :any]
+                                                                         :ret  [:seqable]}
+                                                                      3 {:args [:ifn :any :any]
+                                                                         :ret  [:seqable]}}}
+                                   use-imperative-handle   {:arities {2 {:args [:any :ifn]
+                                                                         :ret  [:any]}
+                                                                      3 {:args [:any :ifn :seqable]
+                                                                         :ret  [:any]}}}
+                                   use-debug               {:arities {1 {:args [:any]
+                                                                         :ret  [:any]}
+                                                                      2 {:args [:any :ifn]
+                                                                         :ret  [:any]}}}
+                                   use-transition          {:arities {0 {:args []
+                                                                         :ret  [:seqable]}}}
+                                   use-id                  {:arities {0 {:args []
+                                                                         :ret  [:any]}}}
+                                   use-optimistic          {:arities {2 {:args [:any :ifn]
+                                                                         :ret  [:seqable]}}}
+                                   use-action-state        {:arities {2 {:args [:ifn :any]
+                                                                         :ret  [:seqable]}
+                                                                      3 {:args [:ifn :any :any]
+                                                                         :ret  [:seqable]}}}
+                                   use-deferred-value      {:arities {1 {:args [:any]
+                                                                         :ret  [:any]}
+                                                                      2 {:args [:any :any]
+                                                                         :ret  [:any]}}}
+                                   use                     {:arities {1 {:args [:any]
+                                                                         :ret  [:any]}}}
+                                   as-react                {:arities {1 {:args [:ifn]
+                                                                         :ret  [:any]}}}
+                                   start-transition        {:arities {1 {:args [:ifn]
+                                                                         :ret  [:nil]}}}
+                                   lazy                    {:arities {1 {:args [:ifn]
+                                                                         :ret  [:any]}}}}}}}}

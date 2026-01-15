@@ -1,15 +1,19 @@
 (ns workshop
-  (:require [devcards.core :as dc :include-macros true]
-            [workshop.core]
-            [workshop.material]
-            [workshop.react-dnd]
-            [workshop.sortable]
-            [workshop.state]))
+  (:require ["react-dom/client" :as react-dom]
+            [hx.react :as hx]
+            [workshop.core :as core]))
 
+(defonce root-atom (atom nil))
 
-(defn ^:dev/after-load start! []
-  (dc/start-devcard-ui!))
+(defn ^:dev/after-load render! []
+  (when-let [root @root-atom]
+    (.render root (hx/f [core/App]))))
 
-(defn init! [] (start!))
+(defn init! []
+  (when-not @root-atom
+    (let [container (js/document.getElementById "app")
+          root (react-dom/createRoot container)]
+      (reset! root-atom root)))
+  (render!))
 
 (init!)
