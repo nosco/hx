@@ -23,22 +23,21 @@
   },
   "homepage": "https://github.com/Lokeh/hx#readme",
   "devDependencies": {
-    "@material-ui/core": "^3.3.2",
+    "@testing-library/react": "^14.0.0",
     "benchmark": "^2.1.4",
-    "karma": "^4.0.1",
-    "karma-chrome-launcher": "^2.2.0",
+    "karma": "^6.4.0",
+    "karma-chrome-launcher": "^3.2.0",
     "karma-cljs-test": "^0.1.0",
-    "react-dnd": "^5.0.0",
-    "react-dnd-html5-backend": "^5.0.1",
-    "react-sortable-hoc": "^0.8.3",
-    "react-testing-library": "^6.0.0",
-    "shadow-cljs": "^2.8.18",
-    "showdown": "^1.9.1"
+    "karma-firefox-launcher": "^2.1.2",
+    "karma-webkit-launcher": "^2.1.0",
+    "playwright": "^1.40.0",
+    "shadow-cljs": "^3.3.5",
+    "showdown": "^2.1.0"
   },
   "dependencies": {
     "create-react-class": "^15.6.3",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
-    "react-is": "^16.8.1"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-is": "^18.2.0"
   }
 }

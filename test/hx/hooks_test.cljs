@@ -5,7 +5,7 @@
             [hx.hooks.alpha :as alpha]
             ["react" :as r]
             [react-utils :as u]
-            [react-testing-library :as rtl]))
+            ["@testing-library/react" :as rtl]))
 
 (t/use-fixtures :each
   {:after rtl/cleanup})
@@ -220,8 +220,8 @@
   (let [[count update-count] (hooks/useState 0)]
     (reset! lifecycle nil)
     [:div {:on-click #(update-count (fn [n]
-                                     ;; (prn @lifecycle)
-                                     (inc n)))}
+                                      ;; (prn @lifecycle)
+                                      (inc n)))}
      count]))
 
 (t/deftest when-applied
@@ -272,7 +272,7 @@
     (let [counter (atom 0)
           FxTest (fn [props]
                    (alpha/useSmartEffect
-                     (swap! counter inc))
+                    (swap! counter inc))
                    (hx/f [:div @counter]))
           test (-> (hx/f [FxTest])
                    (u/render))
@@ -284,7 +284,7 @@
           (re-render))
       (t/is (= @counter 1)))))
 
- (t/deftest useSmartEffect-detect-change
+(t/deftest useSmartEffect-detect-change
   (t/testing "fires anytime `diff` changes before"
     (let [counter (atom 0)
           diff (atom 0)
@@ -306,4 +306,3 @@
       (-> (hx/f [FxTest])
           (re-render))
       (t/is (= @counter 3)))))
-

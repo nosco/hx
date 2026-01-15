@@ -3,7 +3,7 @@
    [goog.dom :as dom]
    [goog.object :as gobj]
    [clojure.string :as str]
-   ["react-testing-library" :as rtl]))
+   ["@testing-library/react" :as rtl]))
 
 (defn pret [x]
   (js/console.log x)
@@ -32,7 +32,7 @@
     f))
 
 (defn call-count [f]
-  @(.-callCount f))
+  (deref (.-callCount ^js f)))
 
 (defn click [node]
   (.click rtl/fireEvent node)
