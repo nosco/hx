@@ -3,7 +3,8 @@
 
    This file intentionally contains both valid and invalid defnc usages
    to test the linting rules."
-  (:require [hx.react :refer [defnc]]))
+  (:require [hx.react :refer [defnc]]
+            ["react" :as react]))
 
 ;; VALID: First arg is map destructuring
 (defnc ValidComponent1 [{:keys [name age]}]
@@ -46,9 +47,13 @@
 (defnc InvalidComponent3 [p the-ref]
   [:div {:ref the-ref} (:name p)])
 
-;; VALID: :wrap with a vector
+;; VALID: :wrap with react/memo
 (defnc ValidWrapComponent [{:keys [x]}]
-  {:wrap [(js/Function.prototype)]}
+  {:wrap [(react/memo)]}
+  [:div x])
+
+;; VALID: ^:memo metadata (preferred way)
+(defnc ^:memo ValidMemoComponent [{:keys [x]}]
   [:div x])
 
 ;; INVALID: :wrap without vector (common mistake)

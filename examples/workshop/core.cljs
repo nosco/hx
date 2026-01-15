@@ -338,14 +338,14 @@
            :style (merge (:input styles) {:width "200px"})
            :placeholder placeholder}])
 
-(def FocusableInput (react/forwardRef FocusableInput*))
+(def FocusableInput (uix.core/forward-ref FocusableInput*))
 
 ;; New style: using :wrap option (preferred)
-(hx/defnc FocusableInputWithWrap [{:keys [placeholder]} ref]
-  {:wrap [(react/forwardRef)]}
-  [:input {:ref ref
-           :style (merge (:input styles) {:width "200px" :border-color "#4CAF50"})
-           :placeholder placeholder}])
+#_(hx/defnc FocusableInputWithWrap [{:keys [placeholder]} ref]
+    {:wrap [(react/forwardRef)]}
+    [:input {:ref ref
+             :style (merge (:input styles) {:width "200px" :border-color "#4CAF50"})
+             :placeholder placeholder}])
 
 (hx/defnc RefSection [_]
   (let [input-ref (react/useRef nil)
@@ -363,14 +363,14 @@
                               (.focus el))}
         "Focus"]]]
 
-     [:div
-      [:strong "Using :wrap option (new style):"]
-      [:div {:style {:display "flex" :align-items "center" :margin-top "8px"}}
-       [FocusableInputWithWrap {:ref input-ref-wrap :placeholder ":wrap [(react/forwardRef)]"}]
-       [:button {:style (:button styles)
-                 :on-click #(when-let [el (.-current input-ref-wrap)]
-                              (.focus el))}
-        "Focus"]]]]))
+     #_[:div
+        [:strong "Using :wrap option (new style):"]
+        [:div {:style {:display "flex" :align-items "center" :margin-top "8px"}}
+         [FocusableInputWithWrap {:ref input-ref-wrap :placeholder ":wrap [(react/forwardRef)]"}]
+         [:button {:style (:button styles)
+                   :on-click #(when-let [el (.-current input-ref-wrap)]
+                                (.focus el))}
+          "Focus"]]]]))
 ;; SECTION 9: FUNCTION AS CHILD
 ;; =============================================================================
 
@@ -390,6 +390,60 @@
     (fn [count]
       [:div {:style {:font-size "24px" :font-weight "bold"}}
        "Count: " count])]])
+
+;; =============================================================================
+;; SECTION 10: REST PROPS (:&)
+;; =============================================================================
+
+;; Component that extracts some props and passes the rest through
+(hx/defnc StyledButton [{:keys [variant children] :& button-props}]
+  (let [variant-style (case variant
+                        :primary (:button styles)
+                        :secondary (:button-secondary styles)
+                        (:button styles))]
+    [:div
+     [:pre (str "button-props: " (pr-str (keys button-props)))]
+     [:button (merge {:style variant-style} button-props)
+      children]]))
+
+;; UIx version for comparison
+(defui UixStyledButton [{:keys [variant children] :& button-props}]
+  (let [variant-style (case variant
+                        :primary (:button styles)
+                        :secondary (:button-secondary styles)
+                        (:button styles))]
+    ($ :div
+       ($ :pre (str "button-props: " (pr-str (keys button-props))))
+       ($ :button {:style variant-style :& button-props}
+          children))))
+
+(hx/defnc RestPropsSection [_]
+  (let [[click-count set-click-count] (hooks/useState 0)]
+    [:div {:style (:section styles)}
+     [:h3 {:style (:section-title styles)} "10. Rest Props (:&) - if they work, you should see the count increase"]
+     [:p "The " [:code ":&"] " syntax extracts remaining props for pass-through:"]
+     [:pre {:style {:background "#f5f5f5" :padding "12px" :border-radius "4px" :overflow-x "auto"}}
+      [:code "(hx/defnc StyledButton [{:keys [variant] :& button-props}]\n  [:button (merge {:style variant-style} button-props)\n   (:children button-props)])"]]
+
+     [:div {:style {:margin-top "16px"}}
+      [:strong "hx defnc with :&"]
+      [:div {:style {:display "flex" :gap "8px" :margin-top "8px"}}
+       [StyledButton {:variant :primary
+                      :on-click #(set-click-count inc)}
+        "Primary (clicked: " click-count ")"]
+       [StyledButton {:variant :secondary
+                      :on-click #(set-click-count 0)}
+        "Reset"]]]
+
+     [:div {:style {:margin-top "16px"}}
+      [:strong "UIx defui with :& (same syntax)"]
+      [:div {:style {:display "flex" :gap "8px" :margin-top "8px"}}
+       ($ UixStyledButton {:variant :primary
+                           :on-click #(set-click-count inc)}
+          "Primary (clicked: " click-count ")")
+       ($ UixStyledButton {:variant :secondary
+                           :on-click #(set-click-count 0)}
+          "Reset")]]]))
 
 ;; =============================================================================
 ;; MAIN APP
@@ -418,6 +472,7 @@
    [StateSection]
    [RefSection]
    [FunctionAsChildSection]
+   [RestPropsSection]
 
    [:footer {:style {:margin-top "32px"
                      :padding-top "16px"

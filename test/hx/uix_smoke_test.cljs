@@ -228,3 +228,40 @@
     ;; Verify the error boundary is properly defined and can be used
     (t/is (some? smoke-test-error-boundary))
     (t/is (fn? smoke-test-error-boundary))))
+
+;;
+;; Props rest syntax (:&)
+;;
+
+(defui ComponentWithRestProps [{:keys [title] :& rest-props}]
+  ($ :div {:data-testid "rest-props"}
+     ($ :h1 title)
+     ($ :span {:data-testid "rest-keys"}
+        (pr-str (sort (keys rest-props))))))
+
+(t/deftest uix-rest-props-syntax
+  (t/testing "UIx :& rest props syntax collects unlisted keys"
+    (let [result (render ($ ComponentWithRestProps {:title "Hello"
+                                                    :foo "bar"
+                                                    :baz 42}))
+          rest-keys (rtl/getByTestId (.-container result) "rest-keys")]
+      ;; :& should collect :foo and :baz but not :title
+      (t/is (= "(:baz :foo)" (.-textContent rest-keys))))))
+
+(defui ComponentWithRestPropsUsage [{:keys [class-name] :& rest-props}]
+  ;; Use rest-props to pass through to a child element
+  ($ :div {:class class-name :data-testid "wrapper"}
+     ($ :button {:data-testid "button" :& rest-props} "Click")))
+
+(t/deftest uix-rest-props-passthrough
+  (t/testing "UIx :& can be used to pass remaining props through"
+    (let [clicked (atom false)
+          result (render ($ ComponentWithRestPropsUsage
+                            {:class-name "my-class"
+                             :on-click #(reset! clicked true)
+                             :title "my-title"}))
+          button (rtl/getByTestId (.-container result) "button")]
+      ;; rest-props should have on-click and title
+      (t/is (= "my-title" (.-title button)))
+      (click button)
+      (t/is (= true @clicked)))))
