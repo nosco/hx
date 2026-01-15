@@ -10,6 +10,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        react-version: ["18", "19"]
+
+    name: Test (React ${{ matrix.react-version }})
+
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +41,13 @@ jobs:
 
       - name: Install npm dependencies
         run: npm ci
+
+      - name: Install React ${{ matrix.react-version }}
+        run: |
+          npm install react@${{ matrix.react-version }} react-dom@${{ matrix.react-version }} react-is@${{ matrix.react-version }} --save-exact
+
+      - name: Show React version
+        run: npm ls react react-dom
 
       - name: Compile tests
         run: npx shadow-cljs compile ci
